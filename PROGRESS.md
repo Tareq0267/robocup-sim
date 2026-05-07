@@ -115,6 +115,16 @@ Key files used as ground truth for this sim:
 | Who chases | Robot closer to ball (`activeIndex`) | Robot with lower `tmMyCost` | ⚠️ Sim uses pure distance; repo uses composite cost (distance + angle + obstacles + fall penalty) |
 | Swap delay | `roleSwapDelay` timer (hysteresis) | `ball_control_cost_threshold=20.0` + cost diff check | ⚠️ Sim uses time hysteresis; repo uses cost threshold |
 | Non-lead behaviour | `ASSIST` state | `decision='assist'` from `StrikerDecide` | ✅ |
+| GK↔striker role swap | GK farther from own goal than ALL strikers → closest striker becomes GK, 2 s cooldown | Same condition in `handleCooperation()`, `CMD_COOLDOWN=2000 ms` | ✅ |
+| Any robot can be GK | ✅ unified `Robot` type with `role` field | Each robot reads `player_role` variable at runtime | ✅ |
+
+### Teammate Collision / Obstacle Avoidance (sim) vs repo
+
+| Concept | Sim | Repo | Match |
+|---|---|---|---|
+| Explicit "don't crash" rule | No — physics `separateCircles` handles it | No explicit BT rule | ✅ |
+| Why robots don't both chase | Cost-based lead + ASSIST state (only 1 is active) | Same: `StrikerDecide decision=='assist'` for non-lead | ✅ |
+| GK as physical obstacle | `separateCircles` for all 3 robot pairs | Depth camera sees teammates as obstacles (height < 35 cm filtered out); `chase_ao_safe_dist=3.5 m` | ⚠️ Sim: elastic separation; repo: BT navigation avoidance |
 
 ---
 
@@ -138,9 +148,11 @@ Key files used as ground truth for this sim:
 - [x] `ASSIST` — non-lead robot moves to support position (2 m behind ball on goal→ball line)
 
 ### Team Coordination
-- [x] Two-robot team with role swap (closer robot becomes active)
-- [x] Role swap hysteresis (`roleSwapDelay` timer)
+- [x] Two-striker role swap with hysteresis (`roleSwapDelay` timer)
+- [x] **GK role switch** — any robot can be GK or striker at runtime; GK swaps to closest striker when GK drifts farthest from own goal; 2 s cooldown matches real `CMD_COOLDOWN=2000 ms`
 - [x] Focused overlay filtering (Team tab = all robots, P1/P2/GK tab = that robot only)
+- [x] Unified `Robot` type with `role`, `gkState`, `gkParams` — no separate `GoalkeeperRobot` in sim state
+- [x] Three-robot collision resolution (all 3 pairs via `separateCircles`)
 
 ### Goalkeeper State Machine
 - [x] `FIND_BALL` — spin until ball visible
@@ -164,6 +176,11 @@ Key files used as ground truth for this sim:
 - [x] Drag-to-reposition: ball, both strikers, goalkeeper
 - [x] Play/pause, speed control, simulation reset
 
+### Scoring & Kickoff
+- [x] Goal detection — ball centre touches goal line within goal mouth → score increments
+- [x] Score display in control bar (US n — n THEM)
+- [x] Kickoff reset — ball to centre, robots to repo-matched positions; `stepBall` allows ball to enter net depth, bounces off posts
+
 ### Parameter Alignment
 - [x] All striker parameters matched to `subtree_striker_play.xml`
 - [x] All goalkeeper parameters matched to `subtree_goal_keeper_play.xml`
@@ -175,11 +192,12 @@ Key files used as ground truth for this sim:
 
 ### Strategy Sim (Step 1)
 
-- [ ] **Goal detection + scoring** — detect when ball crosses goal line, show score, reset ball to centre
+- [x] **Goal detection + scoring** — ball crosses goal line → score increments, robots reset to kickoff positions (our kickoff: primary at -2m, secondary at -3.5m; opponent kickoff: both wait at -1.53m)
 - [ ] **Cross kick** — `decision=='cross'`, `speed_limit=0.4` low-power pass to teammate instead of full shot
 - [ ] **Cost-based role switching** — replace pure-distance swap with composite cost matching `updateCostToKick()` (distance + angle to goal + obstacle penalty)
 - [ ] **Ball out of bounds** — detect ball leaving field, reset per rules (throw-in / goal kick / corner)
-- [ ] **Opponent robots** — add 3 passive or simple opponent robots to test defensive scenarios
+- [ ] **Opponent robots** — add 3 passive or simple opponent robots to test defensive scenarios (note: will require enemy team UI and game controller integration)
+- [ ] **Game controller UI** — bottom sidebar panel: match phase (kickoff/play/freekick/halftime), score override, robot enable/disable, match timer; replaces hardcoded kickoff side logic
 - [ ] **Free kick logic** — positioning, wall distance, kickoff side handling from `subtree_striker_freekick.xml`
 - [ ] **Hardware speed caps** — enforce `vx_limit=2.0` and `vy_limit=0.4` as hard caps on all velocities (currently uncapped)
 - [ ] **`crabWalk` velocity model** — real robot applies `vx_factor=0.5` to forward component and caps lateral to `vy_limit=0.4`; sim uses raw world-frame velocities
