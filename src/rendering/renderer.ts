@@ -5,12 +5,13 @@
 // ================================================================
 
 import type { SimState, Robot, DebugData, GoalkeeperRobot } from '../simulation/types'
-import { GoalkeeperState } from '../simulation/types'
+import { RobotState, GoalkeeperState } from '../simulation/types'
 import { angOf } from '../simulation/math'
 
 const STATE_COLORS: Record<string, string> = {
   SEARCHING:     '#a855f7',  // purple
   IDLE:          '#64748b',  // slate
+  ASSIST:        '#60a5fa',  // blue
   CHASING:       '#f97316',  // orange
   REPOSITIONING: '#eab308',  // yellow
   RADIAL_ADJUST: '#22d3ee',  // cyan
@@ -63,6 +64,7 @@ export function render(ctx: CanvasRenderingContext2D, state: SimState, cw: numbe
       drawVector(ctx, robot.pos, debug.tangentialDir, sc, tc, '#eab308', 'tangent')
     if (state.overlays.showRadialVector && debug.radialDir)
       drawVector(ctx, robot.pos, debug.radialDir, sc, tc, '#22d3ee', 'radial')
+    drawAssistTarget(ctx, robot, state.ball, state.court.width / 2, sc, tc, PLAYER_COLORS[i])
   })
 
   if (state.overlays.showBallVelocity) drawBallVelocity(ctx, state, sc, tc)
@@ -302,6 +304,44 @@ function drawVector(
   ctx.lineTo(ex - al * Math.cos(ang + 0.4), ey - al * Math.sin(ang + 0.4))
   ctx.closePath(); ctx.fillStyle = color; ctx.fill()
   ctx.fillStyle = color; ctx.font = '10px monospace'; ctx.fillText(label, ex + 5, ey - 5)
+}
+
+// ── Assist target marker ──────────────────────────────────────
+// Shows where the inactive robot is heading (support position).
+function drawAssistTarget(
+  ctx: CanvasRenderingContext2D,
+  robot: Robot, ball: { pos: { x: number; y: number } }, courtHalfLength: number,
+  sc: number, tc: (x: number, y: number) => [number, number],
+  playerColor: string,
+) {
+  if (robot.state !== RobotState.ASSIST) return
+
+  const DIST_TO_GOALLINE = 2.5
+  let tx = ball.pos.x - 2.0
+  tx = Math.max(tx, -courtHalfLength + DIST_TO_GOALLINE)
+  const denom = ball.pos.x + courtHalfLength
+  const ty = Math.abs(denom) > 0.05
+    ? ball.pos.y * (tx + courtHalfLength) / denom
+    : 0
+
+  const [ax, ay] = tc(tx, ty)
+  const [rx, ry] = tc(robot.pos.x, robot.pos.y)
+
+  // Dashed line robot → target
+  ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(ax, ay)
+  ctx.strokeStyle = playerColor + '55'; ctx.lineWidth = 1
+  ctx.setLineDash([4, 6]); ctx.stroke(); ctx.setLineDash([])
+
+  // Diamond marker at target
+  const s = 5
+  ctx.beginPath()
+  ctx.moveTo(ax,     ay - s)
+  ctx.lineTo(ax + s, ay)
+  ctx.lineTo(ax,     ay + s)
+  ctx.lineTo(ax - s, ay)
+  ctx.closePath()
+  ctx.strokeStyle = playerColor + 'bb'; ctx.lineWidth = 1.5; ctx.stroke()
+  ctx.fillStyle   = playerColor + '33'; ctx.fill()
 }
 
 // ── Ball velocity ─────────────────────────────────────────────

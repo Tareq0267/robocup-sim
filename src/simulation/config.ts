@@ -34,16 +34,17 @@ export const DEFAULT_FIELD_LAYOUT: FieldLayout = {
 }
 
 export const DEFAULT_PARAMS: RobotParams = {
-  chaseDistance:       2.5,
-  chaseSpeed:          3.0,
-  tangentialSpeed:     2.0,
-  shootAngle:          0.15,   // ≈ 8.6°
-  radialSpeedDistance: 1.0,
-  radialSpeedFar:      2.5,
-  radialSpeedNear:     1.0,
-  shootingSpeed:       4.0,
-  rotationSpeed:       4.0,
-  fieldOfView:         2.094,  // 120° = 2π/3
+  // Aligned to real robot (config.yaml + subtree_striker_play.xml)
+  chaseDistance:       0.7,    // StrikerDecide chase_threshold="0.7" — switch to adjust within 0.7m
+  chaseSpeed:          1.2,    // Chase vx_limit="1.2" (config.yaml vx_limit=2.0 is the hardware cap)
+  tangentialSpeed:     1.2,    // Adjust tangential_speed_far="1.2"
+  shootAngle:          0.15,   // ≈ 8.6° (kick_threshold in AdjustForKickoff is 5°, conservative)
+  radialSpeedDistance: 0.5,    // Adjust near_threshold="0.5"
+  radialSpeedFar:      0.5,    // Adjust vx_limit="0.5" (radial closing speed)
+  radialSpeedNear:     0.2,    // Adjust tangential_speed_near="0.2"
+  shootingSpeed:       1.5,    // Kick speed_limit="1.5"
+  rotationSpeed:       1.2,    // vtheta_limit: 1.2 rad/s
+  fieldOfView:         1.571,  // cam_fov_x: 90° = π/2
 }
 
 // Booster T1: 47cm wide × 23cm deep footprint, radius ≈ half-diagonal
@@ -68,19 +69,20 @@ export const DEFAULT_TEAM: TeamConfig = {
 }
 
 export const DEFAULT_GK_PARAMS: GoalkeeperParams = {
-  chaseThreshold:        1.0,
-  retreatChaseThreshold: 2.0,
-  alignThreshold:        0.035,  // ≈ 2°
-  chaseSpeed:            0.6,
-  retreatSpeed:          0.8,
-  blockSpeedFar:         0.9,
-  blockSpeedNear:        0.2,
-  blockNearThreshold:    0.8,
-  kickSpeed:             1.5,
-  rotationSpeed:         4.0,
-  fieldOfView:           2.094,  // 120°
-  goalLineOffset:        0.5,
-  blockRange:            0.6,
+  // Aligned to real robot (subtree_goal_keeper_play.xml + config.yaml)
+  chaseThreshold:        1.0,    // GoalieDecide chase_threshold="1.0"
+  retreatChaseThreshold: 1.6,    // GoalieDecide retreat_chase_threshold="1.6"
+  alignThreshold:        0.035,  // GoalieDecide align_threshold_deg="2.0" → 0.035 rad
+  chaseSpeed:            0.6,    // Chase vx_limit="0.6"
+  retreatSpeed:          0.8,    // GoToGoalBlockingPosition vx_limit="0.8"
+  blockSpeedFar:         0.9,    // AdjustBlock tangential_speed_far="0.9"
+  blockSpeedNear:        0.2,    // AdjustBlock tangential_speed_near="0.2"
+  blockNearThreshold:    0.8,    // AdjustBlock near_threshold="0.8"
+  kickSpeed:             1.5,    // Kick speed_limit="1.5"
+  rotationSpeed:         1.2,    // vtheta_limit: 1.2 rad/s
+  fieldOfView:           1.571,  // cam_fov_x: 90° = π/2
+  goalLineOffset:        0.5,    // GoToGoalBlockingPosition dist_to_goalline="0.5"
+  blockRange:            0.6,    // AdjustBlock range="0.6"
 }
 
 export const DEFAULT_GOALKEEPER: GoalkeeperRobot = {
@@ -115,7 +117,7 @@ export interface GKParamMeta {
 
 export const GK_PARAM_META: GKParamMeta[] = [
   { key: 'chaseThreshold',        label: 'Chase Threshold',         unit: 'm',     min: 0.1, max: 3,   step: 0.1,  desc: 'Switch from chase to block when ball is within this distance' },
-  { key: 'retreatChaseThreshold', label: 'Retreat-Chase Threshold', unit: 'm',     min: 0.5, max: 5,   step: 0.1,  desc: 'Retreat first if ball is deeper than this in penalty area' },
+  { key: 'retreatChaseThreshold', label: 'Retreat-Chase Threshold', unit: 'm',     min: 0.5, max: 5,   step: 0.1,  desc: 'retreat_chase_threshold="1.6" — retreat first if ball is deeper than this in penalty area' },
   { key: 'alignThreshold',        label: 'Kick Align Tolerance',    unit: 'deg',   min: 0.5, max: 15,  step: 0.5,  desc: 'Max body angle error allowed before kicking' },
   { key: 'chaseSpeed',            label: 'Chase Speed',             unit: 'm/s',   min: 0.1, max: 3,   step: 0.1,  desc: 'Speed while chasing ball' },
   { key: 'retreatSpeed',          label: 'Retreat Speed',           unit: 'm/s',   min: 0.1, max: 3,   step: 0.1,  desc: 'Speed while retreating to goal line' },
@@ -163,14 +165,14 @@ export interface ParamMeta {
 }
 
 export const PARAM_META: ParamMeta[] = [
-  { key: 'chaseDistance',       label: 'Chase Distance',        unit: 'm',     min: 0.5, max: 6,   step: 0.1,  desc: 'Ball farther than this → robot runs straight to it' },
-  { key: 'chaseSpeed',          label: 'Chase Speed',           unit: 'm/s',   min: 0.5, max: 8,   step: 0.1,  desc: 'Movement speed while chasing' },
-  { key: 'tangentialSpeed',     label: 'Tangential Speed',      unit: 'm/s',   min: 0.1, max: 6,   step: 0.1,  desc: 'Orbital speed while repositioning behind the ball' },
-  { key: 'shootAngle',          label: 'Shoot Angle Tolerance', unit: 'deg',   min: 1,   max: 45,  step: 0.5,  desc: 'Max alignment error to be considered in shooting position' },
-  { key: 'radialSpeedDistance', label: 'Radial Speed Threshold',unit: 'm',     min: 0.1, max: 3,   step: 0.1,  desc: 'Distance threshold: switches far→near radial speed' },
-  { key: 'radialSpeedFar',      label: 'Radial Speed (Far)',    unit: 'm/s',   min: 0.1, max: 6,   step: 0.1,  desc: 'Closing speed when dist > threshold' },
-  { key: 'radialSpeedNear',     label: 'Radial Speed (Near)',   unit: 'm/s',   min: 0.1, max: 4,   step: 0.05, desc: 'Closing speed when dist ≤ threshold (precision)' },
-  { key: 'shootingSpeed',       label: 'Shooting Speed',        unit: 'm/s',   min: 0.5, max: 10,  step: 0.1,  desc: 'Forward push speed when shooting' },
-  { key: 'rotationSpeed',       label: 'Rotation Speed',        unit: 'rad/s', min: 0.5, max: 10,  step: 0.1,  desc: 'How fast robot rotates to face target' },
-  { key: 'fieldOfView',         label: 'Field of View',         unit: 'deg',   min: 10,  max: 360, step: 1,    desc: 'Vision cone — ball outside this triggers SEARCHING' },
+  { key: 'chaseDistance',       label: 'Chase Distance',        unit: 'm',     min: 0.1, max: 5,   step: 0.05, desc: 'StrikerDecide chase_threshold — switch to adjust when ball is within this distance (real: 0.7m)' },
+  { key: 'chaseSpeed',          label: 'Chase Speed',           unit: 'm/s',   min: 0.1, max: 2,   step: 0.1,  desc: 'Chase vx_limit="1.2" — hardware cap is 2.0 m/s' },
+  { key: 'tangentialSpeed',     label: 'Tangential Speed',      unit: 'm/s',   min: 0.1, max: 2,   step: 0.05, desc: 'Adjust tangential_speed_far — lateral orbit speed (real: 1.2 m/s, vy_limit: 0.4)' },
+  { key: 'shootAngle',          label: 'Shoot Angle Tolerance', unit: 'deg',   min: 1,   max: 30,  step: 0.5,  desc: 'Max body alignment error before kicking (real kick_threshold ≈ 5°)' },
+  { key: 'radialSpeedDistance', label: 'Near Threshold',        unit: 'm',     min: 0.1, max: 2,   step: 0.05, desc: 'Adjust near_threshold — switches far→near speed (real: 0.5m)' },
+  { key: 'radialSpeedFar',      label: 'Radial Speed (Far)',    unit: 'm/s',   min: 0.1, max: 2,   step: 0.05, desc: 'Closing speed when far — Adjust vx_limit="0.5"' },
+  { key: 'radialSpeedNear',     label: 'Radial Speed (Near)',   unit: 'm/s',   min: 0.1, max: 1,   step: 0.05, desc: 'Closing speed when near — Adjust tangential_speed_near="0.2"' },
+  { key: 'shootingSpeed',       label: 'Kick Speed',            unit: 'm/s',   min: 0.1, max: 3,   step: 0.1,  desc: 'Forward push speed — Kick speed_limit="1.5"' },
+  { key: 'rotationSpeed',       label: 'Rotation Speed',        unit: 'rad/s', min: 0.1, max: 3,   step: 0.05, desc: 'Body rotation rate — real robot vtheta_limit: 1.2 rad/s' },
+  { key: 'fieldOfView',         label: 'Field of View',         unit: 'deg',   min: 10,  max: 180, step: 1,    desc: 'Camera FOV — real robot cam_fov_x: 90° — ball outside triggers SEARCHING' },
 ]

@@ -18,6 +18,34 @@ export function idleBehavior(): Vec2 {
   return { x: 0, y: 0 }
 }
 
+// ASSIST — inactive robot: move to support position 2m behind the ball on the
+// own-goal→ball line. Mirrors real Assist BT node (vx_limit=0.2, vy_limit=0.2,
+// dist_to_goalline=2.5). courtHalfLength = court.width / 2 (our field is 14m wide,
+// so half = 7m along the x axis).
+export function assistBehavior(robot: Robot, ball: Ball, courtHalfLength: number): Vec2 {
+  const DIST_TO_GOALLINE = 2.5  // Assist dist_to_goalline default (brain_tree.h:556)
+  const ASSIST_SPEED     = 0.2  // Assist vx_limit="0.2" from subtree_striker_play.xml
+
+  // Target x: 2m behind ball, but never closer to own goal than dist_to_goalline
+  const ownGoalX  = -courtHalfLength
+  let tx          = ball.pos.x - 2.0
+  tx              = Math.max(tx, ownGoalX + DIST_TO_GOALLINE)
+
+  // Target y: project along the own-goal-centre → ball line to get lateral coord
+  const denom = ball.pos.x + courtHalfLength  // distance of ball from own goal line
+  const ty    = Math.abs(denom) > 0.05
+    ? ball.pos.y * (tx + courtHalfLength) / denom
+    : 0
+
+  const target   = { x: tx, y: ty }
+  const toTarget = sub(target, robot.pos)
+  const d        = dist(robot.pos, target)
+
+  if (d < 0.15) return { x: 0, y: 0 }  // close enough — stop
+
+  return scale(normalize(toTarget), Math.min(ASSIST_SPEED, d))
+}
+
 // CHASING — run straight toward the ball
 export function chaseBehavior(robot: Robot, ball: Ball): Vec2 {
   const dir = normalize(sub(ball.pos, robot.pos))

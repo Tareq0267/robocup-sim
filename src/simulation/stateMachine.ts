@@ -32,7 +32,8 @@ import { sub, dist, angOf, dot, normalize, wrapAngle } from './math'
 // ----------------------------------------------------------------
 // INACTIVE ROBOT STATE
 // Called when this robot is not the active (ball-chasing) robot.
-// It can only IDLE (hold position, face ball) or SEARCH (spin).
+// Mirrors real StrikerDecide: non-lead robot always goes to ASSIST.
+// Falls back to SEARCHING if ball is out of FOV.
 // ----------------------------------------------------------------
 export function getInactiveState(robot: Robot, ball: Ball): { state: RobotState; reason: string } {
   if (!canSeeBall(robot, ball)) {
@@ -40,7 +41,7 @@ export function getInactiveState(robot: Robot, ball: Ball): { state: RobotState;
     const limDeg = (robot.params.fieldOfView / 2 * 180 / Math.PI).toFixed(1)
     return { state: RobotState.SEARCHING, reason: `Inactive + ball out of FOV (${errDeg}° > ±${limDeg}°)` }
   }
-  return { state: RobotState.IDLE, reason: 'Inactive — holding position' }
+  return { state: RobotState.ASSIST, reason: 'Inactive — moving to support position' }
 }
 
 // Can the robot see the ball? (ball must be within the FOV cone)

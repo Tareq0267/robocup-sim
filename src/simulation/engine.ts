@@ -4,7 +4,7 @@
 
 import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type SimState, type DebugData, type StateTransition, type GoalkeeperRobot, type GoalkeeperDebugData } from './types'
 import { getNextState, getInactiveState, computeAlignmentError, computeOrientationError, computeFovError, isOnCorrectSide, isAligned, isAtContactRange, isOrientationAligned, canSeeBall } from './stateMachine'
-import { searchBehavior, idleBehavior, chaseBehavior, repositionBehavior, radialAdjustBehavior, readyBehavior, shootBehavior, getTargetOrientation } from './behaviors'
+import { searchBehavior, idleBehavior, assistBehavior, chaseBehavior, repositionBehavior, radialAdjustBehavior, readyBehavior, shootBehavior, getTargetOrientation } from './behaviors'
 import { goalieDecide, gkCanSeeBall, gkFovError, gkAlignmentError, ballInZone } from './goalkeeperStateMachine'
 import { gkFindBallBehavior, gkRetreatBehavior, gkAdjustBlockBehavior, gkChaseBehavior, gkKickBehavior, gkTargetOrientation } from './goalkeeperBehaviors'
 import { stepBall, applyContact, resolveOverlap, resolveRobotCollision, separateCircles } from './physics'
@@ -43,13 +43,14 @@ function tickRobot(
   // ── 2. Compute velocity ────────────────────────────────────
   let velocity = { x: 0, y: 0 }
   switch (nextState) {
-    case RobotState.SEARCHING:    velocity = searchBehavior();                          break
-    case RobotState.IDLE:         velocity = idleBehavior();                            break
-    case RobotState.CHASING:      velocity = chaseBehavior(updatedRobot, ball);         break
-    case RobotState.REPOSITIONING:velocity = repositionBehavior(updatedRobot, ball, goal); break
-    case RobotState.RADIAL_ADJUST:velocity = radialAdjustBehavior(updatedRobot, ball);  break
-    case RobotState.READY:        velocity = readyBehavior();                           break
-    case RobotState.SHOOTING:     velocity = shootBehavior(updatedRobot);               break
+    case RobotState.SEARCHING:    velocity = searchBehavior();                                         break
+    case RobotState.IDLE:         velocity = idleBehavior();                                           break
+    case RobotState.ASSIST:       velocity = assistBehavior(updatedRobot, ball, court.width / 2);      break
+    case RobotState.CHASING:      velocity = chaseBehavior(updatedRobot, ball);                        break
+    case RobotState.REPOSITIONING:velocity = repositionBehavior(updatedRobot, ball, goal);             break
+    case RobotState.RADIAL_ADJUST:velocity = radialAdjustBehavior(updatedRobot, ball);                 break
+    case RobotState.READY:        velocity = readyBehavior();                                          break
+    case RobotState.SHOOTING:     velocity = shootBehavior(updatedRobot);                              break
   }
 
   // ── 3. Update position ─────────────────────────────────────

@@ -3,6 +3,7 @@ import type { SimState } from '../simulation/types'
 const STATE_COLORS: Record<string, string> = {
   SEARCHING:     '#a855f7',
   IDLE:          '#64748b',
+  ASSIST:        '#60a5fa',
   CHASING:       '#f97316',
   REPOSITIONING: '#eab308',
   RADIAL_ADJUST: '#22d3ee',

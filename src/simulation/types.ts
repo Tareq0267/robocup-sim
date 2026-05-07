@@ -16,11 +16,12 @@ export interface Vec2 { x: number; y: number }
 //
 // Inactive robot:
 //   SEARCHING        — ball outside FOV, spin
-//   IDLE             — ball visible, hold position and face ball
+//   ASSIST           — ball visible, move to support position 2m behind ball
 // ----------------------------------------------------------------
 export const RobotState = {
   SEARCHING:     'SEARCHING',
   IDLE:          'IDLE',
+  ASSIST:        'ASSIST',
   CHASING:       'CHASING',
   REPOSITIONING: 'REPOSITIONING',
   RADIAL_ADJUST: 'RADIAL_ADJUST',
