@@ -5,7 +5,7 @@
 // ================================================================
 
 import type { SimState, Robot, DebugData, GoalkeeperRobot } from '../simulation/types'
-import { RobotState, GoalkeeperState } from '../simulation/types'
+import { RobotState } from '../simulation/types'
 import { angOf } from '../simulation/math'
 
 const STATE_COLORS: Record<string, string> = {
@@ -29,14 +29,19 @@ const GK_STATE_COLORS: Record<string, string> = {
 
 const GK_COLOR = '#f97316'  // orange accent for goalkeeper
 
-// Player accent colours (ring around robot to tell P1 from P2)
-const PLAYER_COLORS = ['#3b82f6', '#14b8a6']  // blue, teal
+// Player accent colours — used when robot is acting as striker
+const PLAYER_COLORS = ['#3b82f6', '#14b8a6', '#a78bfa']  // blue, teal, violet
 
 const BODY_DEPTH = 0.23   // Booster T1: 23cm front-to-back
 const BODY_WIDTH = 0.47   // Booster T1: 47cm shoulder-to-shoulder
 
 function toCanvas(x: number, y: number, cw: number, ch: number, sc: number): [number, number] {
   return [cw / 2 + x * sc, ch / 2 - y * sc]
+}
+
+// Convert unified Robot to GoalkeeperRobot view (for GK drawing functions)
+function asGKRobot(r: Robot): GoalkeeperRobot {
+  return { pos: r.pos, orientation: r.orientation, state: r.gkState, radius: r.radius, params: r.gkParams }
 }
 
 export function render(ctx: CanvasRenderingContext2D, state: SimState, cw: number, ch: number, focusedRobot: number | null = null) {
@@ -51,58 +56,63 @@ export function render(ctx: CanvasRenderingContext2D, state: SimState, cw: numbe
 
   // Per-robot overlays (drawn under robots)
   state.robots.forEach((robot, i) => {
-    const debug    = state.debugs[i]
-    const isActive = state.activeIndex === i
-    const focused  = focusedRobot === null || focusedRobot === i
+    const focused = focusedRobot === null || focusedRobot === i
     if (!focused) return
-    if (state.overlays.showFOVCone)             drawFOVCone(ctx, robot, debug, sc, tc)
-    if (state.overlays.showChaseDistanceCircle && isActive) drawChaseCircle(ctx, robot, state.ball, sc, tc)
-    if (state.overlays.showAlignmentLine && isActive)       drawAlignmentLine(ctx, robot, state.ball, state.goal, sc, tc)
-    if (state.overlays.showShootAngleCone && isActive)      drawShootCone(ctx, robot, state.ball, state.goal, sc, tc)
-    if (state.overlays.showContactRange)        drawContactRange(ctx, robot, state.ball, sc, tc)
-    if (state.overlays.showTangentVector && debug.tangentialDir)
-      drawVector(ctx, robot.pos, debug.tangentialDir, sc, tc, '#eab308', 'tangent')
-    if (state.overlays.showRadialVector && debug.radialDir)
-      drawVector(ctx, robot.pos, debug.radialDir, sc, tc, '#22d3ee', 'radial')
-    drawAssistTarget(ctx, robot, state.ball, state.court.width / 2, sc, tc, PLAYER_COLORS[i])
+
+    if (robot.role === 'goalkeeper') {
+      // GK FOV cone
+      if (state.overlays.showFOVCone) {
+        const [rx, ry] = tc(robot.pos.x, robot.pos.y)
+        const halfFOV  = robot.gkParams.fieldOfView / 2
+        const range    = 2.8 * sc
+        const start    = -(robot.orientation + halfFOV)
+        const end      = -(robot.orientation - halfFOV)
+        ctx.beginPath(); ctx.moveTo(rx, ry); ctx.arc(rx, ry, range, start, end); ctx.closePath()
+        if (state.goalkeeperDebug.canSeeBall) {
+          ctx.fillStyle = 'rgba(249,115,22,0.07)'; ctx.strokeStyle = 'rgba(249,115,22,0.35)'
+        } else {
+          ctx.fillStyle = 'rgba(168,85,247,0.10)'; ctx.strokeStyle = 'rgba(168,85,247,0.45)'
+        }
+        ctx.lineWidth = 1; ctx.fill(); ctx.stroke()
+      }
+    } else {
+      const debug    = state.debugs[i]
+      const isActive = state.activeIndex === i
+      if (state.overlays.showFOVCone)             drawFOVCone(ctx, robot, debug, sc, tc)
+      if (state.overlays.showChaseDistanceCircle && isActive) drawChaseCircle(ctx, robot, state.ball, sc, tc)
+      if (state.overlays.showAlignmentLine && isActive)       drawAlignmentLine(ctx, robot, state.ball, state.goal, sc, tc)
+      if (state.overlays.showShootAngleCone && isActive)      drawShootCone(ctx, robot, state.ball, state.goal, sc, tc)
+      if (state.overlays.showContactRange)        drawContactRange(ctx, robot, state.ball, sc, tc)
+      if (state.overlays.showTangentVector && debug.tangentialDir)
+        drawVector(ctx, robot.pos, debug.tangentialDir, sc, tc, '#eab308', 'tangent')
+      if (state.overlays.showRadialVector && debug.radialDir)
+        drawVector(ctx, robot.pos, debug.radialDir, sc, tc, '#22d3ee', 'radial')
+      drawAssistTarget(ctx, robot, state.ball, state.court.width / 2, sc, tc, PLAYER_COLORS[i] ?? GK_COLOR)
+    }
   })
 
   if (state.overlays.showBallVelocity) drawBallVelocity(ctx, state, sc, tc)
   drawBall(ctx, state, sc, tc)
 
-  // Draw robots
+  // Draw robots (striker style or GK style based on role)
   state.robots.forEach((robot, i) => {
-    const debug    = state.debugs[i]
-    const isActive = state.activeIndex === i
-    drawRobot(ctx, robot, i, isActive, state.overlays.showOrientationArrow, debug, sc, tc)
-    if (state.overlays.showStateLabel) drawStateLabel(ctx, robot, i, isActive, sc, tc)
-  })
-
-  // Draw goalkeeper (overlays shown when Team tab or GK tab focused)
-  const showGKOverlays = focusedRobot === null || focusedRobot === 2
-  if (showGKOverlays && state.overlays.showFOVCone) {
-    const gk = state.goalkeeper
-    const [rx, ry] = tc(gk.pos.x, gk.pos.y)
-    const halfFOV = gk.params.fieldOfView / 2
-    const range   = 2.8 * sc
-    const start   = -(gk.orientation + halfFOV)
-    const end     = -(gk.orientation - halfFOV)
-    ctx.beginPath(); ctx.moveTo(rx, ry); ctx.arc(rx, ry, range, start, end); ctx.closePath()
-    if (state.goalkeeperDebug.canSeeBall) {
-      ctx.fillStyle = 'rgba(249,115,22,0.07)'; ctx.strokeStyle = 'rgba(249,115,22,0.35)'
+    if (robot.role === 'goalkeeper') {
+      const gkRobot = asGKRobot(robot)
+      drawGoalkeeper(ctx, gkRobot, state.overlays.showOrientationArrow, sc, tc)
+      if (state.overlays.showStateLabel) drawGoalkeeperLabel(ctx, gkRobot, sc, tc)
     } else {
-      ctx.fillStyle = 'rgba(168,85,247,0.10)'; ctx.strokeStyle = 'rgba(168,85,247,0.45)'
+      const debug    = state.debugs[i]
+      const isActive = state.activeIndex === i
+      drawRobot(ctx, robot, i, isActive, state.overlays.showOrientationArrow, debug, sc, tc)
+      if (state.overlays.showStateLabel) drawStateLabel(ctx, robot, i, isActive, sc, tc)
     }
-    ctx.lineWidth = 1; ctx.fill(); ctx.stroke()
-  }
-  drawGoalkeeper(ctx, state.goalkeeper, state.overlays.showOrientationArrow, sc, tc)
-  if (state.overlays.showStateLabel) drawGoalkeeperLabel(ctx, state.goalkeeper, sc, tc)
+  })
 }
 
 // ── Court ─────────────────────────────────────────────────────
 function drawCourt(
   ctx: CanvasRenderingContext2D, state: SimState,
-  cw: number, ch: number, sc: number,
+  _cw: number, _ch: number, sc: number,
   tc: (x: number, y: number) => [number, number],
 ) {
   const [fx, fy] = tc(-state.court.width / 2, state.court.height / 2)
@@ -129,7 +139,7 @@ function drawCourt(
 // ── Field markings: penalty areas, goal areas, penalty marks ─
 function drawFieldMarkings(
   ctx: CanvasRenderingContext2D, state: SimState,
-  sc: number, tc: (x: number, y: number) => [number, number],
+  _sc: number, tc: (x: number, y: number) => [number, number],
 ) {
   const { ownPenaltyArea, ownGoalArea, opponentPenaltyArea, opponentGoalArea, penaltyMarkDist } = state.fieldLayout
   const lineColor = 'rgba(255,255,255,0.35)'
@@ -147,15 +157,11 @@ function drawFieldMarkings(
     ctx.setLineDash([])
   }
 
-  // Penalty areas
   drawZone(ownPenaltyArea,      'rgba(59,130,246,0.05)', lineColor, [])
   drawZone(opponentPenaltyArea, 'rgba(250,204,21,0.05)', lineColor, [])
-
-  // Goal areas (inner boxes)
   drawZone(ownGoalArea,      'rgba(59,130,246,0.08)', areaColor, [4, 4])
   drawZone(opponentGoalArea, 'rgba(250,204,21,0.08)', areaColor, [4, 4])
 
-  // Penalty marks
   function drawMark(x: number, y: number) {
     const [px, py] = tc(x, y)
     const r = 3
@@ -165,7 +171,6 @@ function drawFieldMarkings(
   drawMark(-7.0 + penaltyMarkDist, 0)
   drawMark( 7.0 - penaltyMarkDist, 0)
 
-  // Centre spot
   const [cx, cy] = tc(0, 0)
   ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2)
   ctx.fillStyle = lineColor; ctx.fill()
@@ -174,7 +179,7 @@ function drawFieldMarkings(
 // ── Opponent goal (right, yellow) ────────────────────────────
 function drawGoal(
   ctx: CanvasRenderingContext2D, state: SimState,
-  sc: number, tc: (x: number, y: number) => [number, number],
+  _sc: number, tc: (x: number, y: number) => [number, number],
 ) {
   const { center, width, depth } = state.goal
   const hw = width / 2
@@ -193,11 +198,10 @@ function drawGoal(
 // ── Our goal (left, blue) ─────────────────────────────────────
 function drawOwnGoal(
   ctx: CanvasRenderingContext2D, state: SimState,
-  sc: number, tc: (x: number, y: number) => [number, number],
+  _sc: number, tc: (x: number, y: number) => [number, number],
 ) {
   const { center, width, depth } = state.ownGoal
   const hw = width / 2
-  // Net depth extends left (negative x) for the left-side goal
   const [gx, gy]   = tc(center.x,         center.y + hw)
   const [gx2, gy2] = tc(center.x - depth,  center.y - hw)
   ctx.fillStyle = 'rgba(59,130,246,0.15)'
@@ -247,7 +251,7 @@ function drawChaseCircle(
 function drawAlignmentLine(
   ctx: CanvasRenderingContext2D,
   robot: Robot, ball: SimState['ball'], goal: SimState['goal'],
-  sc: number, tc: (x: number, y: number) => [number, number],
+  _sc: number, tc: (x: number, y: number) => [number, number],
 ) {
   const [rx, ry] = tc(robot.pos.x, robot.pos.y)
   const [bx, by] = tc(ball.pos.x,  ball.pos.y)
@@ -290,7 +294,7 @@ function drawContactRange(
 function drawVector(
   ctx: CanvasRenderingContext2D,
   origin: { x: number; y: number }, dir: { x: number; y: number },
-  sc: number, tc: (x: number, y: number) => [number, number],
+  _sc: number, tc: (x: number, y: number) => [number, number],
   color: string, label: string,
 ) {
   const [ox, oy] = tc(origin.x, origin.y)
@@ -307,11 +311,10 @@ function drawVector(
 }
 
 // ── Assist target marker ──────────────────────────────────────
-// Shows where the inactive robot is heading (support position).
 function drawAssistTarget(
   ctx: CanvasRenderingContext2D,
   robot: Robot, ball: { pos: { x: number; y: number } }, courtHalfLength: number,
-  sc: number, tc: (x: number, y: number) => [number, number],
+  _sc: number, tc: (x: number, y: number) => [number, number],
   playerColor: string,
 ) {
   if (robot.state !== RobotState.ASSIST) return
@@ -327,12 +330,10 @@ function drawAssistTarget(
   const [ax, ay] = tc(tx, ty)
   const [rx, ry] = tc(robot.pos.x, robot.pos.y)
 
-  // Dashed line robot → target
   ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(ax, ay)
   ctx.strokeStyle = playerColor + '55'; ctx.lineWidth = 1
   ctx.setLineDash([4, 6]); ctx.stroke(); ctx.setLineDash([])
 
-  // Diamond marker at target
   const s = 5
   ctx.beginPath()
   ctx.moveTo(ax,     ay - s)
@@ -370,16 +371,16 @@ function drawBall(
   }
 }
 
-// ── Robot rectangle ───────────────────────────────────────────
+// ── Robot rectangle (striker role) ───────────────────────────
 function drawRobot(
   ctx: CanvasRenderingContext2D,
   robot: Robot, playerIndex: number, isActive: boolean,
   showTargetOri: boolean, debug: DebugData,
   sc: number, tc: (x: number, y: number) => [number, number],
 ) {
-  const [rx, ry]  = tc(robot.pos.x, robot.pos.y)
-  const stateColor = STATE_COLORS[robot.state] ?? '#60a5fa'
-  const playerColor = PLAYER_COLORS[playerIndex]
+  const [rx, ry]    = tc(robot.pos.x, robot.pos.y)
+  const stateColor  = STATE_COLORS[robot.state] ?? '#60a5fa'
+  const playerColor = PLAYER_COLORS[playerIndex] ?? '#60a5fa'
   const bD = BODY_DEPTH * sc
   const bW = BODY_WIDTH * sc
 
@@ -387,24 +388,20 @@ function drawRobot(
   ctx.translate(rx, ry)
   ctx.rotate(-robot.orientation)
 
-  // Body fill + outline
   ctx.fillStyle   = stateColor + (isActive ? '33' : '18')
   ctx.strokeStyle = isActive ? stateColor : stateColor + '88'
   ctx.lineWidth   = isActive ? 1.5 : 1
   ctx.fillRect(-bD / 2, -bW / 2, bD, bW)
   ctx.strokeRect(-bD / 2, -bW / 2, bD, bW)
 
-  // Player colour accent line on back edge
   ctx.strokeStyle = playerColor + (isActive ? 'cc' : '55')
   ctx.lineWidth   = 2.5
   ctx.beginPath(); ctx.moveTo(-bD / 2, -bW / 2); ctx.lineTo(-bD / 2, bW / 2); ctx.stroke()
 
-  // Front edge highlight
   ctx.strokeStyle = isActive ? stateColor : stateColor + '66'
   ctx.lineWidth   = 3
   ctx.beginPath(); ctx.moveTo(bD / 2, -bW / 2); ctx.lineTo(bD / 2, bW / 2); ctx.stroke()
 
-  // Front arrow tip
   const tip = bW * 0.35
   ctx.fillStyle = isActive ? stateColor : stateColor + '66'
   ctx.beginPath()
@@ -415,7 +412,6 @@ function drawRobot(
 
   ctx.restore()
 
-  // Active indicator: small dot above robot using player colour
   if (isActive) {
     const [, labelY] = tc(robot.pos.x, robot.pos.y)
     ctx.beginPath()
@@ -423,7 +419,6 @@ function drawRobot(
     ctx.fillStyle = playerColor; ctx.fill()
   }
 
-  // Target orientation dashed line
   if (showTargetOri && debug.targetOrientation !== null) {
     const canvAng = -debug.targetOrientation
     const lineLen = (BODY_DEPTH * 0.9 + 0.3) * sc
@@ -442,7 +437,7 @@ function drawGoalkeeper(
   showTargetOri: boolean,
   sc: number, tc: (x: number, y: number) => [number, number],
 ) {
-  const [rx, ry] = tc(gk.pos.x, gk.pos.y)
+  const [rx, ry]   = tc(gk.pos.x, gk.pos.y)
   const stateColor = GK_STATE_COLORS[gk.state] ?? GK_COLOR
   const bD = BODY_DEPTH * sc
   const bW = BODY_WIDTH * sc
@@ -451,24 +446,20 @@ function drawGoalkeeper(
   ctx.translate(rx, ry)
   ctx.rotate(-gk.orientation)
 
-  // Body
   ctx.fillStyle   = stateColor + '33'
   ctx.strokeStyle = stateColor
   ctx.lineWidth   = 1.5
   ctx.fillRect(-bD / 2, -bW / 2, bD, bW)
   ctx.strokeRect(-bD / 2, -bW / 2, bD, bW)
 
-  // Orange accent on back edge
   ctx.strokeStyle = GK_COLOR + 'cc'
   ctx.lineWidth   = 2.5
   ctx.beginPath(); ctx.moveTo(-bD / 2, -bW / 2); ctx.lineTo(-bD / 2, bW / 2); ctx.stroke()
 
-  // Front edge highlight
   ctx.strokeStyle = stateColor
   ctx.lineWidth   = 3
   ctx.beginPath(); ctx.moveTo(bD / 2, -bW / 2); ctx.lineTo(bD / 2, bW / 2); ctx.stroke()
 
-  // Front arrow tip
   const tip = bW * 0.35
   ctx.fillStyle = stateColor
   ctx.beginPath()
@@ -479,12 +470,10 @@ function drawGoalkeeper(
 
   ctx.restore()
 
-  // GK indicator dot
   ctx.beginPath()
   ctx.arc(rx, ry - BODY_WIDTH * sc / 2 - 10, 3, 0, Math.PI * 2)
   ctx.fillStyle = GK_COLOR; ctx.fill()
 
-  // Target orientation line
   if (showTargetOri) {
     const canvAng = -gk.orientation
     const lineLen = (BODY_DEPTH * 0.9 + 0.3) * sc
@@ -502,9 +491,9 @@ function drawStateLabel(
   robot: Robot, playerIndex: number, isActive: boolean,
   sc: number, tc: (x: number, y: number) => [number, number],
 ) {
-  const [rx, ry]  = tc(robot.pos.x, robot.pos.y)
+  const [rx, ry]   = tc(robot.pos.x, robot.pos.y)
   const stateColor = STATE_COLORS[robot.state] ?? '#60a5fa'
-  const offset    = (BODY_WIDTH / 2) * sc + 8
+  const offset     = (BODY_WIDTH / 2) * sc + 8
 
   ctx.font      = `${isActive ? 'bold' : 'normal'} 10px monospace`
   ctx.fillStyle = isActive ? stateColor : stateColor + '88'
@@ -518,9 +507,9 @@ function drawGoalkeeperLabel(
   gk: GoalkeeperRobot,
   sc: number, tc: (x: number, y: number) => [number, number],
 ) {
-  const [rx, ry] = tc(gk.pos.x, gk.pos.y)
+  const [rx, ry]   = tc(gk.pos.x, gk.pos.y)
   const stateColor = GK_STATE_COLORS[gk.state] ?? GK_COLOR
-  const offset = (BODY_WIDTH / 2) * sc + 8
+  const offset     = (BODY_WIDTH / 2) * sc + 8
   ctx.font      = 'bold 10px monospace'
   ctx.fillStyle = stateColor
   ctx.textAlign = 'center'
