@@ -11,7 +11,11 @@ const STATE_COLORS: Record<string, string> = {
   SHOOTING:      '#ef4444',
 }
 
-interface Props { simState: SimState; robotIndex: 0 | 1 }
+const GK_STATE_COLORS: Record<string, string> = {
+  FIND_BALL: '#a855f7', RETREAT: '#64748b', ADJUST_BLOCK: '#22d3ee', CHASE: '#f97316', KICK: '#ef4444',
+}
+
+interface Props { simState: SimState; robotIndex: 0 | 1 | 2 }
 
 function Row({ label, value, unit = '', color = '' }: { label: string; value: string | number; unit?: string; color?: string }) {
   return (
@@ -46,13 +50,17 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default function StateTab({ simState, robotIndex }: Props) {
-  const robot  = simState.robots[robotIndex]
-  const debug  = simState.debugs[robotIndex]
+  const robot    = simState.robots[robotIndex]
+  const debug    = simState.debugs[robotIndex]
   const { time } = simState
-  const color    = STATE_COLORS[robot.state] ?? '#60a5fa'
+  const isGK     = robot.role === 'goalkeeper'
+  const color    = isGK
+    ? (GK_STATE_COLORS[robot.gkState] ?? '#f97316')
+    : (STATE_COLORS[robot.state] ?? '#60a5fa')
+  const displayState = isGK ? robot.gkState : robot.state
   const errDeg   = debug.alignmentError  * 180 / Math.PI
   const limitDeg = robot.params.shootAngle * 180 / Math.PI
-  const isActive = simState.activeIndex === robotIndex
+  const isActive = !isGK && simState.activeIndex === robotIndex
 
   return (
     <div className="p-3 overflow-y-auto h-full text-xs font-mono">
@@ -62,16 +70,18 @@ export default function StateTab({ simState, robotIndex }: Props) {
         className="rounded px-3 py-2 mb-1 text-center font-bold text-sm"
         style={{ backgroundColor: color + '22', border: `1px solid ${color}55`, color }}
       >
-        {robot.state}
+        {displayState}
       </div>
 
       {/* Role badge */}
       <div className={`rounded px-2 py-1 mb-3 text-center text-[10px] uppercase tracking-widest ${
-        isActive
-          ? 'bg-[#1e3a5f] border border-[#2563eb55] text-[#60a5fa]'
-          : 'bg-[#1a1a1a] border border-[#2a2a2a] text-[#475569]'
+        isGK
+          ? 'bg-[#431407] border border-[#f9731633] text-[#f97316]'
+          : isActive
+            ? 'bg-[#1e3a5f] border border-[#2563eb55] text-[#60a5fa]'
+            : 'bg-[#1a1a1a] border border-[#2a2a2a] text-[#475569]'
       }`}>
-        {isActive ? '● ACTIVE' : '○ IDLE'}
+        {isGK ? '● GOALKEEPER' : isActive ? '● ACTIVE' : '○ IDLE'}
       </div>
 
       <Section title="Time">

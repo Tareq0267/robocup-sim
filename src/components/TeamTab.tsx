@@ -4,8 +4,12 @@ const STATE_COLORS: Record<string, string> = {
   SEARCHING: '#a855f7', IDLE: '#64748b', ASSIST: '#60a5fa', CHASING: '#f97316',
   REPOSITIONING: '#eab308', RADIAL_ADJUST: '#22d3ee',
   READY: '#22c55e', SHOOTING: '#ef4444',
+  // GK states
+  FIND_BALL: '#a855f7', RETREAT: '#64748b', ADJUST_BLOCK: '#22d3ee', KICK: '#ef4444',
 }
-const PLAYER_COLORS = ['#3b82f6', '#14b8a6']
+
+const PLAYER_COLORS = ['#3b82f6', '#14b8a6', '#a78bfa']
+const GK_COLOR      = '#f97316'
 
 interface Props { simState: SimState }
 
@@ -22,9 +26,10 @@ function Row({ label, value, unit = '' }: { label: string; value: string | numbe
 }
 
 export default function TeamTab({ simState }: Props) {
-  const { robots, debugs, activeIndex, swapTimer, team, ball, time } = simState
-  const swapPct = Math.min(swapTimer / team.roleSwapDelay, 1) * 100
+  const { robots, debugs, activeIndex, swapTimer, team, ball, time, gkSwapCooldown } = simState
+  const swapPct    = Math.min(swapTimer / team.roleSwapDelay, 1) * 100
   const pendingSwap = swapTimer > 0
+  const gkIdx      = robots.findIndex(r => r.role === 'goalkeeper')
 
   return (
     <div className="p-3 overflow-y-auto h-full text-xs font-mono space-y-3">
@@ -32,27 +37,29 @@ export default function TeamTab({ simState }: Props) {
       {/* Time */}
       <div className="text-[#475569] text-[10px]">t = {time.toFixed(2)}s</div>
 
-      {/* Role swap status */}
+      {/* Role assignment */}
       <div className="bg-[#0f1117] rounded p-2">
         <div className="text-[10px] text-[#475569] uppercase tracking-widest mb-2">Role Assignment</div>
-        <div className="flex gap-2 mb-2">
+        <div className="flex gap-1.5 mb-2">
           {robots.map((r, i) => {
             const isActive = activeIndex === i
-            const color = PLAYER_COLORS[i]
+            const isGK     = r.role === 'goalkeeper'
+            const color    = isGK ? GK_COLOR : PLAYER_COLORS[i]
+            const badge    = isGK ? 'GK' : isActive ? 'ACTIVE' : 'IDLE'
             return (
               <div
                 key={i}
-                className="flex-1 rounded px-2 py-1.5 text-center"
+                className="flex-1 rounded px-1.5 py-1.5 text-center"
                 style={{
-                  border: `1px solid ${color}${isActive ? 'aa' : '33'}`,
-                  background: isActive ? color + '15' : 'transparent',
+                  border:     `1px solid ${color}${(isActive || isGK) ? 'aa' : '33'}`,
+                  background: (isActive || isGK) ? color + '15' : 'transparent',
                 }}
               >
-                <div className="font-bold" style={{ color: isActive ? color : color + '66' }}>
+                <div className="font-bold text-[11px]" style={{ color: (isActive || isGK) ? color : color + '66' }}>
                   P{i + 1}
                 </div>
-                <div className="text-[10px] mt-0.5" style={{ color: isActive ? '#e2e8f0' : '#475569' }}>
-                  {isActive ? '● ACTIVE' : '○ IDLE'}
+                <div className="text-[9px] mt-0.5" style={{ color: (isActive || isGK) ? '#e2e8f0' : '#475569' }}>
+                  {badge}
                 </div>
               </div>
             )
@@ -65,34 +72,42 @@ export default function TeamTab({ simState }: Props) {
               swap pending — {(team.roleSwapDelay - swapTimer).toFixed(1)}s remaining
             </div>
             <div className="w-full h-1.5 bg-[#1e1e1e] rounded-full overflow-hidden">
-              <div
-                className="h-full bg-[#eab308] transition-all"
-                style={{ width: `${swapPct}%` }}
-              />
+              <div className="h-full bg-[#eab308] transition-all" style={{ width: `${swapPct}%` }} />
             </div>
           </>
         ) : (
           <div className="text-[10px] text-[#334155]">no swap pending</div>
         )}
         <Row label="Swap delay" value={team.roleSwapDelay} unit="s" />
+        {gkSwapCooldown > 0 && (
+          <div className="text-[10px] text-[#f97316] mt-1">
+            GK swap cooldown — {gkSwapCooldown.toFixed(1)}s
+          </div>
+        )}
       </div>
 
-      {/* Per-player summary cards */}
+      {/* Per-robot summary */}
       {robots.map((robot, i) => {
         const debug    = debugs[i]
         const isActive = activeIndex === i
-        const sColor   = STATE_COLORS[robot.state] ?? '#60a5fa'
-        const pColor   = PLAYER_COLORS[i]
-        const dBall    = debug.distanceToBall
+        const isGK     = robot.role === 'goalkeeper'
+        const sColor   = isGK
+          ? ({ FIND_BALL: '#a855f7', RETREAT: '#64748b', ADJUST_BLOCK: '#22d3ee', CHASE: '#f97316', KICK: '#ef4444' }[robot.gkState] ?? GK_COLOR)
+          : (STATE_COLORS[robot.state] ?? '#60a5fa')
+        const pColor     = isGK ? GK_COLOR : PLAYER_COLORS[i]
+        const dBall      = isGK ? simState.goalkeeperDebug.distanceToBall : debug.distanceToBall
+        const displayState = isGK ? robot.gkState : robot.state
 
         return (
           <div key={i} className="bg-[#0f1117] rounded p-2"
             style={{ borderLeft: `2px solid ${pColor}` }}>
             <div className="flex items-center justify-between mb-2">
-              <span className="font-bold" style={{ color: pColor }}>Player {i + 1}</span>
+              <span className="font-bold" style={{ color: pColor }}>
+                P{i + 1}{isGK ? ' (GK)' : ''}
+              </span>
               <span className="text-[10px] px-1.5 py-0.5 rounded"
                 style={{ background: sColor + '22', color: sColor, border: `1px solid ${sColor}44` }}>
-                {robot.state}
+                {displayState}
               </span>
             </div>
 
@@ -101,19 +116,22 @@ export default function TeamTab({ simState }: Props) {
 
             <div className="flex gap-2 mt-1.5">
               <div className={`flex-1 text-center text-[10px] py-0.5 rounded ${
-                debug.canSeeBall ? 'bg-[#14532d22] text-[#22c55e]' : 'bg-[#2e1065] text-[#a855f7]'
+                isGK
+                  ? 'bg-[#431407] text-[#f97316]'
+                  : simState.goalkeeperDebug && i === gkIdx
+                    ? 'bg-[#14532d22] text-[#22c55e]'
+                    : debug.canSeeBall ? 'bg-[#14532d22] text-[#22c55e]' : 'bg-[#2e1065] text-[#a855f7]'
               }`}>
-                {debug.canSeeBall ? '● sees ball' : '● searching'}
+                {isGK ? '● goalkeeper' : debug.canSeeBall ? '● sees ball' : '● searching'}
               </div>
-              {isActive && (
+              {isActive && !isGK && (
                 <div className="flex-1 text-center text-[10px] py-0.5 rounded bg-[#1e3a5f] text-[#60a5fa]">
                   ● active
                 </div>
               )}
             </div>
 
-            {/* Compact alignment bar */}
-            {isActive && (
+            {isActive && !isGK && (
               <div className="mt-2">
                 <div className="flex justify-between text-[10px] text-[#475569] mb-0.5">
                   <span>alignment</span>

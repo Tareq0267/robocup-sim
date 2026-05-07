@@ -63,7 +63,7 @@ export default function LeftPanel({ simState, setParam, setTeamConfig, setGKPara
       </div>
 
       <div className="flex-1 overflow-hidden">
-        {tab === 'params'   && <ParameterPanel params={simState.robots[0].params} team={simState.team} gkParams={simState.goalkeeper.params} setParam={setParam} setTeamConfig={setTeamConfig} setGKParam={setGKParam} />}
+        {tab === 'params'   && <ParameterPanel params={simState.robots[0].params} team={simState.team} gkParams={(simState.robots.find(r => r.role === 'goalkeeper') ?? simState.robots[2]).gkParams} setParam={setParam} setTeamConfig={setTeamConfig} setGKParam={setGKParam} />}
         {tab === 'overlays' && <OverlayPanel   simState={simState} setOverlay={setOverlay} setBallStatic={setBallStatic} />}
       </div>
     </div>

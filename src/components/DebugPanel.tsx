@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { SimState, OverlaySettings, RobotParams } from '../simulation/types'
+import type { SimState, OverlaySettings, RobotParams, TeamConfig, GoalkeeperParams } from '../simulation/types'
 import StateTab from './StateTab'
 import ParameterPanel from './ParameterPanel'
 import OverlayPanel from './OverlayPanel'
@@ -9,6 +9,8 @@ type Tab = 'state' | 'params' | 'overlays'
 interface Props {
   simState:      SimState
   setParam:      <K extends keyof RobotParams>(key: K, value: RobotParams[K]) => void
+  setTeamConfig: <K extends keyof TeamConfig>(key: K, value: TeamConfig[K]) => void
+  setGKParam:    <K extends keyof GoalkeeperParams>(key: K, value: GoalkeeperParams[K]) => void
   setOverlay:    <K extends keyof OverlaySettings>(key: K, value: boolean) => void
   setBallStatic: (v: boolean) => void
 }
@@ -19,12 +21,12 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'overlays', label: 'Overlays' },
 ]
 
-export default function DebugPanel({ simState, setParam, setOverlay, setBallStatic }: Props) {
+export default function DebugPanel({ simState, setParam, setTeamConfig, setGKParam, setOverlay, setBallStatic }: Props) {
   const [tab, setTab] = useState<Tab>('state')
+  const gkRobot = simState.robots.find(r => r.role === 'goalkeeper') ?? simState.robots[2]
 
   return (
     <div className="flex flex-col h-full bg-[#0d0d0d] border-l border-[#1e1e1e]">
-      {/* Tab bar */}
       <div className="flex border-b border-[#1e1e1e] flex-shrink-0">
         {TABS.map(t => (
           <button
@@ -41,10 +43,9 @@ export default function DebugPanel({ simState, setParam, setOverlay, setBallStat
         ))}
       </div>
 
-      {/* Tab content */}
       <div className="flex-1 overflow-hidden">
-        {tab === 'state'   && <StateTab      simState={simState} />}
-        {tab === 'params'  && <ParameterPanel params={simState.robot.params} setParam={setParam} />}
+        {tab === 'state'    && <StateTab      simState={simState} robotIndex={0} />}
+        {tab === 'params'   && <ParameterPanel params={simState.robots[0].params} team={simState.team} gkParams={gkRobot.gkParams} setParam={setParam} setTeamConfig={setTeamConfig} setGKParam={setGKParam} />}
         {tab === 'overlays' && <OverlayPanel  simState={simState} setOverlay={setOverlay} setBallStatic={setBallStatic} />}
       </div>
     </div>

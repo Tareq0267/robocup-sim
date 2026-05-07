@@ -19,7 +19,10 @@ export default function RightPanel({ simState, onFocusChange }: Props) {
 
   function changeTab(t: Tab) {
     setTab(t)
-    onFocusChange(t === 'team' ? null : t === 'p1' ? 0 : t === 'p2' ? 1 : 2)
+    if (t === 'team')     onFocusChange(null)
+    else if (t === 'p1')  onFocusChange(0)
+    else if (t === 'p2')  onFocusChange(1)
+    else /* gk */         onFocusChange(simState.robots.findIndex(r => r.role === 'goalkeeper'))
   }
 
   if (collapsed) {

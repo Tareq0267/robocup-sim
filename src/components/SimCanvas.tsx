@@ -3,20 +3,18 @@ import type { SimState, Vec2 } from '../simulation/types'
 import { render } from '../rendering/renderer'
 
 interface Props {
-  simState:        SimState
-  focusedRobot:    number | null
-  dragBall:        (pos: Vec2) => void
-  dragRobot:       (pos: Vec2, index: 0 | 1) => void
-  dragGoalkeeper:  (pos: Vec2) => void
+  simState:     SimState
+  focusedRobot: number | null
+  dragBall:     (pos: Vec2) => void
+  dragRobot:    (pos: Vec2, index: 0 | 1 | 2) => void
 }
 
 type DragTarget =
   | { kind: 'ball' }
-  | { kind: 'robot'; index: 0 | 1 }
-  | { kind: 'goalkeeper' }
+  | { kind: 'robot'; index: 0 | 1 | 2 }
   | null
 
-export default function SimCanvas({ simState, focusedRobot, dragBall, dragRobot, dragGoalkeeper }: Props) {
+export default function SimCanvas({ simState, focusedRobot, dragBall, dragRobot }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const dragging  = useRef<DragTarget>(null)
 
@@ -53,18 +51,16 @@ export default function SimCanvas({ simState, focusedRobot, dragBall, dragRobot,
   }, [simState.court])
 
   const hitTest = useCallback((p: Vec2): DragTarget => {
-    const { ball, robots, goalkeeper } = simState
+    const { ball, robots } = simState
     const d = (ax: number, ay: number, bx: number, by: number) =>
       Math.sqrt((ax - bx) ** 2 + (ay - by) ** 2)
 
     if (d(p.x, p.y, ball.pos.x, ball.pos.y) < ball.radius + 0.2) return { kind: 'ball' }
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 3; i++) {
       const r = robots[i]
       if (d(p.x, p.y, r.pos.x, r.pos.y) < r.radius + 0.2)
-        return { kind: 'robot', index: i as 0 | 1 }
+        return { kind: 'robot', index: i as 0 | 1 | 2 }
     }
-    if (d(p.x, p.y, goalkeeper.pos.x, goalkeeper.pos.y) < goalkeeper.radius + 0.2)
-      return { kind: 'goalkeeper' }
     return null
   }, [simState])
 
@@ -76,10 +72,9 @@ export default function SimCanvas({ simState, focusedRobot, dragBall, dragRobot,
     const t = dragging.current
     if (!t) return
     const pos = canvasToSim(e.clientX, e.clientY)
-    if (t.kind === 'ball')       dragBall(pos)
-    if (t.kind === 'robot')      dragRobot(pos, t.index)
-    if (t.kind === 'goalkeeper') dragGoalkeeper(pos)
-  }, [canvasToSim, dragBall, dragRobot, dragGoalkeeper])
+    if (t.kind === 'ball')  dragBall(pos)
+    if (t.kind === 'robot') dragRobot(pos, t.index)
+  }, [canvasToSim, dragBall, dragRobot])
 
   const onMouseUp = useCallback(() => { dragging.current = null }, [])
 

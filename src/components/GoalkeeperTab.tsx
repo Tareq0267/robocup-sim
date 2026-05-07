@@ -45,8 +45,17 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default function GoalkeeperTab({ simState }: Props) {
-  const { goalkeeper: gk, goalkeeperDebug: debug, ball, time } = simState
-  const color = GK_STATE_COLORS[gk.state] ?? GK_COLOR
+  const gkIdx  = simState.robots.findIndex(r => r.role === 'goalkeeper')
+  const gk     = simState.robots[gkIdx]
+  const debug  = simState.goalkeeperDebug
+  const { ball, time } = simState
+
+  if (!gk) {
+    return <div className="p-3 text-[#475569] text-xs">No goalkeeper found</div>
+  }
+
+  const color   = GK_STATE_COLORS[gk.gkState] ?? GK_COLOR
+  const slotLabel = `P${gkIdx + 1} → GK`
 
   return (
     <div className="p-3 overflow-y-auto h-full text-xs font-mono">
@@ -56,12 +65,12 @@ export default function GoalkeeperTab({ simState }: Props) {
         className="rounded px-3 py-2 mb-1 text-center font-bold text-sm"
         style={{ backgroundColor: color + '22', border: `1px solid ${color}55`, color }}
       >
-        {gk.state}
+        {gk.gkState}
       </div>
 
       <div className="rounded px-2 py-1 mb-3 text-center text-[10px] uppercase tracking-widest bg-[#1a1a1a] border border-[#2a2a2a]"
         style={{ color: GK_COLOR }}>
-        ● GOALKEEPER
+        ● GOALKEEPER · {slotLabel}
       </div>
 
       <Section title="Time">
@@ -74,7 +83,7 @@ export default function GoalkeeperTab({ simState }: Props) {
           value={(debug.fovError * 180 / Math.PI).toFixed(2)} unit="°"
           color={debug.canSeeBall ? 'text-[#22c55e]' : 'text-[#a855f7]'}
         />
-        <Row label="FOV half-limit" value={(gk.params.fieldOfView / 2 * 180 / Math.PI).toFixed(1)} unit="°" />
+        <Row label="FOV half-limit" value={(gk.gkParams.fieldOfView / 2 * 180 / Math.PI).toFixed(1)} unit="°" />
         <Bool label="Can see ball" value={debug.canSeeBall} />
       </Section>
 
@@ -88,9 +97,9 @@ export default function GoalkeeperTab({ simState }: Props) {
       <Section title="Alignment">
         <Row
           label="Body error" value={(debug.alignmentError * 180 / Math.PI).toFixed(2)} unit="°"
-          color={debug.alignmentError <= gk.params.alignThreshold ? 'text-[#22c55e]' : 'text-[#f97316]'}
+          color={debug.alignmentError <= gk.gkParams.alignThreshold ? 'text-[#22c55e]' : 'text-[#f97316]'}
         />
-        <Row label="Kick tolerance" value={(gk.params.alignThreshold * 180 / Math.PI).toFixed(2)} unit="°" />
+        <Row label="Kick tolerance" value={(gk.gkParams.alignThreshold * 180 / Math.PI).toFixed(2)} unit="°" />
       </Section>
 
       <Section title="Position">
