@@ -1,7 +1,7 @@
 // ================================================================
 // DEFAULT VALUES — change these to set starting conditions
 // ================================================================
-import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type OverlaySettings, type RobotParams, type TeamConfig, type FieldLayout, type GoalkeeperParams, type GoalkeeperRobot, type GoalkeeperDebugData } from './types'
+import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type OverlaySettings, type RobotParams, type TeamConfig, type FieldLayout, type GoalkeeperParams, type GoalkeeperDebugData } from './types'
 
 // Adult Size field: 14m × 9m
 export const DEFAULT_COURT: Court = {
@@ -47,23 +47,6 @@ export const DEFAULT_PARAMS: RobotParams = {
   fieldOfView:         1.571,  // cam_fov_x: 90° = π/2
 }
 
-// Booster T1: 47cm wide × 23cm deep footprint, radius ≈ half-diagonal
-export const DEFAULT_ROBOT_1: Robot = {
-  pos:         { x: -3.5, y:  0.8 },
-  orientation: 0,
-  state:       RobotState.CHASING,
-  radius:      0.26,
-  params:      { ...DEFAULT_PARAMS },
-}
-
-export const DEFAULT_ROBOT_2: Robot = {
-  pos:         { x: -3.5, y: -0.8 },
-  orientation: 0,
-  state:       RobotState.IDLE,
-  radius:      0.26,
-  params:      { ...DEFAULT_PARAMS },
-}
-
 export const DEFAULT_TEAM: TeamConfig = {
   roleSwapDelay: 1.0,  // seconds
 }
@@ -85,12 +68,39 @@ export const DEFAULT_GK_PARAMS: GoalkeeperParams = {
   blockRange:            0.6,    // AdjustBlock range="0.6"
 }
 
-export const DEFAULT_GOALKEEPER: GoalkeeperRobot = {
+// Booster T1: 47cm wide × 23cm deep footprint, radius ≈ half-diagonal
+export const DEFAULT_ROBOT_1: Robot = {
+  pos:         { x: -3.5, y:  0.8 },
+  orientation: 0,
+  state:       RobotState.CHASING,
+  radius:      0.26,
+  params:      { ...DEFAULT_PARAMS },
+  role:        'striker',
+  gkState:     GoalkeeperState.RETREAT,
+  gkParams:    { ...DEFAULT_GK_PARAMS },
+}
+
+export const DEFAULT_ROBOT_2: Robot = {
+  pos:         { x: -3.5, y: -0.8 },
+  orientation: 0,
+  state:       RobotState.IDLE,
+  radius:      0.26,
+  params:      { ...DEFAULT_PARAMS },
+  role:        'striker',
+  gkState:     GoalkeeperState.RETREAT,
+  gkParams:    { ...DEFAULT_GK_PARAMS },
+}
+
+// Robot that starts as goalkeeper (can swap to striker via role switch)
+export const DEFAULT_ROBOT_GK: Robot = {
   pos:         { x: -6.5, y: 0 },
   orientation: 0,
-  state:       GoalkeeperState.RETREAT,
+  state:       RobotState.IDLE,
   radius:      0.26,
-  params:      { ...DEFAULT_GK_PARAMS },
+  params:      { ...DEFAULT_PARAMS },
+  role:        'goalkeeper',
+  gkState:     GoalkeeperState.RETREAT,
+  gkParams:    { ...DEFAULT_GK_PARAMS },
 }
 
 export const EMPTY_GK_DEBUG: GoalkeeperDebugData = {

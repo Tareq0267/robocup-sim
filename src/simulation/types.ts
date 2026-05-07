@@ -54,12 +54,17 @@ export interface TeamConfig {
                          //     Resets to 0 if distances flip back before delay completes
 }
 
+export type TeamRole = 'striker' | 'goalkeeper'
+
 export interface Robot {
   pos:         Vec2
   orientation: number      // (rad) 0=right, π/2=up
-  state:       RobotState
+  state:       RobotState  // striker-role state (frozen when role==='goalkeeper')
   radius:      number      // (m)
-  params:      RobotParams
+  params:      RobotParams // striker-role parameters
+  role:        TeamRole    // current active role
+  gkState:     GoalkeeperState   // goalkeeper-role state (active when role==='goalkeeper')
+  gkParams:    GoalkeeperParams  // goalkeeper-role parameters
 }
 
 export interface Ball {
@@ -152,8 +157,8 @@ export interface GoalkeeperDebugData {
 // ----------------------------------------------------------------
 export interface StateTransition {
   time:   number
-  from:   RobotState
-  to:     RobotState
+  from:   string   // string to accommodate both RobotState and GoalkeeperState names
+  to:     string
   reason: string
 }
 
@@ -193,11 +198,11 @@ export interface OverlaySettings {
 // FULL SIMULATION STATE
 // ----------------------------------------------------------------
 export interface SimState {
-  robots:          [Robot, Robot]
-  activeIndex:     number          // 0 or 1 — which robot is currently active
-  swapTimer:       number          // seconds the wrong robot has been closer (hysteresis)
+  robots:          [Robot, Robot, Robot]  // exactly one has role==='goalkeeper'
+  activeIndex:     number                 // index of lead striker (role==='striker', closest to ball)
+  swapTimer:       number                 // striker lead-swap hysteresis timer
+  gkSwapCooldown:  number                 // seconds remaining before next GK role swap is allowed
   team:            TeamConfig
-  goalkeeper:      GoalkeeperRobot
   ball:            Ball
   goal:            Goal            // opponent's goal (right side) — robots shoot at this
   ownGoal:         Goal            // our goal (left side) — goalkeeper defends this
@@ -206,7 +211,8 @@ export interface SimState {
   time:            number
   isPlaying:       boolean
   speed:           number
-  debugs:          [DebugData, DebugData]
-  goalkeeperDebug: GoalkeeperDebugData
+  score:           { ours: number; theirs: number }
+  debugs:          [DebugData, DebugData, DebugData]  // index matches robots[]
+  goalkeeperDebug: GoalkeeperDebugData                // GK-specific debug for the current GK robot
   overlays:        OverlaySettings
 }
