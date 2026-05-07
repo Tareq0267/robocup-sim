@@ -97,6 +97,56 @@ export interface FieldLayout {
 }
 
 // ----------------------------------------------------------------
+// GOALKEEPER — separate types so GK logic never bleeds into striker
+// ----------------------------------------------------------------
+export const GoalkeeperState = {
+  FIND_BALL:    'FIND_BALL',
+  RETREAT:      'RETREAT',
+  ADJUST_BLOCK: 'ADJUST_BLOCK',
+  CHASE:        'CHASE',
+  KICK:         'KICK',
+} as const
+export type GoalkeeperState = typeof GoalkeeperState[keyof typeof GoalkeeperState]
+
+export interface GoalkeeperParams {
+  // GoalieDecide thresholds
+  chaseThreshold:        number  // (m)   stop chasing below this, switch to block
+  retreatChaseThreshold: number  // (m)   retreat first if ball is deeper than this in penalty area
+  alignThreshold:        number  // (rad) body must be within this to kick
+
+  // Movement
+  chaseSpeed:     number  // (m/s)   speed while chasing ball
+  retreatSpeed:   number  // (m/s)   speed while retreating to goal line
+  blockSpeedFar:  number  // (m/s)   tangential speed far from ball
+  blockSpeedNear: number  // (m/s)   tangential speed near ball
+  blockNearThreshold: number  // (m) distance at which blockSpeed switches far→near
+  kickSpeed:      number  // (m/s)   push speed when kicking
+  rotationSpeed:  number  // (rad/s) body rotation speed
+  fieldOfView:    number  // (rad)   vision cone
+
+  // Positioning
+  goalLineOffset: number  // (m) stand this far in front of goal line
+  blockRange:     number  // (m) maintain this distance from ball when blocking
+}
+
+export interface GoalkeeperRobot {
+  pos:         Vec2
+  orientation: number
+  state:       GoalkeeperState
+  radius:      number
+  params:      GoalkeeperParams
+}
+
+export interface GoalkeeperDebugData {
+  distanceToBall:    number
+  canSeeBall:        boolean
+  fovError:          number
+  ballInPenaltyArea: boolean
+  alignmentError:    number
+  stateHistory:      StateTransition[]
+}
+
+// ----------------------------------------------------------------
 // DEBUG
 // ----------------------------------------------------------------
 export interface StateTransition {
@@ -142,18 +192,20 @@ export interface OverlaySettings {
 // FULL SIMULATION STATE
 // ----------------------------------------------------------------
 export interface SimState {
-  robots:      [Robot, Robot]
-  activeIndex: number          // 0 or 1 — which robot is currently active
-  swapTimer:   number          // seconds the wrong robot has been closer (hysteresis)
-  team:        TeamConfig
-  ball:        Ball
-  goal:        Goal            // opponent's goal (right side) — robots shoot at this
-  ownGoal:     Goal            // our goal (left side) — goalkeeper defends this
-  fieldLayout: FieldLayout
-  court:       Court
-  time:        number
-  isPlaying:   boolean
-  speed:       number
-  debugs:      [DebugData, DebugData]
-  overlays:    OverlaySettings
+  robots:          [Robot, Robot]
+  activeIndex:     number          // 0 or 1 — which robot is currently active
+  swapTimer:       number          // seconds the wrong robot has been closer (hysteresis)
+  team:            TeamConfig
+  goalkeeper:      GoalkeeperRobot
+  ball:            Ball
+  goal:            Goal            // opponent's goal (right side) — robots shoot at this
+  ownGoal:         Goal            // our goal (left side) — goalkeeper defends this
+  fieldLayout:     FieldLayout
+  court:           Court
+  time:            number
+  isPlaying:       boolean
+  speed:           number
+  debugs:          [DebugData, DebugData]
+  goalkeeperDebug: GoalkeeperDebugData
+  overlays:        OverlaySettings
 }

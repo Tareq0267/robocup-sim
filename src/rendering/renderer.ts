@@ -4,7 +4,8 @@
 // Canvas coords:     (0,0) = top-left, y-down
 // ================================================================
 
-import type { SimState, Robot, DebugData } from '../simulation/types'
+import type { SimState, Robot, DebugData, GoalkeeperRobot } from '../simulation/types'
+import { GoalkeeperState } from '../simulation/types'
 import { angOf } from '../simulation/math'
 
 const STATE_COLORS: Record<string, string> = {
@@ -16,6 +17,16 @@ const STATE_COLORS: Record<string, string> = {
   READY:         '#22c55e',  // green
   SHOOTING:      '#ef4444',  // red
 }
+
+const GK_STATE_COLORS: Record<string, string> = {
+  FIND_BALL:    '#a855f7',  // purple
+  RETREAT:      '#64748b',  // slate
+  ADJUST_BLOCK: '#22d3ee',  // cyan
+  CHASE:        '#f97316',  // orange
+  KICK:         '#ef4444',  // red
+}
+
+const GK_COLOR = '#f97316'  // orange accent for goalkeeper
 
 // Player accent colours (ring around robot to tell P1 from P2)
 const PLAYER_COLORS = ['#3b82f6', '#14b8a6']  // blue, teal
@@ -64,6 +75,26 @@ export function render(ctx: CanvasRenderingContext2D, state: SimState, cw: numbe
     drawRobot(ctx, robot, i, isActive, state.overlays.showOrientationArrow, debug, sc, tc)
     if (state.overlays.showStateLabel) drawStateLabel(ctx, robot, i, isActive, sc, tc)
   })
+
+  // Draw goalkeeper (overlays shown when Team tab or GK tab focused)
+  const showGKOverlays = focusedRobot === null || focusedRobot === 2
+  if (showGKOverlays && state.overlays.showFOVCone) {
+    const gk = state.goalkeeper
+    const [rx, ry] = tc(gk.pos.x, gk.pos.y)
+    const halfFOV = gk.params.fieldOfView / 2
+    const range   = 2.8 * sc
+    const start   = -(gk.orientation + halfFOV)
+    const end     = -(gk.orientation - halfFOV)
+    ctx.beginPath(); ctx.moveTo(rx, ry); ctx.arc(rx, ry, range, start, end); ctx.closePath()
+    if (state.goalkeeperDebug.canSeeBall) {
+      ctx.fillStyle = 'rgba(249,115,22,0.07)'; ctx.strokeStyle = 'rgba(249,115,22,0.35)'
+    } else {
+      ctx.fillStyle = 'rgba(168,85,247,0.10)'; ctx.strokeStyle = 'rgba(168,85,247,0.45)'
+    }
+    ctx.lineWidth = 1; ctx.fill(); ctx.stroke()
+  }
+  drawGoalkeeper(ctx, state.goalkeeper, state.overlays.showOrientationArrow, sc, tc)
+  if (state.overlays.showStateLabel) drawGoalkeeperLabel(ctx, state.goalkeeper, sc, tc)
 }
 
 // ── Court ─────────────────────────────────────────────────────
@@ -364,6 +395,67 @@ function drawRobot(
   }
 }
 
+// ── Goalkeeper rectangle ──────────────────────────────────────
+function drawGoalkeeper(
+  ctx: CanvasRenderingContext2D,
+  gk: GoalkeeperRobot,
+  showTargetOri: boolean,
+  sc: number, tc: (x: number, y: number) => [number, number],
+) {
+  const [rx, ry] = tc(gk.pos.x, gk.pos.y)
+  const stateColor = GK_STATE_COLORS[gk.state] ?? GK_COLOR
+  const bD = BODY_DEPTH * sc
+  const bW = BODY_WIDTH * sc
+
+  ctx.save()
+  ctx.translate(rx, ry)
+  ctx.rotate(-gk.orientation)
+
+  // Body
+  ctx.fillStyle   = stateColor + '33'
+  ctx.strokeStyle = stateColor
+  ctx.lineWidth   = 1.5
+  ctx.fillRect(-bD / 2, -bW / 2, bD, bW)
+  ctx.strokeRect(-bD / 2, -bW / 2, bD, bW)
+
+  // Orange accent on back edge
+  ctx.strokeStyle = GK_COLOR + 'cc'
+  ctx.lineWidth   = 2.5
+  ctx.beginPath(); ctx.moveTo(-bD / 2, -bW / 2); ctx.lineTo(-bD / 2, bW / 2); ctx.stroke()
+
+  // Front edge highlight
+  ctx.strokeStyle = stateColor
+  ctx.lineWidth   = 3
+  ctx.beginPath(); ctx.moveTo(bD / 2, -bW / 2); ctx.lineTo(bD / 2, bW / 2); ctx.stroke()
+
+  // Front arrow tip
+  const tip = bW * 0.35
+  ctx.fillStyle = stateColor
+  ctx.beginPath()
+  ctx.moveTo(bD / 2 + tip, 0)
+  ctx.lineTo(bD / 2, -tip * 0.55)
+  ctx.lineTo(bD / 2,  tip * 0.55)
+  ctx.closePath(); ctx.fill()
+
+  ctx.restore()
+
+  // GK indicator dot
+  ctx.beginPath()
+  ctx.arc(rx, ry - BODY_WIDTH * sc / 2 - 10, 3, 0, Math.PI * 2)
+  ctx.fillStyle = GK_COLOR; ctx.fill()
+
+  // Target orientation line
+  if (showTargetOri) {
+    const canvAng = -gk.orientation
+    const lineLen = (BODY_DEPTH * 0.9 + 0.3) * sc
+    const ex = rx + Math.cos(canvAng) * lineLen
+    const ey = ry + Math.sin(canvAng) * lineLen
+    ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(ex, ey)
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1
+    ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([])
+  }
+}
+
 // ── State + player label ──────────────────────────────────────
 function drawStateLabel(
   ctx: CanvasRenderingContext2D,
@@ -378,5 +470,20 @@ function drawStateLabel(
   ctx.fillStyle = isActive ? stateColor : stateColor + '88'
   ctx.textAlign = 'center'
   ctx.fillText(`P${playerIndex + 1} · ${robot.state}`, rx, ry - offset)
+  ctx.textAlign = 'left'
+}
+
+function drawGoalkeeperLabel(
+  ctx: CanvasRenderingContext2D,
+  gk: GoalkeeperRobot,
+  sc: number, tc: (x: number, y: number) => [number, number],
+) {
+  const [rx, ry] = tc(gk.pos.x, gk.pos.y)
+  const stateColor = GK_STATE_COLORS[gk.state] ?? GK_COLOR
+  const offset = (BODY_WIDTH / 2) * sc + 8
+  ctx.font      = 'bold 10px monospace'
+  ctx.fillStyle = stateColor
+  ctx.textAlign = 'center'
+  ctx.fillText(`GK · ${gk.state}`, rx, ry - offset)
   ctx.textAlign = 'left'
 }

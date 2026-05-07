@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import type { SimState } from '../simulation/types'
-import TeamTab  from './TeamTab'
-import StateTab from './StateTab'
+import TeamTab       from './TeamTab'
+import StateTab      from './StateTab'
+import GoalkeeperTab from './GoalkeeperTab'
 
-type Tab = 'team' | 'p1' | 'p2'
+type Tab = 'team' | 'p1' | 'p2' | 'gk'
 
 interface Props {
   simState:      SimState
@@ -18,7 +19,7 @@ export default function RightPanel({ simState, onFocusChange }: Props) {
 
   function changeTab(t: Tab) {
     setTab(t)
-    onFocusChange(t === 'team' ? null : t === 'p1' ? 0 : 1)
+    onFocusChange(t === 'team' ? null : t === 'p1' ? 0 : t === 'p2' ? 1 : 2)
   }
 
   if (collapsed) {
@@ -44,6 +45,7 @@ export default function RightPanel({ simState, onFocusChange }: Props) {
     { id: 'team', label: 'Team' },
     { id: 'p1',   label: 'P1',  color: PLAYER_COLORS[0] },
     { id: 'p2',   label: 'P2',  color: PLAYER_COLORS[1] },
+    { id: 'gk',   label: 'GK',  color: '#f97316' },
   ]
 
   return (
@@ -76,9 +78,10 @@ export default function RightPanel({ simState, onFocusChange }: Props) {
       </div>
 
       <div className="flex-1 overflow-hidden">
-        {tab === 'team' && <TeamTab  simState={simState} />}
-        {tab === 'p1'   && <StateTab simState={simState} robotIndex={0} />}
-        {tab === 'p2'   && <StateTab simState={simState} robotIndex={1} />}
+        {tab === 'team' && <TeamTab       simState={simState} />}
+        {tab === 'p1'   && <StateTab      simState={simState} robotIndex={0} />}
+        {tab === 'p2'   && <StateTab      simState={simState} robotIndex={1} />}
+        {tab === 'gk'   && <GoalkeeperTab simState={simState} />}
       </div>
     </div>
   )

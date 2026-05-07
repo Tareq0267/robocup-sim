@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import type { SimState, RobotParams, OverlaySettings, Vec2, TeamConfig } from '../simulation/types'
-import { DEFAULT_ROBOT_1, DEFAULT_ROBOT_2, DEFAULT_BALL, DEFAULT_GOAL, DEFAULT_OWN_GOAL, DEFAULT_FIELD_LAYOUT, DEFAULT_COURT, DEFAULT_OVERLAYS, DEFAULT_TEAM } from '../simulation/config'
+import type { SimState, RobotParams, OverlaySettings, Vec2, TeamConfig, GoalkeeperParams } from '../simulation/types'
+import { DEFAULT_ROBOT_1, DEFAULT_ROBOT_2, DEFAULT_BALL, DEFAULT_GOAL, DEFAULT_OWN_GOAL, DEFAULT_FIELD_LAYOUT, DEFAULT_COURT, DEFAULT_OVERLAYS, DEFAULT_TEAM, DEFAULT_GOALKEEPER, EMPTY_GK_DEBUG, DEFAULT_GK_PARAMS } from '../simulation/config'
 import { tick } from '../simulation/engine'
 
 const EMPTY_DEBUG = {
@@ -26,6 +26,8 @@ function makeInitialState(): SimState {
     activeIndex: 0,
     swapTimer:   0,
     team:        { ...DEFAULT_TEAM },
+    goalkeeper:      { ...DEFAULT_GOALKEEPER, params: { ...DEFAULT_GK_PARAMS } },
+    goalkeeperDebug: { ...EMPTY_GK_DEBUG, stateHistory: [] },
     ball:        { ...DEFAULT_BALL },
     goal:        { ...DEFAULT_GOAL },
     ownGoal:     { ...DEFAULT_OWN_GOAL },
@@ -102,10 +104,19 @@ export function useSimulation() {
       return { ...s, robots }
     }), [])
 
+  const dragGoalkeeper = useCallback((pos: Vec2) =>
+    setSimState(s => ({ ...s, goalkeeper: { ...s.goalkeeper, pos } })), [])
+
+  const setGKParam = useCallback(<K extends keyof GoalkeeperParams>(key: K, value: GoalkeeperParams[K]) =>
+    setSimState(s => ({
+      ...s,
+      goalkeeper: { ...s.goalkeeper, params: { ...s.goalkeeper.params, [key]: value } },
+    })), [])
+
   return {
     simState,
     play, pause, step, reset,
-    setSpeed, setParam, setTeamConfig, setOverlay,
-    setBallStatic, dragBall, dragRobot,
+    setSpeed, setParam, setTeamConfig, setGKParam, setOverlay,
+    setBallStatic, dragBall, dragRobot, dragGoalkeeper,
   }
 }

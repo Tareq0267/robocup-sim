@@ -5,18 +5,22 @@
 import type { Ball, Robot, Court, Vec2 } from './types'
 import { add, scale, sub, len, normalize, dist } from './math'
 
-// Separate two overlapping robots — splits overlap equally, re-clamps to court
-export function resolveRobotCollision(a: Robot, b: Robot, court: Court): [Robot, Robot] {
-  const d       = dist(a.pos, b.pos)
-  const minDist = a.radius + b.radius
-  if (d >= minDist) return [a, b]
+// Separate two overlapping circles — returns corrected positions (generic, works for any robot type)
+export function separateCircles(
+  posA: Vec2, radA: number,
+  posB: Vec2, radB: number,
+  court: Court,
+): [Vec2, Vec2] {
+  const d       = dist(posA, posB)
+  const minDist = radA + radB
+  if (d >= minDist) return [posA, posB]
 
-  const dir  = d < 1e-9 ? { x: 1, y: 0 } : normalize(sub(b.pos, a.pos))
+  const dir  = d < 1e-9 ? { x: 1, y: 0 } : normalize(sub(posB, posA))
   const push = (minDist - d) / 2 + 0.001
 
-  const clamp = (r: Robot, pos: Vec2): Vec2 => {
-    const hw = court.width  / 2 - r.radius
-    const hh = court.height / 2 - r.radius
+  const clamp = (pos: Vec2, rad: number): Vec2 => {
+    const hw = court.width  / 2 - rad
+    const hh = court.height / 2 - rad
     return {
       x: Math.max(-hw, Math.min(hw, pos.x)),
       y: Math.max(-hh, Math.min(hh, pos.y)),
@@ -24,9 +28,15 @@ export function resolveRobotCollision(a: Robot, b: Robot, court: Court): [Robot,
   }
 
   return [
-    { ...a, pos: clamp(a, sub(a.pos, scale(dir, push))) },
-    { ...b, pos: clamp(b, add(b.pos, scale(dir, push))) },
+    clamp(sub(posA, scale(dir, push)), radA),
+    clamp(add(posB, scale(dir, push)), radB),
   ]
+}
+
+// Separate two overlapping robots — splits overlap equally, re-clamps to court
+export function resolveRobotCollision(a: Robot, b: Robot, court: Court): [Robot, Robot] {
+  const [posA, posB] = separateCircles(a.pos, a.radius, b.pos, b.radius, court)
+  return [{ ...a, pos: posA }, { ...b, pos: posB }]
 }
 
 const FRICTION = 1.8   // m/s² deceleration

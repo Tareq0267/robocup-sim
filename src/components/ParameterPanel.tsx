@@ -1,18 +1,21 @@
-import type { RobotParams, TeamConfig } from '../simulation/types'
-import { PARAM_META } from '../simulation/config'
+import type { RobotParams, TeamConfig, GoalkeeperParams } from '../simulation/types'
+import { PARAM_META, GK_PARAM_META } from '../simulation/config'
 
 interface Props {
   params:        RobotParams
   team:          TeamConfig
+  gkParams:      GoalkeeperParams
   setParam:      <K extends keyof RobotParams>(key: K, value: RobotParams[K]) => void
   setTeamConfig: <K extends keyof TeamConfig>(key: K, value: TeamConfig[K]) => void
+  setGKParam:    <K extends keyof GoalkeeperParams>(key: K, value: GoalkeeperParams[K]) => void
 }
 
 function Slider({
-  label, value, unit, min, max, step, desc,
+  label, value, unit, min, max, step, desc, accentClass = 'accent-blue-500',
   onChange,
 }: {
   label: string; value: number; unit: string; min: number; max: number; step: number; desc: string
+  accentClass?: string
   onChange: (v: number) => void
 }) {
   return (
@@ -33,14 +36,14 @@ function Slider({
       <input
         type="range" min={min} max={max} step={step} value={value}
         onChange={e => onChange(parseFloat(e.target.value))}
-        className="w-full h-1 accent-blue-500 cursor-pointer"
+        className={`w-full h-1 ${accentClass} cursor-pointer`}
       />
       <div className="text-[#475569] text-[10px] mt-1 leading-snug">{desc}</div>
     </div>
   )
 }
 
-export default function ParameterPanel({ params, team, setParam, setTeamConfig }: Props) {
+export default function ParameterPanel({ params, team, gkParams, setParam, setTeamConfig, setGKParam }: Props) {
   return (
     <div className="p-3 overflow-y-auto h-full space-y-3">
 
@@ -53,9 +56,9 @@ export default function ParameterPanel({ params, team, setParam, setTeamConfig }
         onChange={v => setTeamConfig('roleSwapDelay', v)}
       />
 
-      {/* Robot settings (shared) */}
+      {/* Striker settings (shared P1/P2) */}
       <div className="text-[10px] text-[#475569] uppercase tracking-widest pt-1">
-        Robots (shared)
+        Strikers (P1 &amp; P2)
       </div>
       {PARAM_META.map(meta => {
         const isAngle  = meta.unit === 'deg'
@@ -63,13 +66,28 @@ export default function ParameterPanel({ params, team, setParam, setTeamConfig }
         const disp     = isAngle ? raw * 180 / Math.PI : raw
         const onChange = (v: number) =>
           setParam(meta.key, (isAngle ? v * Math.PI / 180 : v) as RobotParams[typeof meta.key])
-
         return (
-          <Slider
-            key={meta.key}
-            label={meta.label} value={disp} unit={meta.unit}
-            min={meta.min} max={meta.max} step={meta.step}
-            desc={meta.desc}
+          <Slider key={meta.key} label={meta.label} value={disp} unit={meta.unit}
+            min={meta.min} max={meta.max} step={meta.step} desc={meta.desc}
+            onChange={onChange}
+          />
+        )
+      })}
+
+      {/* Goalkeeper settings */}
+      <div className="text-[10px] text-[#f97316] uppercase tracking-widest pt-2 border-t border-[#1e1e1e]">
+        Goalkeeper
+      </div>
+      {GK_PARAM_META.map(meta => {
+        const isAngle  = meta.unit === 'deg'
+        const raw      = gkParams[meta.key] as number
+        const disp     = isAngle ? raw * 180 / Math.PI : raw
+        const onChange = (v: number) =>
+          setGKParam(meta.key, (isAngle ? v * Math.PI / 180 : v) as GoalkeeperParams[typeof meta.key])
+        return (
+          <Slider key={meta.key} label={meta.label} value={disp} unit={meta.unit}
+            min={meta.min} max={meta.max} step={meta.step} desc={meta.desc}
+            accentClass="accent-orange-500"
             onChange={onChange}
           />
         )

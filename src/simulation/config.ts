@@ -1,7 +1,7 @@
 // ================================================================
 // DEFAULT VALUES — change these to set starting conditions
 // ================================================================
-import { RobotState, type Robot, type Ball, type Goal, type Court, type OverlaySettings, type RobotParams, type TeamConfig, type FieldLayout } from './types'
+import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type OverlaySettings, type RobotParams, type TeamConfig, type FieldLayout, type GoalkeeperParams, type GoalkeeperRobot, type GoalkeeperDebugData } from './types'
 
 // Adult Size field: 14m × 9m
 export const DEFAULT_COURT: Court = {
@@ -66,6 +66,68 @@ export const DEFAULT_ROBOT_2: Robot = {
 export const DEFAULT_TEAM: TeamConfig = {
   roleSwapDelay: 1.0,  // seconds
 }
+
+export const DEFAULT_GK_PARAMS: GoalkeeperParams = {
+  chaseThreshold:        1.0,
+  retreatChaseThreshold: 2.0,
+  alignThreshold:        0.035,  // ≈ 2°
+  chaseSpeed:            0.6,
+  retreatSpeed:          0.8,
+  blockSpeedFar:         0.9,
+  blockSpeedNear:        0.2,
+  blockNearThreshold:    0.8,
+  kickSpeed:             1.5,
+  rotationSpeed:         4.0,
+  fieldOfView:           2.094,  // 120°
+  goalLineOffset:        0.5,
+  blockRange:            0.6,
+}
+
+export const DEFAULT_GOALKEEPER: GoalkeeperRobot = {
+  pos:         { x: -6.5, y: 0 },
+  orientation: 0,
+  state:       GoalkeeperState.RETREAT,
+  radius:      0.26,
+  params:      { ...DEFAULT_GK_PARAMS },
+}
+
+export const EMPTY_GK_DEBUG: GoalkeeperDebugData = {
+  distanceToBall:    0,
+  canSeeBall:        true,
+  fovError:          0,
+  ballInPenaltyArea: false,
+  alignmentError:    0,
+  stateHistory:      [],
+}
+
+// ----------------------------------------------------------------
+// GOALKEEPER PARAMETER PANEL METADATA
+// ----------------------------------------------------------------
+export interface GKParamMeta {
+  key:   keyof GoalkeeperParams
+  label: string
+  unit:  string
+  min:   number
+  max:   number
+  step:  number
+  desc:  string
+}
+
+export const GK_PARAM_META: GKParamMeta[] = [
+  { key: 'chaseThreshold',        label: 'Chase Threshold',         unit: 'm',     min: 0.1, max: 3,   step: 0.1,  desc: 'Switch from chase to block when ball is within this distance' },
+  { key: 'retreatChaseThreshold', label: 'Retreat-Chase Threshold', unit: 'm',     min: 0.5, max: 5,   step: 0.1,  desc: 'Retreat first if ball is deeper than this in penalty area' },
+  { key: 'alignThreshold',        label: 'Kick Align Tolerance',    unit: 'deg',   min: 0.5, max: 15,  step: 0.5,  desc: 'Max body angle error allowed before kicking' },
+  { key: 'chaseSpeed',            label: 'Chase Speed',             unit: 'm/s',   min: 0.1, max: 3,   step: 0.1,  desc: 'Speed while chasing ball' },
+  { key: 'retreatSpeed',          label: 'Retreat Speed',           unit: 'm/s',   min: 0.1, max: 3,   step: 0.1,  desc: 'Speed while retreating to goal line' },
+  { key: 'blockSpeedFar',         label: 'Block Speed (Far)',       unit: 'm/s',   min: 0.1, max: 3,   step: 0.1,  desc: 'Tangential blocking speed when ball is far' },
+  { key: 'blockSpeedNear',        label: 'Block Speed (Near)',      unit: 'm/s',   min: 0.1, max: 2,   step: 0.05, desc: 'Tangential blocking speed when ball is close' },
+  { key: 'blockNearThreshold',    label: 'Block Near Threshold',    unit: 'm',     min: 0.1, max: 2,   step: 0.1,  desc: 'Distance that switches far→near block speed' },
+  { key: 'kickSpeed',             label: 'Kick Speed',              unit: 'm/s',   min: 0.1, max: 5,   step: 0.1,  desc: 'Ball push speed when clearing' },
+  { key: 'rotationSpeed',         label: 'Rotation Speed',          unit: 'rad/s', min: 0.5, max: 10,  step: 0.1,  desc: 'Body rotation speed' },
+  { key: 'fieldOfView',           label: 'Field of View',           unit: 'deg',   min: 10,  max: 360, step: 1,    desc: 'Vision cone — ball outside triggers FIND_BALL' },
+  { key: 'goalLineOffset',        label: 'Goal Line Offset',        unit: 'm',     min: 0.1, max: 2,   step: 0.05, desc: 'How far in front of goal line the GK stands' },
+  { key: 'blockRange',            label: 'Block Range',             unit: 'm',     min: 0.1, max: 2,   step: 0.05, desc: 'Target distance from ball when blocking' },
+]
 
 export const DEFAULT_BALL: Ball = {
   pos:      { x: 0, y: 0 },

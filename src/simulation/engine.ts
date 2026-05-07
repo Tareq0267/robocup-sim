@@ -2,10 +2,12 @@
 // SIMULATION ENGINE — one tick per frame
 // ================================================================
 
-import { RobotState, type Robot, type Ball, type Goal, type Court, type SimState, type DebugData, type StateTransition } from './types'
+import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type SimState, type DebugData, type StateTransition, type GoalkeeperRobot, type GoalkeeperDebugData } from './types'
 import { getNextState, getInactiveState, computeAlignmentError, computeOrientationError, computeFovError, isOnCorrectSide, isAligned, isAtContactRange, isOrientationAligned, canSeeBall } from './stateMachine'
 import { searchBehavior, idleBehavior, chaseBehavior, repositionBehavior, radialAdjustBehavior, readyBehavior, shootBehavior, getTargetOrientation } from './behaviors'
-import { stepBall, applyContact, resolveOverlap, resolveRobotCollision } from './physics'
+import { goalieDecide, gkCanSeeBall, gkFovError, gkAlignmentError, ballInZone } from './goalkeeperStateMachine'
+import { gkFindBallBehavior, gkRetreatBehavior, gkAdjustBlockBehavior, gkChaseBehavior, gkKickBehavior, gkTargetOrientation } from './goalkeeperBehaviors'
+import { stepBall, applyContact, resolveOverlap, resolveRobotCollision, separateCircles } from './physics'
 import { add, scale, dist, rotateToward } from './math'
 
 const MAX_HISTORY = 50
@@ -95,10 +97,79 @@ function tickRobot(
 }
 
 // ----------------------------------------------------------------
+// Goalkeeper tick — independent from striker logic
+// ----------------------------------------------------------------
+function tickGoalkeeper(
+  gk:          GoalkeeperRobot,
+  ball:        Ball,
+  ownGoal:     Goal,
+  court:       Court,
+  state:       SimState,
+  dt:          number,
+  time:        number,
+  prevHistory: StateTransition[],
+): { gk: GoalkeeperRobot; debug: GoalkeeperDebugData } {
+  const history = [...prevHistory]
+
+  // ── 1. Decide next state ───────────────────────────────────
+  const { state: nextState, reason } = goalieDecide(gk, ball, state.fieldLayout.ownPenaltyArea)
+
+  if (nextState !== gk.state) {
+    history.unshift({ time, from: gk.state as string, to: nextState as string, reason } as StateTransition)
+    if (history.length > 50) history.pop()
+  }
+
+  const updatedGk = { ...gk, state: nextState }
+
+  // ── 2. Compute velocity ────────────────────────────────────
+  let velocity: { x: number; y: number } = { x: 0, y: 0 }
+  switch (nextState) {
+    case GoalkeeperState.FIND_BALL:    velocity = gkFindBallBehavior();                          break
+    case GoalkeeperState.RETREAT:      velocity = gkRetreatBehavior(updatedGk, ownGoal);         break
+    case GoalkeeperState.ADJUST_BLOCK: velocity = gkAdjustBlockBehavior(updatedGk, ball, ownGoal); break
+    case GoalkeeperState.CHASE:        velocity = gkChaseBehavior(updatedGk, ball);              break
+    case GoalkeeperState.KICK:         velocity = gkKickBehavior(updatedGk);                     break
+  }
+
+  // ── 3. Update position (clamp to court) ───────────────────
+  const hw = court.width  / 2 - gk.radius
+  const hh = court.height / 2 - gk.radius
+  const rawPos = add(updatedGk.pos, scale(velocity, dt))
+  const clampedPos = {
+    x: Math.max(-hw, Math.min(hw, rawPos.x)),
+    y: Math.max(-hh, Math.min(hh, rawPos.y)),
+  }
+
+  // ── 4. Update orientation ──────────────────────────────────
+  // FIND_BALL: spin continuously; all others: face ball
+  const targetOri = nextState === GoalkeeperState.FIND_BALL
+    ? null
+    : gkTargetOrientation(updatedGk, ball)
+
+  const newOri = targetOri === null
+    ? updatedGk.orientation + gk.params.rotationSpeed * dt
+    : rotateToward(updatedGk.orientation, targetOri, gk.params.rotationSpeed, dt)
+
+  const finalGk = { ...updatedGk, pos: clampedPos, orientation: newOri }
+
+  // ── 5. Debug ───────────────────────────────────────────────
+  const debug: GoalkeeperDebugData = {
+    distanceToBall:    dist(finalGk.pos, ball.pos),
+    canSeeBall:        gkCanSeeBall(finalGk, ball),
+    fovError:          gkFovError(finalGk, ball),
+    ballInPenaltyArea: ballInZone(ball, state.fieldLayout.ownPenaltyArea),
+    alignmentError:    gkAlignmentError(finalGk, ball),
+    stateHistory:      history,
+  }
+
+  return { gk: finalGk, debug }
+}
+
+// ----------------------------------------------------------------
 // Main tick — updates both robots + ball + team coordination
 // ----------------------------------------------------------------
 export function tick(state: SimState, dt: number): SimState {
-  const { robots, ball, goal, court, team, time } = state
+  const { robots, ball, goal, court, team, time, goalkeeper, ownGoal } = state
 
   // ── Team coordination: role swap with hysteresis ───────────
   // Check which robot is closer. If it's NOT the active one,
@@ -123,28 +194,39 @@ export function tick(state: SimState, dt: number): SimState {
   // ── Update each robot ──────────────────────────────────────
   const r0 = tickRobot(robots[0], ball, goal, court, newActiveIndex === 0, dt, time, state.debugs[0].stateHistory)
   const r1 = tickRobot(robots[1], ball, goal, court, newActiveIndex === 1, dt, time, state.debugs[1].stateHistory)
+  const gkResult = tickGoalkeeper(goalkeeper, ball, ownGoal, court, state, dt, time, state.goalkeeperDebug.stateHistory)
 
-  // ── Robot-robot collision ──────────────────────────────────
-  const [robot0, robot1] = resolveRobotCollision(r0.robot, r1.robot, court)
+  // ── Collisions: strikers vs strikers, each striker vs GK ──
+  let [robot0, robot1] = resolveRobotCollision(r0.robot, r1.robot, court)
+  let gkPos = gkResult.gk.pos
+  let pos0: typeof gkPos, pos1: typeof gkPos
+  ;[pos0, gkPos] = separateCircles(robot0.pos, robot0.radius, gkPos, gkResult.gk.radius, court)
+  robot0 = { ...robot0, pos: pos0 }
+  ;[pos1, gkPos] = separateCircles(robot1.pos, robot1.radius, gkPos, gkResult.gk.radius, court)
+  robot1 = { ...robot1, pos: pos1 }
+  const newGk = { ...gkResult.gk, pos: gkPos }
 
-  // ── Ball physics (only active robot pushes) ────────────────
+  // ── Ball physics (active striker and GK can push ball) ────
   const activeRobot = newActiveIndex === 0 ? robot0 : robot1
   const activeVel   = newActiveIndex === 0
     ? (robot0.state === RobotState.SHOOTING ? shootBehavior(robot0) : { x: 0, y: 0 })
     : (robot1.state === RobotState.SHOOTING ? shootBehavior(robot1) : { x: 0, y: 0 })
+  const gkVel = newGk.state === GoalkeeperState.KICK ? gkKickBehavior(newGk) : { x: 0, y: 0 }
 
   let newBall = ball
-  if (activeRobot.state === RobotState.SHOOTING) {
-    newBall = applyContact(newBall, activeRobot, activeVel)
-  }
+  if (activeRobot.state === RobotState.SHOOTING) newBall = applyContact(newBall, activeRobot, activeVel)
+  if (newGk.state === GoalkeeperState.KICK)       newBall = applyContact(newBall, newGk, gkVel)
   newBall = resolveOverlap(newBall, robot0)
   newBall = resolveOverlap(newBall, robot1)
+  newBall = resolveOverlap(newBall, newGk)
   newBall = stepBall(newBall, court, dt)
 
   return {
     ...state,
-    robots:      [robot0, robot1],
-    debugs:      [r0.debug, r1.debug],
+    robots:          [robot0, robot1],
+    debugs:          [r0.debug, r1.debug],
+    goalkeeper:      newGk,
+    goalkeeperDebug: gkResult.debug,
     activeIndex: newActiveIndex,
     swapTimer:   newSwapTimer,
     ball:        newBall,

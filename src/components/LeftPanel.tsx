@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { SimState, OverlaySettings, RobotParams, TeamConfig } from '../simulation/types'
+import type { SimState, OverlaySettings, RobotParams, TeamConfig, GoalkeeperParams } from '../simulation/types'
 import ParameterPanel from './ParameterPanel'
 import OverlayPanel   from './OverlayPanel'
 
@@ -9,11 +9,12 @@ interface Props {
   simState:      SimState
   setParam:      <K extends keyof RobotParams>(key: K, value: RobotParams[K]) => void
   setTeamConfig: <K extends keyof TeamConfig>(key: K, value: TeamConfig[K]) => void
+  setGKParam:    <K extends keyof GoalkeeperParams>(key: K, value: GoalkeeperParams[K]) => void
   setOverlay:    <K extends keyof OverlaySettings>(key: K, value: boolean) => void
   setBallStatic: (v: boolean) => void
 }
 
-export default function LeftPanel({ simState, setParam, setTeamConfig, setOverlay, setBallStatic }: Props) {
+export default function LeftPanel({ simState, setParam, setTeamConfig, setGKParam, setOverlay, setBallStatic }: Props) {
   const [collapsed, setCollapsed] = useState(false)
   const [tab, setTab] = useState<Tab>('params')
 
@@ -62,7 +63,7 @@ export default function LeftPanel({ simState, setParam, setTeamConfig, setOverla
       </div>
 
       <div className="flex-1 overflow-hidden">
-        {tab === 'params'   && <ParameterPanel params={simState.robots[0].params} team={simState.team} setParam={setParam} setTeamConfig={setTeamConfig} />}
+        {tab === 'params'   && <ParameterPanel params={simState.robots[0].params} team={simState.team} gkParams={simState.goalkeeper.params} setParam={setParam} setTeamConfig={setTeamConfig} setGKParam={setGKParam} />}
         {tab === 'overlays' && <OverlayPanel   simState={simState} setOverlay={setOverlay} setBallStatic={setBallStatic} />}
       </div>
     </div>

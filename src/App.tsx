@@ -9,8 +9,8 @@ export default function App() {
   const {
     simState,
     play, pause, step, reset,
-    setSpeed, setParam, setTeamConfig, setOverlay,
-    setBallStatic, dragBall, dragRobot,
+    setSpeed, setParam, setTeamConfig, setGKParam, setOverlay,
+    setBallStatic, dragBall, dragRobot, dragGoalkeeper,
   } = useSimulation()
 
   const [focusedRobot, setFocusedRobot] = useState<number | null>(null)
@@ -27,11 +27,12 @@ export default function App() {
           simState={simState}
           setParam={setParam}
           setTeamConfig={setTeamConfig}
+          setGKParam={setGKParam}
           setOverlay={setOverlay}
           setBallStatic={setBallStatic}
         />
         <div className="flex-1 overflow-hidden">
-          <SimCanvas simState={simState} focusedRobot={focusedRobot} dragBall={dragBall} dragRobot={dragRobot} />
+          <SimCanvas simState={simState} focusedRobot={focusedRobot} dragBall={dragBall} dragRobot={dragRobot} dragGoalkeeper={dragGoalkeeper} />
         </div>
         <RightPanel simState={simState} onFocusChange={setFocusedRobot} />
       </div>
