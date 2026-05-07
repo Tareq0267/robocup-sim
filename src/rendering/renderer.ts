@@ -20,8 +20,8 @@ const STATE_COLORS: Record<string, string> = {
 // Player accent colours (ring around robot to tell P1 from P2)
 const PLAYER_COLORS = ['#3b82f6', '#14b8a6']  // blue, teal
 
-const BODY_DEPTH = 0.36
-const BODY_WIDTH = 0.28
+const BODY_DEPTH = 0.23   // Booster T1: 23cm front-to-back
+const BODY_WIDTH = 0.47   // Booster T1: 47cm shoulder-to-shoulder
 
 function toCanvas(x: number, y: number, cw: number, ch: number, sc: number): [number, number] {
   return [cw / 2 + x * sc, ch / 2 - y * sc]
@@ -33,6 +33,7 @@ export function render(ctx: CanvasRenderingContext2D, state: SimState, cw: numbe
 
   ctx.clearRect(0, 0, cw, ch)
   drawCourt(ctx, state, cw, ch, sc, tc)
+  drawFieldMarkings(ctx, state, sc, tc)
   drawOwnGoal(ctx, state, sc, tc)
   drawGoal(ctx, state, sc, tc)
 
@@ -85,11 +86,56 @@ function drawCourt(
   ctx.beginPath(); ctx.moveTo(cx0, cy0); ctx.lineTo(cx1, cy1); ctx.stroke()
 
   const [ccx, ccy] = tc(0, 0)
-  ctx.beginPath(); ctx.arc(ccx, ccy, 1 * sc, 0, Math.PI * 2); ctx.stroke()
+  ctx.beginPath(); ctx.arc(ccx, ccy, state.fieldLayout.centreCircleRadius * sc, 0, Math.PI * 2); ctx.stroke()
 
   ctx.strokeStyle = 'rgba(255,255,255,0.5)'
   ctx.lineWidth = 2
   ctx.strokeRect(fx, fy, fw, fh)
+}
+
+// ── Field markings: penalty areas, goal areas, penalty marks ─
+function drawFieldMarkings(
+  ctx: CanvasRenderingContext2D, state: SimState,
+  sc: number, tc: (x: number, y: number) => [number, number],
+) {
+  const { ownPenaltyArea, ownGoalArea, opponentPenaltyArea, opponentGoalArea, penaltyMarkDist } = state.fieldLayout
+  const lineColor = 'rgba(255,255,255,0.35)'
+  const areaColor = 'rgba(255,255,255,0.20)'
+
+  function drawZone(zone: typeof ownPenaltyArea, fill: string, stroke: string, dash: number[]) {
+    const [x1, y1] = tc(zone.minX, zone.maxY)
+    const [x2, y2] = tc(zone.maxX, zone.minY)
+    ctx.setLineDash(dash)
+    ctx.fillStyle = fill
+    ctx.fillRect(x1, y1, x2 - x1, y2 - y1)
+    ctx.strokeStyle = stroke
+    ctx.lineWidth = 1
+    ctx.strokeRect(x1, y1, x2 - x1, y2 - y1)
+    ctx.setLineDash([])
+  }
+
+  // Penalty areas
+  drawZone(ownPenaltyArea,      'rgba(59,130,246,0.05)', lineColor, [])
+  drawZone(opponentPenaltyArea, 'rgba(250,204,21,0.05)', lineColor, [])
+
+  // Goal areas (inner boxes)
+  drawZone(ownGoalArea,      'rgba(59,130,246,0.08)', areaColor, [4, 4])
+  drawZone(opponentGoalArea, 'rgba(250,204,21,0.08)', areaColor, [4, 4])
+
+  // Penalty marks
+  function drawMark(x: number, y: number) {
+    const [px, py] = tc(x, y)
+    const r = 3
+    ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2)
+    ctx.fillStyle = lineColor; ctx.fill()
+  }
+  drawMark(-7.0 + penaltyMarkDist, 0)
+  drawMark( 7.0 - penaltyMarkDist, 0)
+
+  // Centre spot
+  const [cx, cy] = tc(0, 0)
+  ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2)
+  ctx.fillStyle = lineColor; ctx.fill()
 }
 
 // ── Opponent goal (right, yellow) ────────────────────────────
@@ -97,8 +143,8 @@ function drawGoal(
   ctx: CanvasRenderingContext2D, state: SimState,
   sc: number, tc: (x: number, y: number) => [number, number],
 ) {
-  const { center, width } = state.goal
-  const hw = width / 2; const depth = 0.5
+  const { center, width, depth } = state.goal
+  const hw = width / 2
   const [gx, gy]   = tc(center.x,         center.y + hw)
   const [gx2, gy2] = tc(center.x + depth,  center.y - hw)
   ctx.fillStyle = 'rgba(250,204,21,0.15)'
@@ -116,8 +162,8 @@ function drawOwnGoal(
   ctx: CanvasRenderingContext2D, state: SimState,
   sc: number, tc: (x: number, y: number) => [number, number],
 ) {
-  const { center, width } = state.ownGoal
-  const hw = width / 2; const depth = 0.5
+  const { center, width, depth } = state.ownGoal
+  const hw = width / 2
   // Net depth extends left (negative x) for the left-side goal
   const [gx, gy]   = tc(center.x,         center.y + hw)
   const [gx2, gy2] = tc(center.x - depth,  center.y - hw)

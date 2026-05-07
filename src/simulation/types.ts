@@ -71,11 +71,29 @@ export interface Ball {
 export interface Goal {
   center: Vec2
   width:  number
+  depth:  number
 }
 
 export interface Court {
   width:  number
   height: number
+}
+
+// Axis-aligned rectangular zone on the field (sim coords)
+export interface FieldZone {
+  minX: number
+  maxX: number
+  minY: number
+  maxY: number
+}
+
+export interface FieldLayout {
+  ownPenaltyArea:      FieldZone  // J=3m deep, K=6m wide (Adult Size)
+  ownGoalArea:         FieldZone  // E=1m deep, F=4m wide (Adult Size)
+  opponentPenaltyArea: FieldZone
+  opponentGoalArea:    FieldZone
+  centreCircleRadius:  number     // H/2 = 1.5m (Adult Size)
+  penaltyMarkDist:     number     // G = 2.1m from goal line (Adult Size)
 }
 
 // ----------------------------------------------------------------
@@ -131,6 +149,7 @@ export interface SimState {
   ball:        Ball
   goal:        Goal            // opponent's goal (right side) — robots shoot at this
   ownGoal:     Goal            // our goal (left side) — goalkeeper defends this
+  fieldLayout: FieldLayout
   court:       Court
   time:        number
   isPlaying:   boolean

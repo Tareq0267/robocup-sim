@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { SimState, RobotParams, OverlaySettings, Vec2, TeamConfig } from '../simulation/types'
-import { DEFAULT_ROBOT_1, DEFAULT_ROBOT_2, DEFAULT_BALL, DEFAULT_GOAL, DEFAULT_OWN_GOAL, DEFAULT_COURT, DEFAULT_OVERLAYS, DEFAULT_TEAM } from '../simulation/config'
+import { DEFAULT_ROBOT_1, DEFAULT_ROBOT_2, DEFAULT_BALL, DEFAULT_GOAL, DEFAULT_OWN_GOAL, DEFAULT_FIELD_LAYOUT, DEFAULT_COURT, DEFAULT_OVERLAYS, DEFAULT_TEAM } from '../simulation/config'
 import { tick } from '../simulation/engine'
 
 const EMPTY_DEBUG = {
@@ -29,6 +29,7 @@ function makeInitialState(): SimState {
     ball:        { ...DEFAULT_BALL },
     goal:        { ...DEFAULT_GOAL },
     ownGoal:     { ...DEFAULT_OWN_GOAL },
+    fieldLayout: { ...DEFAULT_FIELD_LAYOUT },
     court:       { ...DEFAULT_COURT },
     time:        0,
     isPlaying:   false,

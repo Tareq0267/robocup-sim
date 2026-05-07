@@ -1,21 +1,36 @@
 // ================================================================
 // DEFAULT VALUES — change these to set starting conditions
 // ================================================================
-import { RobotState, type Robot, type Ball, type Goal, type Court, type OverlaySettings, type RobotParams, type TeamConfig } from './types'
+import { RobotState, type Robot, type Ball, type Goal, type Court, type OverlaySettings, type RobotParams, type TeamConfig, type FieldLayout } from './types'
 
+// Adult Size field: 14m × 9m
 export const DEFAULT_COURT: Court = {
-  width:  9,
-  height: 6,
+  width:  14,
+  height: 9,
 }
 
+// Opponent goal — right side, x = +7.0
 export const DEFAULT_GOAL: Goal = {
-  center: { x: 4.5, y: 0 },
-  width:  1.5,
+  center: { x: 7.0, y: 0 },
+  width:  2.6,
+  depth:  0.6,
 }
 
+// Our goal — left side, x = -7.0
 export const DEFAULT_OWN_GOAL: Goal = {
-  center: { x: -4.5, y: 0 },
-  width:  1.5,
+  center: { x: -7.0, y: 0 },
+  width:  2.6,
+  depth:  0.6,
+}
+
+// Adult Size field zones
+export const DEFAULT_FIELD_LAYOUT: FieldLayout = {
+  ownPenaltyArea:      { minX: -7.0, maxX: -4.0, minY: -3.0, maxY: 3.0 },
+  ownGoalArea:         { minX: -7.0, maxX: -6.0, minY: -2.0, maxY: 2.0 },
+  opponentPenaltyArea: { minX:  4.0, maxX:  7.0, minY: -3.0, maxY: 3.0 },
+  opponentGoalArea:    { minX:  6.0, maxX:  7.0, minY: -2.0, maxY: 2.0 },
+  centreCircleRadius:  1.5,
+  penaltyMarkDist:     2.1,
 }
 
 export const DEFAULT_PARAMS: RobotParams = {
@@ -31,19 +46,20 @@ export const DEFAULT_PARAMS: RobotParams = {
   fieldOfView:         2.094,  // 120° = 2π/3
 }
 
+// Booster T1: 47cm wide × 23cm deep footprint, radius ≈ half-diagonal
 export const DEFAULT_ROBOT_1: Robot = {
-  pos:         { x: -3.0, y:  0.8 },
+  pos:         { x: -3.5, y:  0.8 },
   orientation: 0,
   state:       RobotState.CHASING,
-  radius:      0.15,
+  radius:      0.26,
   params:      { ...DEFAULT_PARAMS },
 }
 
 export const DEFAULT_ROBOT_2: Robot = {
-  pos:         { x: -3.0, y: -0.8 },
+  pos:         { x: -3.5, y: -0.8 },
   orientation: 0,
   state:       RobotState.IDLE,
-  radius:      0.15,
+  radius:      0.26,
   params:      { ...DEFAULT_PARAMS },
 }
 
