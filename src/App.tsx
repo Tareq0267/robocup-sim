@@ -8,9 +8,9 @@ import RightPanel from './components/RightPanel'
 export default function App() {
   const {
     simState,
-    play, pause, step, reset,
+    play, pause, step, reset, scoreGoal,
     setSpeed, setParam, setTeamConfig, setGKParam, setOverlay,
-    setBallStatic, dragBall, dragRobot, dragGoalkeeper,
+    setBallStatic, dragBall, dragRobot,
   } = useSimulation()
 
   const [focusedRobot, setFocusedRobot] = useState<number | null>(null)
@@ -20,7 +20,7 @@ export default function App() {
       <ControlBar
         simState={simState}
         play={play} pause={pause} step={step} reset={reset}
-        setSpeed={setSpeed}
+        setSpeed={setSpeed} scoreGoal={scoreGoal}
       />
       <div className="flex flex-1 overflow-hidden">
         <LeftPanel
@@ -32,7 +32,7 @@ export default function App() {
           setBallStatic={setBallStatic}
         />
         <div className="flex-1 overflow-hidden">
-          <SimCanvas simState={simState} focusedRobot={focusedRobot} dragBall={dragBall} dragRobot={dragRobot} dragGoalkeeper={dragGoalkeeper} />
+          <SimCanvas simState={simState} focusedRobot={focusedRobot} dragBall={dragBall} dragRobot={dragRobot} />
         </div>
         <RightPanel simState={simState} onFocusChange={setFocusedRobot} />
       </div>
