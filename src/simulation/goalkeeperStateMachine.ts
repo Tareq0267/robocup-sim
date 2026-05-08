@@ -1,11 +1,14 @@
 // ================================================================
 // GOALKEEPER STATE MACHINE
+// Mirrors GoalieDecide::tick() in brain_tree.cpp
 // Priority order (0 = highest):
 //   0. FIND_BALL    — ball not visible, spin until found
-//   1. RETREAT      — ball outside penalty area, return to goal line
-//   2. ADJUST_BLOCK — ball in penalty area, position to block
-//   3. CHASE        — ball in penalty area and far, close distance
-//   4. KICK         — ball close and aligned, clear it
+//   1. RETREAT      — return to goal-line blocking position (tracks ball Y)
+//                     triggered when ball outside penalty OR robot outside goal area
+//   2. ADJUST_BLOCK — position on goal→ball line; constrained to goal area when
+//                     ball is outside penalty (long-range mode)
+//   3. CHASE        — close in on ball (medium range: chaseThreshold–retreatChaseThreshold)
+//   4. KICK         — ball close and GK aligned, clear it
 // ================================================================
 
 import { GoalkeeperState, type GoalkeeperRobot, type Ball, type FieldZone } from './types'
@@ -39,45 +42,54 @@ export function ballInZone(ball: Ball, zone: FieldZone): boolean {
 }
 
 // ── GoalieDecide ──────────────────────────────────────────────
-// Mirrors the BT GoalieDecide node — pure function, no side effects
+// Mirrors GoalieDecide::tick() in brain_tree.cpp — pure function, no side effects
 export function goalieDecide(
   gk:          GoalkeeperRobot,
   ball:        Ball,
   penaltyArea: FieldZone,
+  goalArea:    FieldZone,
 ): { state: GoalkeeperState; reason: string } {
   const { chaseThreshold, retreatChaseThreshold, alignThreshold } = gk.params
 
-  // Priority 0: can't see ball → spin
   if (!gkCanSeeBall(gk, ball)) {
     return { state: GoalkeeperState.FIND_BALL, reason: 'Ball outside FOV — searching' }
   }
 
   const ballInPenalty = ballInZone(ball, penaltyArea)
-  const d             = dist(gk.pos, ball.pos)
+  const robotInGoal   = gk.pos.x >= goalArea.minX && gk.pos.x <= goalArea.maxX &&
+                        gk.pos.y >= goalArea.minY && gk.pos.y <= goalArea.maxY
+  const d = dist(gk.pos, ball.pos)
 
-  // Priority 1: ball outside penalty area → retreat to goal line
+  // Ball outside penalty area
   if (!ballInPenalty) {
-    return { state: GoalkeeperState.RETREAT, reason: 'Ball outside penalty area — retreating to goal line' }
+    if (robotInGoal) {
+      // Already in goal area — stay and track ball in long-range blocking mode
+      return { state: GoalkeeperState.ADJUST_BLOCK, reason: 'Ball outside penalty — long-range block from goal area' }
+    }
+    // Outside goal area — retreat back to goal-line position
+    return { state: GoalkeeperState.RETREAT, reason: 'Ball outside penalty, not in goal area — retreating' }
   }
 
   // Ball IS in penalty area from here on
 
-  // Priority 2: ball deep in penalty area but GK is far → retreat first to close goal gap
+  // Ball far in penalty area
   if (d > retreatChaseThreshold) {
-    return { state: GoalkeeperState.RETREAT, reason: `Ball ${d.toFixed(2)}m away (> retreat threshold ${retreatChaseThreshold}m) — retreating` }
+    if (!robotInGoal) {
+      return { state: GoalkeeperState.RETREAT, reason: `Ball ${d.toFixed(2)}m away, not in goal area — retreating to close gap` }
+    }
+    // Already in goal area — stay and block rather than chasing into a gap
+    return { state: GoalkeeperState.ADJUST_BLOCK, reason: `Ball ${d.toFixed(2)}m away, in goal area — holding block position` }
   }
 
-  // Priority 3: ball at mid-range → adjust blocking position
+  // Medium range (chaseThreshold < d <= retreatChaseThreshold): chase to close in
   if (d > chaseThreshold) {
-    return { state: GoalkeeperState.ADJUST_BLOCK, reason: `Ball at ${d.toFixed(2)}m — adjusting block position` }
+    return { state: GoalkeeperState.CHASE, reason: `Ball at ${d.toFixed(2)}m (medium range) — chasing` }
   }
 
-  // Priority 4: ball very close → check alignment for kick
+  // Close range (d <= chaseThreshold): adjust into kick position or kick
   const alignErr = gkAlignmentError(gk, ball)
   if (alignErr <= alignThreshold) {
     return { state: GoalkeeperState.KICK, reason: `Aligned (${(alignErr * 180 / Math.PI).toFixed(1)}°) — kicking` }
   }
-
-  // Close but not aligned → chase to close further and get aligned
-  return { state: GoalkeeperState.CHASE, reason: `Ball close (${d.toFixed(2)}m) but not aligned — chasing` }
+  return { state: GoalkeeperState.ADJUST_BLOCK, reason: `Ball close (${d.toFixed(2)}m), adjusting to align for kick` }
 }

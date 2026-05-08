@@ -208,7 +208,7 @@ function tickGoalkeeper(
   const history = [...prevHistory]
 
   // ── 1. Decide next state ───────────────────────────────────
-  const { state: nextState, reason } = goalieDecide(gk, ball, state.fieldLayout.ownPenaltyArea)
+  const { state: nextState, reason } = goalieDecide(gk, ball, state.fieldLayout.ownPenaltyArea, state.fieldLayout.ownGoalArea)
 
   if (nextState !== gk.state) {
     history.unshift({ time, from: gk.state as string, to: nextState as string, reason } as StateTransition)
@@ -221,8 +221,8 @@ function tickGoalkeeper(
   let velocity: { x: number; y: number } = { x: 0, y: 0 }
   switch (nextState) {
     case GoalkeeperState.FIND_BALL:    velocity = gkFindBallBehavior();                          break
-    case GoalkeeperState.RETREAT:      velocity = gkRetreatBehavior(updatedGk, ownGoal);         break
-    case GoalkeeperState.ADJUST_BLOCK: velocity = gkAdjustBlockBehavior(updatedGk, ball, ownGoal); break
+    case GoalkeeperState.RETREAT:      velocity = gkRetreatBehavior(updatedGk, ball, ownGoal, state.fieldLayout.ownPenaltyArea); break
+    case GoalkeeperState.ADJUST_BLOCK: velocity = gkAdjustBlockBehavior(updatedGk, ball, ownGoal, ballInZone(ball, state.fieldLayout.ownPenaltyArea), state.fieldLayout.ownGoalArea); break
     case GoalkeeperState.CHASE:        velocity = gkChaseBehavior(updatedGk, ball);              break
     case GoalkeeperState.KICK:         velocity = gkKickBehavior(updatedGk);                     break
   }
