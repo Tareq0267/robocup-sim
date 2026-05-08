@@ -92,6 +92,10 @@ export function useSimulation() {
         : { ours: s.score.ours, theirs: s.score.theirs + 1 },
       side === 'ours' ? 'theirs' : 'ours',
     )), [])
+
+  // Reset robots and ball to kickoff positions without changing the score.
+  const kickoff = useCallback((side: 'ours' | 'theirs') =>
+    setSimState(s => makeKickoffState(s, s.score, side)), [])
   const setSpeed = useCallback((speed: number) => setSimState(s => ({ ...s, speed })), [])
 
   // Striker params are shared — update all robots (any can become striker)
@@ -133,7 +137,7 @@ export function useSimulation() {
 
   return {
     simState,
-    play, pause, step, reset, scoreGoal,
+    play, pause, step, reset, scoreGoal, kickoff,
     setSpeed, setParam, setTeamConfig, setGKParam, setOverlay,
     setBallStatic, dragBall, dragRobot,
   }

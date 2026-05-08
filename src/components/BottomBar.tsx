@@ -3,7 +3,11 @@ import { useState } from 'react'
 const COLLAPSED_H = 28   // px — header strip only
 const EXPANDED_H  = 160  // px — header + content
 
-export default function BottomBar() {
+interface Props {
+  onKickoff: (side: 'ours' | 'theirs') => void
+}
+
+export default function BottomBar({ onKickoff }: Props) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -29,11 +33,23 @@ export default function BottomBar() {
       {/* ── Content area ────────────────────────────────────── */}
       <div className="px-4 py-3 flex items-start gap-8 text-xs font-mono">
 
-        {/* Placeholder sections */}
+        {/* Match Phase */}
         <div className="flex flex-col gap-1">
           <span className="text-[10px] uppercase tracking-widest text-[#475569] mb-1">Match Phase</span>
           <div className="flex gap-1">
-            {(['Kickoff', 'Playing', 'Free Kick', 'Half Time'] as const).map(phase => (
+            <button
+              onClick={() => onKickoff('ours')}
+              className="px-2 py-1 rounded text-[11px] bg-[#0f1f0f] text-[#4ade80] border border-[#1a3a1a] hover:bg-[#1a3a1a] transition-colors"
+            >
+              Our Kickoff
+            </button>
+            <button
+              onClick={() => onKickoff('theirs')}
+              className="px-2 py-1 rounded text-[11px] bg-[#1a1008] text-[#fb923c] border border-[#3a2010] hover:bg-[#3a2010] transition-colors"
+            >
+              Their Kickoff
+            </button>
+            {(['Playing', 'Free Kick', 'Half Time'] as const).map(phase => (
               <button
                 key={phase}
                 disabled

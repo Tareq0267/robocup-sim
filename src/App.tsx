@@ -9,7 +9,7 @@ import BottomBar  from './components/BottomBar'
 export default function App() {
   const {
     simState,
-    play, pause, step, reset, scoreGoal,
+    play, pause, step, reset, scoreGoal, kickoff,
     setSpeed, setParam, setTeamConfig, setGKParam, setOverlay,
     setBallStatic, dragBall, dragRobot,
   } = useSimulation()
@@ -37,7 +37,7 @@ export default function App() {
         </div>
         <RightPanel simState={simState} onFocusChange={setFocusedRobot} />
       </div>
-      <BottomBar />
+      <BottomBar onKickoff={kickoff} />
     </div>
   )
 }
