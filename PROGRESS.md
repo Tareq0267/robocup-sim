@@ -178,8 +178,19 @@ Key files used as ground truth for this sim:
 
 ### Scoring & Kickoff
 - [x] Goal detection — ball centre touches goal line within goal mouth → score increments
-- [x] Score display in control bar (US n — n THEM)
-- [x] Kickoff reset — ball to centre, robots to repo-matched positions; `stepBall` allows ball to enter net depth, bounces off posts
+- [x] Score display in control bar and bottom bar
+- [x] Kickoff reset — ball to centre, robots to repo-matched positions (verified against humanoid repo `brain_tree.cpp`)
+- [x] **Kickoff walk** — after +Goal, robots animate to kickoff positions (`gc.gameState=READY`); sim auto-pauses once all arrive; ▶ transitions to PLAY and unfreezes ball
+
+### Game Controller
+- [x] `GameControllerState` type model mirroring the RoboCup GC UDP protocol (`gameState`, `kickoffSide`, `subStateType`, `subState`, `freeKickType`, `freeKickSide`, `penalties`, `firstHalf`)
+- [x] Bottom bar UI — 3-column layout: Our Team (+Goal), Centre (score/timer/half), Their Team (+Goal); match controls greyed out pending full GC integration
+- [x] `updateGc` hook — generic GC state updater wired to READY/PLAY/SET transitions
+- [x] **Free kick engine** — `calcFreekickTargets` mirrors `GoToFreekickPosition::onRunning()` from robotedge (attack: 0.7 m behind ball toward goal; defense: 1.9 m on own-goal→ball line)
+- [x] FK phases — STOP/SET: all robots freeze; GET_READY: strikers move to FK targets, active striker plays normally to allow kick; GK retreats to goal
+- [x] Ball placement per type — THROW_IN (nearest sideline), CORNER (field corner), GOAL_KICK (1 m from goal line), PENALTY (penaltyMarkDist from goal line); DIRECT/INDIRECT leave ball in place per real GC protocol
+- [x] **GK goal blocking during FK** — GK moves to 0.9 m in front of goal line, centred (mirrors `GoToGoalBlockingPosition dist_to_goalline=0.9` from `subtree_goal_keeper_freekick.xml`)
+- [x] **Penalty card freeze** — `gc.penalties[i]=true` freezes the corresponding robot (zero velocity), mirroring `gc_is_under_penalty → SetVelocity(0)` from robotedge `brain.cpp`
 
 ### Parameter Alignment
 - [x] All striker parameters matched to `subtree_striker_play.xml`
@@ -192,13 +203,13 @@ Key files used as ground truth for this sim:
 
 ### Strategy Sim (Step 1)
 
-- [x] **Goal detection + scoring** — ball crosses goal line → score increments, robots reset to kickoff positions (our kickoff: primary at -2m, secondary at -3.5m; opponent kickoff: both wait at -1.53m)
+- [x] **Goal detection + scoring** — ball crosses goal line → score increments; robots animate to kickoff positions (READY state); ▶ starts play
+- [x] **Free kick engine** — robot positioning + ball placement for THROW_IN, CORNER, GOAL_KICK, PENALTY, DIRECT, INDIRECT; GK goal blocking; FK phase flow (STOP → GET_READY → SET); penalty card freeze
+- [ ] **Full game controller UI** — match controls (game state buttons, set piece triggers, FK phases, penalty toggles) are currently greyed out; wiring to engine exists but UI interaction disabled pending full GC integration
+- [ ] **Ball out of bounds detection** — automatic detection when ball leaves field, auto-triggering the correct set piece (throw-in / goal kick / corner); currently set pieces are triggered manually only
 - [ ] **Cross kick** — `decision=='cross'`, `speed_limit=0.4` low-power pass to teammate instead of full shot
 - [ ] **Cost-based role switching** — replace pure-distance swap with composite cost matching `updateCostToKick()` (distance + angle to goal + obstacle penalty)
-- [ ] **Ball out of bounds** — detect ball leaving field, reset per rules (throw-in / goal kick / corner)
-- [ ] **Opponent robots** — add 3 passive or simple opponent robots to test defensive scenarios (note: will require enemy team UI and game controller integration)
-- [ ] **Game controller UI** — bottom sidebar panel: match phase (kickoff/play/freekick/halftime), score override, robot enable/disable, match timer; replaces hardcoded kickoff side logic
-- [ ] **Free kick logic** — positioning, wall distance, kickoff side handling from `subtree_striker_freekick.xml`
+- [ ] **Opponent robots** — add 3 passive or simple opponent robots to test defensive scenarios
 - [ ] **Hardware speed caps** — enforce `vx_limit=2.0` and `vy_limit=0.4` as hard caps on all velocities (currently uncapped)
 - [ ] **`crabWalk` velocity model** — real robot applies `vx_factor=0.5` to forward component and caps lateral to `vy_limit=0.4`; sim uses raw world-frame velocities
 
