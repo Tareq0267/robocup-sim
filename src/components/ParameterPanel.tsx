@@ -1,5 +1,5 @@
 import type { RobotParams, TeamConfig, GoalkeeperParams } from '../simulation/types'
-import { PARAM_META, ASSIST_PARAM_META, GK_PARAM_META } from '../simulation/config'
+import { PARAM_META, ASSIST_PARAM_META, GK_PARAM_META, GK_BLOCK_PARAM_META } from '../simulation/config'
 
 interface Props {
   params:        RobotParams
@@ -104,6 +104,18 @@ export default function ParameterPanel({ params, team, gkParams, setParam, setTe
           />
         )
       })}
+
+      {/* Adjust Block settings */}
+      <div className="text-[10px] text-[#fbbf24] uppercase tracking-widest pt-2 border-t border-[#1e1e1e]">
+        GK — Adjust Block
+      </div>
+      {GK_BLOCK_PARAM_META.map(meta => (
+        <Slider key={meta.key} label={meta.label} value={gkParams[meta.key] as number}
+          unit={meta.unit} min={meta.min} max={meta.max} step={meta.step} desc={meta.desc}
+          accentClass="accent-amber-500"
+          onChange={v => setGKParam(meta.key, v as GoalkeeperParams[typeof meta.key])}
+        />
+      ))}
     </div>
   )
 }

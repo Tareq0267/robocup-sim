@@ -129,20 +129,25 @@ export interface GKParamMeta {
   desc:  string
 }
 
+// General GK params (thresholds, speeds, FOV, goal line)
 export const GK_PARAM_META: GKParamMeta[] = [
-  { key: 'chaseThreshold',        label: 'Chase Threshold',         unit: 'm',     min: 0.1, max: 3,   step: 0.1,  desc: 'Switch from chase to block when ball is within this distance' },
-  { key: 'retreatChaseThreshold', label: 'Retreat-Chase Threshold', unit: 'm',     min: 0.5, max: 5,   step: 0.1,  desc: 'retreat_chase_threshold="1.6" — retreat first if ball is deeper than this in penalty area' },
+  { key: 'chaseThreshold',        label: 'Chase Threshold',         unit: 'm',     min: 0.1, max: 3,   step: 0.1,  desc: 'chase_threshold="1.0" — ball closer than this → adjust/kick instead of chase' },
+  { key: 'retreatChaseThreshold', label: 'Retreat-Chase Threshold', unit: 'm',     min: 0.5, max: 5,   step: 0.1,  desc: 'retreat_chase_threshold="1.6" — ball farther than this inside penalty → stay in goal area instead of chasing' },
   { key: 'alignThreshold',        label: 'Kick Align Tolerance',    unit: 'deg',   min: 0.5, max: 15,  step: 0.5,  desc: 'Max body angle error allowed before kicking' },
-  { key: 'chaseSpeed',            label: 'Chase Speed',             unit: 'm/s',   min: 0.1, max: 3,   step: 0.1,  desc: 'Speed while chasing ball' },
-  { key: 'retreatSpeed',          label: 'Retreat Speed',           unit: 'm/s',   min: 0.1, max: 3,   step: 0.1,  desc: 'Speed while retreating to goal line' },
-  { key: 'blockSpeedFar',         label: 'Block Speed (Far)',       unit: 'm/s',   min: 0.1, max: 3,   step: 0.1,  desc: 'Tangential blocking speed when ball is far' },
-  { key: 'blockSpeedNear',        label: 'Block Speed (Near)',      unit: 'm/s',   min: 0.1, max: 2,   step: 0.05, desc: 'Tangential blocking speed when ball is close' },
-  { key: 'blockNearThreshold',    label: 'Block Near Threshold',    unit: 'm',     min: 0.1, max: 2,   step: 0.1,  desc: 'Distance that switches far→near block speed' },
+  { key: 'chaseSpeed',            label: 'Chase Speed',             unit: 'm/s',   min: 0.1, max: 3,   step: 0.1,  desc: 'Speed while chasing ball (medium range: chaseThreshold–retreatChaseThreshold)' },
+  { key: 'retreatSpeed',          label: 'Retreat Speed',           unit: 'm/s',   min: 0.1, max: 3,   step: 0.1,  desc: 'Speed while retreating to goal-line blocking position' },
   { key: 'kickSpeed',             label: 'Kick Speed',              unit: 'm/s',   min: 0.1, max: 5,   step: 0.1,  desc: 'Ball push speed when clearing' },
   { key: 'rotationSpeed',         label: 'Rotation Speed',          unit: 'rad/s', min: 0.5, max: 10,  step: 0.1,  desc: 'Body rotation speed' },
   { key: 'fieldOfView',           label: 'Field of View',           unit: 'deg',   min: 10,  max: 360, step: 1,    desc: 'Vision cone — ball outside triggers FIND_BALL' },
-  { key: 'goalLineOffset',        label: 'Goal Line Offset',        unit: 'm',     min: 0.1, max: 2,   step: 0.05, desc: 'How far in front of goal line the GK stands' },
-  { key: 'blockRange',            label: 'Block Range',             unit: 'm',     min: 0.1, max: 2,   step: 0.05, desc: 'Target distance from ball when blocking' },
+  { key: 'goalLineOffset',        label: 'Goal Line Offset',        unit: 'm',     min: 0.1, max: 2,   step: 0.05, desc: 'dist_to_goalline="0.5" — how far in front of goal line the GK stands during RETREAT' },
+]
+
+// ADJUST_BLOCK specific params (orbiting/blocking behaviour)
+export const GK_BLOCK_PARAM_META: GKParamMeta[] = [
+  { key: 'blockRange',         label: 'Block Range',         unit: 'm',   min: 0.1, max: 2,   step: 0.05, desc: 'range="0.6" — target distance from ball when on the goal→ball line' },
+  { key: 'blockNearThreshold', label: 'Near Threshold',      unit: 'm',   min: 0.1, max: 2,   step: 0.1,  desc: 'near_threshold="0.8" — switches far→near block speed' },
+  { key: 'blockSpeedFar',      label: 'Block Speed (Far)',   unit: 'm/s', min: 0.1, max: 3,   step: 0.1,  desc: 'tangential_speed_far="0.9" — lateral orbit speed when ball is far' },
+  { key: 'blockSpeedNear',     label: 'Block Speed (Near)',  unit: 'm/s', min: 0.1, max: 2,   step: 0.05, desc: 'tangential_speed_near="0.2" — lateral orbit speed when ball is close' },
 ]
 
 export const DEFAULT_BALL: Ball = {
