@@ -12,23 +12,8 @@ import { add, scale, dist, rotateToward } from './math'
 
 const MAX_HISTORY = 50
 
-// ----------------------------------------------------------------
-// Kickoff reset positions — from brain_tree.cpp GoToReadyPosition::tick()
-// Real robot: our kickoff tx=-max(circleRadius,2.0)=-2.0  ty=0 (both strikers)
-//             opp kickoff  tx=-circleRadius=-1.53          ty=0 (both strikers)
-//             GK           tx=-length/2+goalAreaLength=-5.76 → sim equiv: -7+1=-6.0
-// ----------------------------------------------------------------
-const OUR_KICKOFF = [
-  { x: -2.0, y: 0 },   // striker (both stand here; collision resolution separates them)
-  { x: -2.0, y: 0 },
-  { x: -6.0, y: 0 },   // GK — goal line offset into goal area (-7+1)
-] as const
-
-const OPP_KICKOFF = [
-  { x: -1.53, y: 0 },  // strikers wait at circle edge
-  { x: -1.53, y: 0 },
-  { x: -6.0,  y: 0 },  // GK
-] as const
+// GK kickoff X — goal area front edge: -length/2 + goalAreaLength = -7+1 = -6.0
+const GK_KICKOFF_X = -6.0
 
 const EMPTY_STRIKER_DEBUG: DebugData = {
   distanceToBall:       0,
@@ -68,8 +53,13 @@ export function makeKickoffState(
   const strikerIdxs = ([0, 1, 2] as const).filter((i): i is 0 | 1 | 2 => i !== gkIdx)
   if (gkIdx < 0 || strikerIdxs.length < 2) return state
 
-  const positions = kickoffSide === 'ours' ? OUR_KICKOFF : OPP_KICKOFF
-  const [sPos0, sPos1, gkPos] = positions
+  const { ourKickoffX, ourPrimaryY, ourSecondaryY, theirKickoffX, theirPrimaryY, theirSecondaryY } = state.team
+  const kx   = kickoffSide === 'ours' ? ourKickoffX   : theirKickoffX
+  const kpy  = kickoffSide === 'ours' ? ourPrimaryY   : theirPrimaryY
+  const ksy  = kickoffSide === 'ours' ? ourSecondaryY : theirSecondaryY
+  const sPos0 = { x: kx, y: kpy }
+  const sPos1 = { x: kx, y: ksy }
+  const gkPos = { x: GK_KICKOFF_X, y: 0 }
   const [sa, sb] = strikerIdxs
 
   const newRobots = [...state.robots] as [Robot, Robot, Robot]
