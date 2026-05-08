@@ -1,5 +1,5 @@
 import type { RobotParams, TeamConfig, GoalkeeperParams } from '../simulation/types'
-import { PARAM_META, GK_PARAM_META } from '../simulation/config'
+import { PARAM_META, ASSIST_PARAM_META, GK_PARAM_META } from '../simulation/config'
 
 interface Props {
   params:        RobotParams
@@ -73,6 +73,18 @@ export default function ParameterPanel({ params, team, gkParams, setParam, setTe
           />
         )
       })}
+
+      {/* Assist settings */}
+      <div className="text-[10px] text-[#34d399] uppercase tracking-widest pt-2 border-t border-[#1e1e1e]">
+        Assist
+      </div>
+      {ASSIST_PARAM_META.map(meta => (
+        <Slider key={meta.key} label={meta.label} value={params[meta.key] as number}
+          unit={meta.unit} min={meta.min} max={meta.max} step={meta.step} desc={meta.desc}
+          accentClass="accent-emerald-500"
+          onChange={v => setParam(meta.key, v as RobotParams[typeof meta.key])}
+        />
+      ))}
 
       {/* Goalkeeper settings */}
       <div className="text-[10px] text-[#f97316] uppercase tracking-widest pt-2 border-t border-[#1e1e1e]">

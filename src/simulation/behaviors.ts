@@ -23,13 +23,11 @@ export function idleBehavior(): Vec2 {
 // dist_to_goalline=2.5). courtHalfLength = court.width / 2 (our field is 14m wide,
 // so half = 7m along the x axis).
 export function assistBehavior(robot: Robot, ball: Ball, courtHalfLength: number): Vec2 {
-  const DIST_TO_GOALLINE = 2.5  // Assist dist_to_goalline default (brain_tree.h:556)
-  const ASSIST_SPEED     = 0.2  // Assist vx_limit="0.2" from subtree_striker_play.xml
+  const { assistSpeed, assistBackDist, assistDistToGoalLine } = robot.params
 
-  // Target x: 2m behind ball, but never closer to own goal than dist_to_goalline
-  const ownGoalX  = -courtHalfLength
-  let tx          = ball.pos.x - 2.0
-  tx              = Math.max(tx, ownGoalX + DIST_TO_GOALLINE)
+  const ownGoalX = -courtHalfLength
+  let tx         = ball.pos.x - assistBackDist
+  tx             = Math.max(tx, ownGoalX + assistDistToGoalLine)
 
   // Target y: project along the own-goal-centre → ball line to get lateral coord
   const denom = ball.pos.x + courtHalfLength  // distance of ball from own goal line
@@ -43,7 +41,7 @@ export function assistBehavior(robot: Robot, ball: Ball, courtHalfLength: number
 
   if (d < 0.15) return { x: 0, y: 0 }  // close enough — stop
 
-  return scale(normalize(toTarget), Math.min(ASSIST_SPEED, d))
+  return scale(normalize(toTarget), Math.min(assistSpeed, d))
 }
 
 // CHASING — run straight toward the ball

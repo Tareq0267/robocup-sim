@@ -45,6 +45,10 @@ export const DEFAULT_PARAMS: RobotParams = {
   shootingSpeed:       1.5,    // Kick speed_limit="1.5"
   rotationSpeed:       1.2,    // vtheta_limit: 1.2 rad/s
   fieldOfView:         1.571,  // cam_fov_x: 90° = π/2
+  // Assist
+  assistSpeed:          0.2,   // Assist vx_limit="0.2"
+  assistBackDist:       2.0,   // dist_to_goalline offset — place target 2m behind ball
+  assistDistToGoalLine: 2.5,   // dist_to_goalline="2.5" — min clearance from own goal line
 }
 
 export const DEFAULT_TEAM: TeamConfig = {
@@ -185,4 +189,10 @@ export const PARAM_META: ParamMeta[] = [
   { key: 'shootingSpeed',       label: 'Kick Speed',            unit: 'm/s',   min: 0.1, max: 3,   step: 0.1,  desc: 'Forward push speed — Kick speed_limit="1.5"' },
   { key: 'rotationSpeed',       label: 'Rotation Speed',        unit: 'rad/s', min: 0.1, max: 3,   step: 0.05, desc: 'Body rotation rate — real robot vtheta_limit: 1.2 rad/s' },
   { key: 'fieldOfView',         label: 'Field of View',         unit: 'deg',   min: 10,  max: 180, step: 1,    desc: 'Camera FOV — real robot cam_fov_x: 90° — ball outside triggers SEARCHING' },
+]
+
+export const ASSIST_PARAM_META: ParamMeta[] = [
+  { key: 'assistSpeed',          label: 'Assist Speed',          unit: 'm/s', min: 0.05, max: 1.5, step: 0.05, desc: 'Assist vx_limit="0.2" — speed while moving to support position' },
+  { key: 'assistBackDist',       label: 'Back Distance',         unit: 'm',   min: 0.5,  max: 6,   step: 0.1,  desc: 'Place assist target this far behind the ball along the goal→ball line (default: 2.0m)' },
+  { key: 'assistDistToGoalLine', label: 'Goal Line Clearance',   unit: 'm',   min: 0.5,  max: 6,   step: 0.1,  desc: 'Assist dist_to_goalline="2.5" — minimum clearance between assist target and own goal line' },
 ]

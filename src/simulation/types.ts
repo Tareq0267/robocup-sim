@@ -44,6 +44,11 @@ export interface RobotParams {
   shootingSpeed:       number  // (m/s)   Forward push speed
   rotationSpeed:       number  // (rad/s) How fast robot rotates to face target
   fieldOfView:         number  // (rad)   Total FOV angle (120° default)
+
+  // Assist (inactive striker support position)
+  assistSpeed:          number  // (m/s) Speed while moving to assist target — Assist vx_limit="0.2"
+  assistBackDist:       number  // (m)   How far behind the ball to place the assist target (default 2.0)
+  assistDistToGoalLine: number  // (m)   Minimum distance of assist target from own goal line — dist_to_goalline=2.5
 }
 
 // ----------------------------------------------------------------
