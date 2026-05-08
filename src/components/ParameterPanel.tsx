@@ -2,12 +2,13 @@ import type { RobotParams, TeamConfig, GoalkeeperParams } from '../simulation/ty
 import { PARAM_META, ASSIST_PARAM_META, GK_PARAM_META, GK_BLOCK_PARAM_META, KICKOFF_PARAM_META } from '../simulation/config'
 
 interface Props {
-  params:        RobotParams
-  team:          TeamConfig
-  gkParams:      GoalkeeperParams
-  setParam:      <K extends keyof RobotParams>(key: K, value: RobotParams[K]) => void
-  setTeamConfig: <K extends keyof TeamConfig>(key: K, value: TeamConfig[K]) => void
-  setGKParam:    <K extends keyof GoalkeeperParams>(key: K, value: GoalkeeperParams[K]) => void
+  params:          RobotParams
+  gkParams:        GoalkeeperParams
+  setParam:        <K extends keyof RobotParams>(key: K, value: RobotParams[K]) => void
+  setGKParam:      <K extends keyof GoalkeeperParams>(key: K, value: GoalkeeperParams[K]) => void
+  team?:           TeamConfig
+  setTeamConfig?:  <K extends keyof TeamConfig>(key: K, value: TeamConfig[K]) => void
+  hideTeamConfig?: boolean
 }
 
 function Slider({
@@ -43,18 +44,23 @@ function Slider({
   )
 }
 
-export default function ParameterPanel({ params, team, gkParams, setParam, setTeamConfig, setGKParam }: Props) {
+export default function ParameterPanel({ params, team, gkParams, setParam, setTeamConfig, setGKParam, hideTeamConfig }: Props) {
+  const showTeam = !hideTeamConfig && !!team && !!setTeamConfig
   return (
     <div className="p-3 overflow-y-auto h-full space-y-3">
 
       {/* Team settings */}
-      <div className="text-[10px] text-[#475569] uppercase tracking-widest">Team</div>
-      <Slider
-        label="Role Swap Delay" value={team.roleSwapDelay} unit="s"
-        min={0.1} max={5} step={0.1}
-        desc="Seconds the closer robot must stay closer before roles swap. Resets if distances flip back."
-        onChange={v => setTeamConfig('roleSwapDelay', v)}
-      />
+      {showTeam && (
+        <>
+          <div className="text-[10px] text-[#475569] uppercase tracking-widest">Team</div>
+          <Slider
+            label="Role Swap Delay" value={team!.roleSwapDelay} unit="s"
+            min={0.1} max={5} step={0.1}
+            desc="Seconds the closer robot must stay closer before roles swap. Resets if distances flip back."
+            onChange={v => setTeamConfig!('roleSwapDelay', v)}
+          />
+        </>
+      )}
 
       {/* Striker settings (shared P1/P2) */}
       <div className="text-[10px] text-[#475569] uppercase tracking-widest pt-1">
@@ -118,16 +124,20 @@ export default function ParameterPanel({ params, team, gkParams, setParam, setTe
       ))}
 
       {/* Kickoff positions */}
-      <div className="text-[10px] text-[#818cf8] uppercase tracking-widest pt-2 border-t border-[#1e1e1e]">
-        Kickoff Positions
-      </div>
-      {KICKOFF_PARAM_META.map(meta => (
-        <Slider key={meta.key} label={meta.label} value={team[meta.key] as number}
-          unit={meta.unit} min={meta.min} max={meta.max} step={meta.step} desc={meta.desc}
-          accentClass="accent-indigo-500"
-          onChange={v => setTeamConfig(meta.key, v as TeamConfig[typeof meta.key])}
-        />
-      ))}
+      {showTeam && (
+        <>
+          <div className="text-[10px] text-[#818cf8] uppercase tracking-widest pt-2 border-t border-[#1e1e1e]">
+            Kickoff Positions
+          </div>
+          {KICKOFF_PARAM_META.map(meta => (
+            <Slider key={meta.key} label={meta.label} value={team![meta.key] as number}
+              unit={meta.unit} min={meta.min} max={meta.max} step={meta.step} desc={meta.desc}
+              accentClass="accent-indigo-500"
+              onChange={v => setTeamConfig!(meta.key, v as TeamConfig[typeof meta.key])}
+            />
+          ))}
+        </>
+      )}
     </div>
   )
 }

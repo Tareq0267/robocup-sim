@@ -225,6 +225,11 @@ export interface OverlaySettings {
 }
 
 // ----------------------------------------------------------------
+// ENEMY TEAM
+// ----------------------------------------------------------------
+export type EnemyMode = 'off' | 'static' | 'active'
+
+// ----------------------------------------------------------------
 // FULL SIMULATION STATE
 // ----------------------------------------------------------------
 export interface SimState {
@@ -246,4 +251,12 @@ export interface SimState {
   goalkeeperDebug: GoalkeeperDebugData                // GK-specific debug for the current GK robot
   overlays:        OverlaySettings
   gc:              GameControllerState
+  // ── Enemy team ─────────────────────────────────────────────
+  enemyMode:            EnemyMode
+  enemyRobots:          [Robot, Robot, Robot]
+  enemyActiveIndex:     number
+  enemySwapTimer:       number
+  enemyGkSwapCooldown:  number
+  enemyDebugs:          [DebugData, DebugData, DebugData]
+  enemyGoalkeeperDebug: GoalkeeperDebugData
 }

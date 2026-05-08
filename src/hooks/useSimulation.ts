@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import type { SimState, RobotParams, OverlaySettings, Vec2, TeamConfig, GoalkeeperParams, Robot, GameControllerState, GcGameState, GcSubStateType, GcSubState, GcFreeKickType } from '../simulation/types'
-import { DEFAULT_ROBOT_1, DEFAULT_ROBOT_2, DEFAULT_ROBOT_GK, DEFAULT_BALL, DEFAULT_GOAL, DEFAULT_OWN_GOAL, DEFAULT_FIELD_LAYOUT, DEFAULT_COURT, DEFAULT_OVERLAYS, DEFAULT_TEAM, DEFAULT_GC, EMPTY_GK_DEBUG } from '../simulation/config'
+import type { SimState, RobotParams, OverlaySettings, Vec2, TeamConfig, GoalkeeperParams, Robot, GameControllerState, GcGameState, GcSubStateType, GcSubState, GcFreeKickType, EnemyMode } from '../simulation/types'
+import { DEFAULT_ROBOT_1, DEFAULT_ROBOT_2, DEFAULT_ROBOT_GK, DEFAULT_ENEMY_ROBOT_1, DEFAULT_ENEMY_ROBOT_2, DEFAULT_ENEMY_GK, DEFAULT_BALL, DEFAULT_GOAL, DEFAULT_OWN_GOAL, DEFAULT_FIELD_LAYOUT, DEFAULT_COURT, DEFAULT_OVERLAYS, DEFAULT_TEAM, DEFAULT_GC, EMPTY_GK_DEBUG } from '../simulation/config'
 import { tick, makeKickoffState } from '../simulation/engine'
 
 const EMPTY_DEBUG = {
@@ -22,8 +22,8 @@ const EMPTY_DEBUG = {
 function makeInitialState(): SimState {
   return {
     robots: [
-      { ...DEFAULT_ROBOT_1, params: { ...DEFAULT_ROBOT_1.params }, gkParams: { ...DEFAULT_ROBOT_1.gkParams } },
-      { ...DEFAULT_ROBOT_2, params: { ...DEFAULT_ROBOT_2.params }, gkParams: { ...DEFAULT_ROBOT_2.gkParams } },
+      { ...DEFAULT_ROBOT_1,  params: { ...DEFAULT_ROBOT_1.params  }, gkParams: { ...DEFAULT_ROBOT_1.gkParams  } },
+      { ...DEFAULT_ROBOT_2,  params: { ...DEFAULT_ROBOT_2.params  }, gkParams: { ...DEFAULT_ROBOT_2.gkParams  } },
       { ...DEFAULT_ROBOT_GK, params: { ...DEFAULT_ROBOT_GK.params }, gkParams: { ...DEFAULT_ROBOT_GK.gkParams } },
     ],
     activeIndex:    0,
@@ -47,6 +47,21 @@ function makeInitialState(): SimState {
     ],
     overlays: { ...DEFAULT_OVERLAYS },
     gc: { ...DEFAULT_GC, penalties: [false, false, false] as [boolean, boolean, boolean] },
+    enemyMode:           'off',
+    enemyRobots: [
+      { ...DEFAULT_ENEMY_ROBOT_1, params: { ...DEFAULT_ENEMY_ROBOT_1.params }, gkParams: { ...DEFAULT_ENEMY_ROBOT_1.gkParams } },
+      { ...DEFAULT_ENEMY_ROBOT_2, params: { ...DEFAULT_ENEMY_ROBOT_2.params }, gkParams: { ...DEFAULT_ENEMY_ROBOT_2.gkParams } },
+      { ...DEFAULT_ENEMY_GK,      params: { ...DEFAULT_ENEMY_GK.params      }, gkParams: { ...DEFAULT_ENEMY_GK.gkParams      } },
+    ],
+    enemyActiveIndex:    0,
+    enemySwapTimer:      0,
+    enemyGkSwapCooldown: 0,
+    enemyDebugs: [
+      { ...EMPTY_DEBUG, stateHistory: [] },
+      { ...EMPTY_DEBUG, stateHistory: [] },
+      { ...EMPTY_DEBUG, stateHistory: [] },
+    ],
+    enemyGoalkeeperDebug: { ...EMPTY_GK_DEBUG, stateHistory: [] },
   }
 }
 
@@ -143,6 +158,13 @@ export function useSimulation() {
       return { ...s, robots }
     }), [])
 
+  const dragEnemyRobot = useCallback((pos: Vec2, index: 0 | 1 | 2) =>
+    setSimState(s => {
+      const enemyRobots = [...s.enemyRobots] as [Robot, Robot, Robot]
+      enemyRobots[index] = { ...enemyRobots[index], pos }
+      return { ...s, enemyRobots }
+    }), [])
+
   const updateGc = useCallback(<K extends keyof GameControllerState>(key: K, value: GameControllerState[K]) =>
     setSimState(s => {
       const newGc: GameControllerState = { ...s.gc, [key]: value }
@@ -227,10 +249,29 @@ export function useSimulation() {
       return { ...s, robots }
     }), [])
 
+  const setEnemyMode = useCallback((mode: EnemyMode) =>
+    setSimState(s => ({ ...s, enemyMode: mode })), [])
+
+  const setEnemyParam = useCallback(<K extends keyof RobotParams>(key: K, value: RobotParams[K]) =>
+    setSimState(s => ({
+      ...s,
+      enemyRobots: s.enemyRobots.map(r => ({ ...r, params: { ...r.params, [key]: value } })) as [Robot, Robot, Robot],
+    })), [])
+
+  const setEnemyGKParam = useCallback(<K extends keyof GoalkeeperParams>(key: K, value: GoalkeeperParams[K]) =>
+    setSimState(s => {
+      const gkIdx = s.enemyRobots.findIndex(r => r.role === 'goalkeeper')
+      if (gkIdx === -1) return s
+      const enemyRobots = [...s.enemyRobots] as [Robot, Robot, Robot]
+      enemyRobots[gkIdx] = { ...enemyRobots[gkIdx], gkParams: { ...enemyRobots[gkIdx].gkParams, [key]: value } }
+      return { ...s, enemyRobots }
+    }), [])
+
   return {
     simState,
     play, pause, step, reset, scoreGoal, kickoff, updateGc, triggerSetPiece,
     setSpeed, setParam, setTeamConfig, setGKParam, setOverlay,
-    setBallStatic, dragBall, dragRobot,
+    setBallStatic, dragBall, dragRobot, dragEnemyRobot,
+    setEnemyMode, setEnemyParam, setEnemyGKParam,
   }
 }

@@ -113,6 +113,40 @@ export const DEFAULT_ROBOT_GK: Robot = {
   gkParams:    { ...DEFAULT_GK_PARAMS },
 }
 
+// ── Enemy team defaults — mirror of our team, facing left (orientation π) ──
+export const DEFAULT_ENEMY_ROBOT_1: Robot = {
+  pos:         { x: 3.5, y:  0.8 },
+  orientation: Math.PI,
+  state:       RobotState.CHASING,
+  radius:      0.26,
+  params:      { ...DEFAULT_PARAMS },
+  role:        'striker',
+  gkState:     GoalkeeperState.RETREAT,
+  gkParams:    { ...DEFAULT_GK_PARAMS },
+}
+
+export const DEFAULT_ENEMY_ROBOT_2: Robot = {
+  pos:         { x: 3.5, y: -0.8 },
+  orientation: Math.PI,
+  state:       RobotState.IDLE,
+  radius:      0.26,
+  params:      { ...DEFAULT_PARAMS },
+  role:        'striker',
+  gkState:     GoalkeeperState.RETREAT,
+  gkParams:    { ...DEFAULT_GK_PARAMS },
+}
+
+export const DEFAULT_ENEMY_GK: Robot = {
+  pos:         { x: 6.5, y: 0 },
+  orientation: Math.PI,
+  state:       RobotState.IDLE,
+  radius:      0.26,
+  params:      { ...DEFAULT_PARAMS },
+  role:        'goalkeeper',
+  gkState:     GoalkeeperState.RETREAT,
+  gkParams:    { ...DEFAULT_GK_PARAMS },
+}
+
 export const EMPTY_GK_DEBUG: GoalkeeperDebugData = {
   distanceToBall:    0,
   canSeeBall:        true,

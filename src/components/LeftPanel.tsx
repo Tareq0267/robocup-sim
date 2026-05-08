@@ -1,20 +1,34 @@
 import { useState } from 'react'
-import type { SimState, OverlaySettings, RobotParams, TeamConfig, GoalkeeperParams } from '../simulation/types'
+import type { SimState, OverlaySettings, RobotParams, TeamConfig, GoalkeeperParams, EnemyMode } from '../simulation/types'
 import ParameterPanel from './ParameterPanel'
 import OverlayPanel   from './OverlayPanel'
 
-type Tab = 'params' | 'overlays'
+type Tab = 'params' | 'overlays' | 'enemy'
 
 interface Props {
-  simState:      SimState
-  setParam:      <K extends keyof RobotParams>(key: K, value: RobotParams[K]) => void
-  setTeamConfig: <K extends keyof TeamConfig>(key: K, value: TeamConfig[K]) => void
-  setGKParam:    <K extends keyof GoalkeeperParams>(key: K, value: GoalkeeperParams[K]) => void
-  setOverlay:    <K extends keyof OverlaySettings>(key: K, value: boolean) => void
-  setBallStatic: (v: boolean) => void
+  simState:        SimState
+  setParam:        <K extends keyof RobotParams>(key: K, value: RobotParams[K]) => void
+  setTeamConfig:   <K extends keyof TeamConfig>(key: K, value: TeamConfig[K]) => void
+  setGKParam:      <K extends keyof GoalkeeperParams>(key: K, value: GoalkeeperParams[K]) => void
+  setOverlay:      <K extends keyof OverlaySettings>(key: K, value: boolean) => void
+  setBallStatic:   (v: boolean) => void
+  setEnemyMode:    (mode: EnemyMode) => void
+  setEnemyParam:   <K extends keyof RobotParams>(key: K, value: RobotParams[K]) => void
+  setEnemyGKParam: <K extends keyof GoalkeeperParams>(key: K, value: GoalkeeperParams[K]) => void
 }
 
-export default function LeftPanel({ simState, setParam, setTeamConfig, setGKParam, setOverlay, setBallStatic }: Props) {
+const ENEMY_MODE_CYCLE: Record<EnemyMode, EnemyMode> = { off: 'static', static: 'active', active: 'off' }
+const ENEMY_MODE_LABEL: Record<EnemyMode, string>    = { off: 'Off', static: 'Static', active: 'Active' }
+const ENEMY_MODE_COLOR: Record<EnemyMode, string>    = {
+  off:    'text-[#475569] border-[#2a2a2a]',
+  static: 'text-[#f59e0b] border-[#f59e0b44]',
+  active: 'text-[#ef4444] border-[#ef444444]',
+}
+
+export default function LeftPanel({
+  simState, setParam, setTeamConfig, setGKParam, setOverlay, setBallStatic,
+  setEnemyMode, setEnemyParam, setEnemyGKParam,
+}: Props) {
   const [collapsed, setCollapsed] = useState(false)
   const [tab, setTab] = useState<Tab>('params')
 
@@ -37,10 +51,13 @@ export default function LeftPanel({ simState, setParam, setTeamConfig, setGKPara
     )
   }
 
+  const enemyGkParams = (simState.enemyRobots.find(r => r.role === 'goalkeeper') ?? simState.enemyRobots[2]).gkParams
+  const enemyParams   = simState.enemyRobots[0].params
+
   return (
     <div className="w-72 flex-shrink-0 flex flex-col bg-[#0d0d0d] border-r border-[#1e1e1e]">
       <div className="flex items-stretch border-b border-[#1e1e1e] flex-shrink-0">
-        {(['params', 'overlays'] as Tab[]).map(t => (
+        {(['params', 'overlays', 'enemy'] as Tab[]).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -65,6 +82,35 @@ export default function LeftPanel({ simState, setParam, setTeamConfig, setGKPara
       <div className="flex-1 overflow-hidden">
         {tab === 'params'   && <ParameterPanel params={simState.robots[0].params} team={simState.team} gkParams={(simState.robots.find(r => r.role === 'goalkeeper') ?? simState.robots[2]).gkParams} setParam={setParam} setTeamConfig={setTeamConfig} setGKParam={setGKParam} />}
         {tab === 'overlays' && <OverlayPanel   simState={simState} setOverlay={setOverlay} setBallStatic={setBallStatic} />}
+        {tab === 'enemy'    && (
+          <div className="flex flex-col h-full">
+            {/* Mode toggle */}
+            <div className="flex items-center gap-3 px-3 py-3 border-b border-[#1e1e1e] flex-shrink-0">
+              <span className="text-[10px] text-[#475569] uppercase tracking-widest">Enemy Team</span>
+              <button
+                onClick={() => setEnemyMode(ENEMY_MODE_CYCLE[simState.enemyMode])}
+                className={`ml-auto px-3 py-1 rounded border text-xs font-mono font-semibold transition-colors ${ENEMY_MODE_COLOR[simState.enemyMode]}`}
+              >
+                {ENEMY_MODE_LABEL[simState.enemyMode]}
+              </button>
+            </div>
+            {simState.enemyMode === 'off' ? (
+              <div className="flex-1 flex items-center justify-center text-[#2d3748] text-xs font-mono text-center px-4">
+                Enemy team disabled.<br />Click the toggle to enable.
+              </div>
+            ) : (
+              <div className="flex-1 overflow-hidden">
+                <ParameterPanel
+                  params={enemyParams}
+                  gkParams={enemyGkParams}
+                  setParam={setEnemyParam}
+                  setGKParam={setEnemyGKParam}
+                  hideTeamConfig
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

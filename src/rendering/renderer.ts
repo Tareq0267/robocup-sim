@@ -107,6 +107,17 @@ export function render(ctx: CanvasRenderingContext2D, state: SimState, cw: numbe
       if (state.overlays.showStateLabel) drawStateLabel(ctx, robot, i, isActive, sc, tc)
     }
   })
+
+  // Draw enemy robots (red team)
+  if (state.enemyMode !== 'off') {
+    let eStrikerNum = 0
+    state.enemyRobots.forEach((robot, i) => {
+      const isActive = robot.role === 'striker' && state.enemyActiveIndex === i
+      const label = robot.role === 'goalkeeper' ? 'EK' : `E${++eStrikerNum}`
+      drawEnemyRobot(ctx, robot, isActive, sc, tc)
+      if (state.overlays.showStateLabel) drawEnemyLabel(ctx, robot, label, sc, tc)
+    })
+  }
 }
 
 // ── Court ─────────────────────────────────────────────────────
@@ -514,5 +525,76 @@ function drawGoalkeeperLabel(
   ctx.fillStyle = stateColor
   ctx.textAlign = 'center'
   ctx.fillText(`GK · ${gk.state}`, rx, ry - offset)
+  ctx.textAlign = 'left'
+}
+
+// ── Enemy team rendering (red) ────────────────────────────
+// Enemy robots always use red — no state-based colour so they're instantly distinct
+const ENEMY_BASE   = '#ef4444'   // red-500 — strikers
+const ENEMY_GK_BASE = '#b91c1c'  // red-700 — goalkeeper (darker for role distinction)
+const ENEMY_ACCENT = '#fca5a5'   // red-300 — highlight stripe
+
+function drawEnemyRobot(
+  ctx: CanvasRenderingContext2D,
+  robot: Robot, isActive: boolean,
+  sc: number, tc: (x: number, y: number) => [number, number],
+) {
+  const [rx, ry] = tc(robot.pos.x, robot.pos.y)
+  const isGk     = robot.role === 'goalkeeper'
+  const base     = isGk ? ENEMY_GK_BASE : ENEMY_BASE
+  const bD = BODY_DEPTH * sc
+  const bW = BODY_WIDTH * sc
+
+  ctx.save()
+  ctx.translate(rx, ry)
+  ctx.rotate(-robot.orientation)
+
+  ctx.fillStyle   = base + (isActive || isGk ? '44' : '22')
+  ctx.strokeStyle = isActive || isGk ? base : base + '99'
+  ctx.lineWidth   = isActive || isGk ? 1.5 : 1
+  ctx.fillRect(-bD / 2, -bW / 2, bD, bW)
+  ctx.strokeRect(-bD / 2, -bW / 2, bD, bW)
+
+  // Back edge accent stripe (same side as our team's player colour stripe)
+  ctx.strokeStyle = ENEMY_ACCENT + (isActive || isGk ? 'dd' : '66')
+  ctx.lineWidth   = 2.5
+  ctx.beginPath(); ctx.moveTo(-bD / 2, -bW / 2); ctx.lineTo(-bD / 2, bW / 2); ctx.stroke()
+
+  // Front edge stripe
+  ctx.strokeStyle = isActive || isGk ? base : base + '77'
+  ctx.lineWidth   = 3
+  ctx.beginPath(); ctx.moveTo(bD / 2, -bW / 2); ctx.lineTo(bD / 2, bW / 2); ctx.stroke()
+
+  // Direction arrow tip
+  const tip = bW * 0.35
+  ctx.fillStyle = isActive || isGk ? base : base + '77'
+  ctx.beginPath()
+  ctx.moveTo(bD / 2 + tip,  0)
+  ctx.lineTo(bD / 2,       -tip * 0.55)
+  ctx.lineTo(bD / 2,        tip * 0.55)
+  ctx.closePath(); ctx.fill()
+
+  ctx.restore()
+
+  if (isActive || isGk) {
+    ctx.beginPath()
+    ctx.arc(rx, ry - BODY_WIDTH * sc / 2 - 10, 3, 0, Math.PI * 2)
+    ctx.fillStyle = ENEMY_ACCENT; ctx.fill()
+  }
+}
+
+function drawEnemyLabel(
+  ctx: CanvasRenderingContext2D,
+  robot: Robot, label: string,
+  sc: number, tc: (x: number, y: number) => [number, number],
+) {
+  const [rx, ry]  = tc(robot.pos.x, robot.pos.y)
+  const base      = robot.role === 'goalkeeper' ? ENEMY_GK_BASE : ENEMY_BASE
+  const offset    = (BODY_WIDTH / 2) * sc + 8
+  const stateName = robot.role === 'goalkeeper' ? robot.gkState : robot.state
+  ctx.font      = `${robot.role === 'goalkeeper' ? 'bold' : 'normal'} 10px monospace`
+  ctx.fillStyle = base + 'cc'
+  ctx.textAlign = 'center'
+  ctx.fillText(`${label} · ${stateName}`, rx, ry - offset)
   ctx.textAlign = 'left'
 }

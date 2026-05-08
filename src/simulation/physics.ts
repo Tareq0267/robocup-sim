@@ -18,9 +18,10 @@ export function separateCircles(
   const dir  = d < 1e-9 ? { x: 1, y: 0 } : normalize(sub(posB, posA))
   const push = (minDist - d) / 2 + 0.001
 
+  const PADDING = 1.0  // must match ROBOT_FIELD_PADDING in engine.ts
   const clamp = (pos: Vec2, rad: number): Vec2 => {
-    const hw = court.width  / 2 - rad
-    const hh = court.height / 2 - rad
+    const hw = court.width  / 2 - rad + PADDING
+    const hh = court.height / 2 - rad + PADDING
     return {
       x: Math.max(-hw, Math.min(hw, pos.x)),
       y: Math.max(-hh, Math.min(hh, pos.y)),

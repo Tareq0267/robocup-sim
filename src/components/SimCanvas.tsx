@@ -3,18 +3,20 @@ import type { SimState, Vec2 } from '../simulation/types'
 import { render } from '../rendering/renderer'
 
 interface Props {
-  simState:     SimState
-  focusedRobot: number | null
-  dragBall:     (pos: Vec2) => void
-  dragRobot:    (pos: Vec2, index: 0 | 1 | 2) => void
+  simState:       SimState
+  focusedRobot:   number | null
+  dragBall:       (pos: Vec2) => void
+  dragRobot:      (pos: Vec2, index: 0 | 1 | 2) => void
+  dragEnemyRobot: (pos: Vec2, index: 0 | 1 | 2) => void
 }
 
 type DragTarget =
   | { kind: 'ball' }
-  | { kind: 'robot'; index: 0 | 1 | 2 }
+  | { kind: 'robot';  index: 0 | 1 | 2 }
+  | { kind: 'enemy';  index: 0 | 1 | 2 }
   | null
 
-export default function SimCanvas({ simState, focusedRobot, dragBall, dragRobot }: Props) {
+export default function SimCanvas({ simState, focusedRobot, dragBall, dragRobot, dragEnemyRobot }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const dragging  = useRef<DragTarget>(null)
 
@@ -51,16 +53,26 @@ export default function SimCanvas({ simState, focusedRobot, dragBall, dragRobot 
   }, [simState.court])
 
   const hitTest = useCallback((p: Vec2): DragTarget => {
-    const { ball, robots } = simState
+    const { ball, robots, enemyRobots, enemyMode } = simState
     const d = (ax: number, ay: number, bx: number, by: number) =>
       Math.sqrt((ax - bx) ** 2 + (ay - by) ** 2)
 
     if (d(p.x, p.y, ball.pos.x, ball.pos.y) < ball.radius + 0.2) return { kind: 'ball' }
+
     for (let i = 0; i < 3; i++) {
       const r = robots[i]
       if (d(p.x, p.y, r.pos.x, r.pos.y) < r.radius + 0.2)
         return { kind: 'robot', index: i as 0 | 1 | 2 }
     }
+
+    if (enemyMode !== 'off') {
+      for (let i = 0; i < 3; i++) {
+        const r = enemyRobots[i]
+        if (d(p.x, p.y, r.pos.x, r.pos.y) < r.radius + 0.2)
+          return { kind: 'enemy', index: i as 0 | 1 | 2 }
+      }
+    }
+
     return null
   }, [simState])
 
@@ -74,7 +86,8 @@ export default function SimCanvas({ simState, focusedRobot, dragBall, dragRobot 
     const pos = canvasToSim(e.clientX, e.clientY)
     if (t.kind === 'ball')  dragBall(pos)
     if (t.kind === 'robot') dragRobot(pos, t.index)
-  }, [canvasToSim, dragBall, dragRobot])
+    if (t.kind === 'enemy') dragEnemyRobot(pos, t.index)
+  }, [canvasToSim, dragBall, dragRobot, dragEnemyRobot])
 
   const onMouseUp = useCallback(() => { dragging.current = null }, [])
 
