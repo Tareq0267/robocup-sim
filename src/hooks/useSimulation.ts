@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import type { SimState, RobotParams, OverlaySettings, Vec2, TeamConfig, GoalkeeperParams, Robot } from '../simulation/types'
-import { DEFAULT_ROBOT_1, DEFAULT_ROBOT_2, DEFAULT_ROBOT_GK, DEFAULT_BALL, DEFAULT_GOAL, DEFAULT_OWN_GOAL, DEFAULT_FIELD_LAYOUT, DEFAULT_COURT, DEFAULT_OVERLAYS, DEFAULT_TEAM, EMPTY_GK_DEBUG } from '../simulation/config'
+import type { SimState, RobotParams, OverlaySettings, Vec2, TeamConfig, GoalkeeperParams, Robot, GameControllerState, GcGameState, GcSubStateType, GcSubState, GcFreeKickType } from '../simulation/types'
+import { DEFAULT_ROBOT_1, DEFAULT_ROBOT_2, DEFAULT_ROBOT_GK, DEFAULT_BALL, DEFAULT_GOAL, DEFAULT_OWN_GOAL, DEFAULT_FIELD_LAYOUT, DEFAULT_COURT, DEFAULT_OVERLAYS, DEFAULT_TEAM, DEFAULT_GC, EMPTY_GK_DEBUG } from '../simulation/config'
 import { tick, makeKickoffState } from '../simulation/engine'
 
 const EMPTY_DEBUG = {
@@ -46,6 +46,7 @@ function makeInitialState(): SimState {
       { ...EMPTY_DEBUG, stateHistory: [] },
     ],
     overlays: { ...DEFAULT_OVERLAYS },
+    gc: { ...DEFAULT_GC, penalties: [false, false, false] as [boolean, boolean, boolean] },
   }
 }
 
@@ -75,23 +76,40 @@ export function useSimulation() {
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
   }, [simState.isPlaying])
 
-  const play  = useCallback(() => setSimState(s => ({ ...s, isPlaying: true })), [])
+  // During READY (post-goal kickoff walk), pressing play starts actual play.
+  const play  = useCallback(() => setSimState(s => {
+    if (s.gc.gameState === 'READY') {
+      return {
+        ...s,
+        isPlaying: true,
+        ball: { ...s.ball, isStatic: false },
+        gc: { ...s.gc, gameState: 'PLAY' as GcGameState },
+      }
+    }
+    return { ...s, isPlaying: true }
+  }), [])
   const pause = useCallback(() => setSimState(s => ({ ...s, isPlaying: false })), [])
   const step  = useCallback(() => {
     setSimState(prev => prev.isPlaying ? prev : tick(prev, (1 / 60) * prev.speed))
   }, [])
   const reset    = useCallback(() => setSimState(makeInitialState()), [])
 
-  // Manually score a goal and reset to kickoff positions.
-  // side='ours': we scored → opponent kicks off. side='theirs': they scored → we kick off.
+  // Manually score a goal — update score, freeze ball at centre, and let
+  // robots walk to kickoff positions (READY state). Press play to start.
   const scoreGoal = useCallback((side: 'ours' | 'theirs') =>
-    setSimState(s => makeKickoffState(
-      s,
-      side === 'ours'
+    setSimState(s => {
+      const newScore = side === 'ours'
         ? { ours: s.score.ours + 1, theirs: s.score.theirs }
-        : { ours: s.score.ours, theirs: s.score.theirs + 1 },
-      side === 'ours' ? 'theirs' : 'ours',
-    )), [])
+        : { ours: s.score.ours, theirs: s.score.theirs + 1 }
+      const kickoffSide: 'ours' | 'theirs' = side === 'ours' ? 'theirs' : 'ours'
+      return {
+        ...s,
+        score:     newScore,
+        isPlaying: true,
+        ball:      { ...s.ball, pos: { x: 0, y: 0 }, velocity: { x: 0, y: 0 }, isStatic: true },
+        gc:        { ...s.gc, gameState: 'READY' as GcGameState, kickoffSide, subStateType: 'NONE' as GcSubStateType, subState: 'STOP' as GcSubState },
+      }
+    }), [])
 
   // Reset robots and ball to kickoff positions without changing the score.
   const kickoff = useCallback((side: 'ours' | 'theirs') =>
@@ -125,6 +143,80 @@ export function useSimulation() {
       return { ...s, robots }
     }), [])
 
+  const updateGc = useCallback(<K extends keyof GameControllerState>(key: K, value: GameControllerState[K]) =>
+    setSimState(s => {
+      const newGc: GameControllerState = { ...s.gc, [key]: value }
+      let next: SimState = { ...s, gc: newGc }
+
+      if (key === 'gameState') {
+        const gs = value as GcGameState
+        if (gs === 'READY') {
+          next = makeKickoffState({ ...s, gc: newGc }, s.score, s.gc.kickoffSide)
+          next = { ...next, gc: newGc, isPlaying: false }
+        } else if (gs === 'PLAY') {
+          next = { ...next, isPlaying: true }
+        } else {
+          next = { ...next, isPlaying: false }
+        }
+      }
+
+      // GET_READY: unfreeze the ball so the kicking robot can actually play it
+      if (key === 'subState' && value === 'GET_READY') {
+        next = { ...next, ball: { ...next.ball, isStatic: false } }
+      }
+
+      if (key === 'kickoffSide' && s.gc.gameState === 'READY') {
+        const side = value as 'ours' | 'theirs'
+        next = makeKickoffState(next, next.score, side)
+        next = { ...next, gc: newGc }
+      }
+
+      return next
+    }), [])
+
+  // Place ball for set piece and enter FREE_KICK STOP phase.
+  // Throw-in: ball snaps to nearest sideline. Corner: ball to corner of relevant goal end.
+  const triggerSetPiece = useCallback((type: GcFreeKickType, side: 'ours' | 'theirs') =>
+    setSimState(s => {
+      const hw = s.court.width  / 2
+      const hh = s.court.height / 2
+      const sy = s.ball.pos.y >= 0 ? 1 : -1
+      let bx = s.ball.pos.x
+      let by = s.ball.pos.y
+
+      if (type === 'THROW_IN') {
+        bx = Math.max(-hw, Math.min(hw, bx))
+        by = sy * hh
+      } else if (type === 'CORNER') {
+        // Our corner kick → we attack from opponent's corner (right side)
+        // Their corner kick → they attack from our corner (left side)
+        bx = side === 'ours' ? hw : -hw
+        by = sy * hh
+      } else if (type === 'GOAL_KICK') {
+        bx = side === 'ours' ? -hw + 1.0 : hw - 1.0
+        by = 0
+      } else if (type === 'PENALTY') {
+        // Penalty spot: field_length/2 - penaltyMarkDist from centre, y=0
+        // Matches robotedge: xSign * (fd.length/2 - fd.penaltyDist)
+        bx = side === 'ours' ? hw - s.fieldLayout.penaltyMarkDist : -(hw - s.fieldLayout.penaltyMarkDist)
+        by = 0
+      }
+
+      const newGc: GameControllerState = {
+        ...s.gc,
+        subStateType: 'FREE_KICK' as GcSubStateType,
+        subState:     'STOP'      as GcSubState,
+        freeKickType: type,
+        freeKickSide: side,
+      }
+      return {
+        ...s,
+        gc:        newGc,
+        isPlaying: false,
+        ball:      { ...s.ball, pos: { x: bx, y: by }, velocity: { x: 0, y: 0 }, isStatic: true },
+      }
+    }), [])
+
   // GK params update — find whichever robot currently has goalkeeper role
   const setGKParam = useCallback(<K extends keyof GoalkeeperParams>(key: K, value: GoalkeeperParams[K]) =>
     setSimState(s => {
@@ -137,7 +229,7 @@ export function useSimulation() {
 
   return {
     simState,
-    play, pause, step, reset, scoreGoal, kickoff,
+    play, pause, step, reset, scoreGoal, kickoff, updateGc, triggerSetPiece,
     setSpeed, setParam, setTeamConfig, setGKParam, setOverlay,
     setBallStatic, dragBall, dragRobot,
   }
