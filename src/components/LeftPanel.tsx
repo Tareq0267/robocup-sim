@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import type { SimState, OverlaySettings, RobotParams, TeamConfig, GoalkeeperParams, EnemyMode } from '../simulation/types'
 import ParameterPanel from './ParameterPanel'
 import OverlayPanel   from './OverlayPanel'
@@ -25,12 +25,43 @@ const ENEMY_MODE_COLOR: Record<EnemyMode, string>    = {
   active: 'text-[#ef4444] border-[#ef444444]',
 }
 
+const MIN_WIDTH = 180
+const MAX_WIDTH = 560
+const DEFAULT_WIDTH = 288  // matches old w-72
+
 export default function LeftPanel({
   simState, setParam, setTeamConfig, setGKParam, setOverlay, setBallStatic,
   setEnemyMode, setEnemyParam, setEnemyGKParam,
 }: Props) {
   const [collapsed, setCollapsed] = useState(false)
-  const [tab, setTab] = useState<Tab>('params')
+  const [tab,       setTab]       = useState<Tab>('params')
+  const [width,     setWidth]     = useState(DEFAULT_WIDTH)
+
+  const isResizing  = useRef(false)
+  const dragStartX  = useRef(0)
+  const dragStartW  = useRef(DEFAULT_WIDTH)
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (!isResizing.current) return
+      const delta = e.clientX - dragStartX.current
+      setWidth(Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, dragStartW.current + delta)))
+    }
+    const onUp = () => { isResizing.current = false }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup',   onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup',   onUp)
+    }
+  }, [])
+
+  const onHandleDown = (e: React.MouseEvent) => {
+    isResizing.current = true
+    dragStartX.current = e.clientX
+    dragStartW.current = width
+    e.preventDefault()
+  }
 
   if (collapsed) {
     return (
@@ -51,11 +82,17 @@ export default function LeftPanel({
     )
   }
 
-  const enemyGkParams = (simState.enemyRobots.find(r => r.role === 'goalkeeper') ?? simState.enemyRobots[2]).gkParams
-  const enemyParams   = simState.enemyRobots[0].params
+  const enemyGkParams  = (simState.enemyRobots.find(r => r.role === 'goalkeeper') ?? simState.enemyRobots[2]).gkParams
+  const enemyParams    = simState.enemyRobots[0].params
+  const contentZoom    = Math.max(0.8, Math.min(1.5, width / DEFAULT_WIDTH))
+  const contentStyle   = { zoom: contentZoom, height: `calc(100% / ${contentZoom})` } as React.CSSProperties
 
   return (
-    <div className="w-72 flex-shrink-0 flex flex-col bg-[#0d0d0d] border-r border-[#1e1e1e]">
+    <div
+      style={{ width }}
+      className="flex-shrink-0 flex flex-col bg-[#0d0d0d] border-r border-[#1e1e1e] relative"
+    >
+      {/* Tab bar */}
       <div className="flex items-stretch border-b border-[#1e1e1e] flex-shrink-0">
         {(['params', 'overlays', 'enemy'] as Tab[]).map(t => (
           <button
@@ -79,12 +116,12 @@ export default function LeftPanel({
         </button>
       </div>
 
-      <div className="flex-1 overflow-hidden">
+      {/* Content — text scales with panel width */}
+      <div className="flex-1 overflow-hidden" style={contentStyle}>
         {tab === 'params'   && <ParameterPanel params={simState.robots[0].params} team={simState.team} gkParams={(simState.robots.find(r => r.role === 'goalkeeper') ?? simState.robots[2]).gkParams} setParam={setParam} setTeamConfig={setTeamConfig} setGKParam={setGKParam} />}
         {tab === 'overlays' && <OverlayPanel   simState={simState} setOverlay={setOverlay} setBallStatic={setBallStatic} />}
         {tab === 'enemy'    && (
           <div className="flex flex-col h-full">
-            {/* Mode toggle */}
             <div className="flex items-center gap-3 px-3 py-3 border-b border-[#1e1e1e] flex-shrink-0">
               <span className="text-[10px] text-[#475569] uppercase tracking-widest">Enemy Team</span>
               <button
@@ -111,6 +148,15 @@ export default function LeftPanel({
             )}
           </div>
         )}
+      </div>
+
+      {/* Resize handle — 8 px hit area straddling the right border */}
+      <div
+        onMouseDown={onHandleDown}
+        className="absolute top-0 right-0 h-full w-2 cursor-col-resize z-10 group"
+        title="Drag to resize"
+      >
+        <div className="absolute inset-y-0 right-0 w-px bg-[#1e1e1e] group-hover:bg-[#3b82f6] group-active:bg-[#3b82f6] transition-colors" />
       </div>
     </div>
   )

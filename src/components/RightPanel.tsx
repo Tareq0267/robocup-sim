@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import type { SimState } from '../simulation/types'
 import TeamTab       from './TeamTab'
 import StateTab      from './StateTab'
@@ -13,9 +13,41 @@ interface Props {
 
 const PLAYER_COLORS = ['#3b82f6', '#14b8a6']
 
+const MIN_WIDTH     = 180
+const MAX_WIDTH     = 560
+const DEFAULT_WIDTH = 288  // matches old w-72
+
 export default function RightPanel({ simState, onFocusChange }: Props) {
   const [collapsed, setCollapsed] = useState(false)
-  const [tab, setTab] = useState<Tab>('team')
+  const [tab,       setTab]       = useState<Tab>('team')
+  const [width,     setWidth]     = useState(DEFAULT_WIDTH)
+
+  const isResizing  = useRef(false)
+  const dragStartX  = useRef(0)
+  const dragStartW  = useRef(DEFAULT_WIDTH)
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (!isResizing.current) return
+      // Dragging left from the left edge makes the panel wider
+      const delta = e.clientX - dragStartX.current
+      setWidth(Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, dragStartW.current - delta)))
+    }
+    const onUp = () => { isResizing.current = false }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup',   onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup',   onUp)
+    }
+  }, [])
+
+  const onHandleDown = (e: React.MouseEvent) => {
+    isResizing.current = true
+    dragStartX.current = e.clientX
+    dragStartW.current = width
+    e.preventDefault()
+  }
 
   function changeTab(t: Tab) {
     setTab(t)
@@ -51,8 +83,23 @@ export default function RightPanel({ simState, onFocusChange }: Props) {
     { id: 'gk',   label: 'GK',  color: '#f97316' },
   ]
 
+  const contentZoom  = Math.max(0.8, Math.min(1.5, width / DEFAULT_WIDTH))
+  const contentStyle = { zoom: contentZoom, height: `calc(100% / ${contentZoom})` } as React.CSSProperties
+
   return (
-    <div className="w-72 flex-shrink-0 flex flex-col bg-[#0d0d0d] border-l border-[#1e1e1e]">
+    <div
+      style={{ width }}
+      className="flex-shrink-0 flex flex-col bg-[#0d0d0d] border-l border-[#1e1e1e] relative"
+    >
+      {/* Resize handle — left edge */}
+      <div
+        onMouseDown={onHandleDown}
+        className="absolute top-0 left-0 h-full w-2 cursor-col-resize z-10 group"
+        title="Drag to resize"
+      >
+        <div className="absolute inset-y-0 left-0 w-px bg-[#1e1e1e] group-hover:bg-[#3b82f6] group-active:bg-[#3b82f6] transition-colors" />
+      </div>
+
       <div className="flex items-stretch border-b border-[#1e1e1e] flex-shrink-0">
         <button
           onClick={() => setCollapsed(true)}
@@ -80,7 +127,8 @@ export default function RightPanel({ simState, onFocusChange }: Props) {
         ))}
       </div>
 
-      <div className="flex-1 overflow-hidden">
+      {/* Content — text scales with panel width */}
+      <div className="flex-1 overflow-hidden" style={contentStyle}>
         {tab === 'team' && <TeamTab       simState={simState} />}
         {tab === 'p1'   && <StateTab      simState={simState} robotIndex={0} />}
         {tab === 'p2'   && <StateTab      simState={simState} robotIndex={1} />}

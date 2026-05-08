@@ -35,8 +35,8 @@ const PLAYER_COLORS = ['#3b82f6', '#14b8a6', '#a78bfa']  // blue, teal, violet
 const BODY_DEPTH = 0.23   // Booster T1: 23cm front-to-back
 const BODY_WIDTH = 0.47   // Booster T1: 47cm shoulder-to-shoulder
 
-function toCanvas(x: number, y: number, cw: number, ch: number, sc: number): [number, number] {
-  return [cw / 2 + x * sc, ch / 2 - y * sc]
+function toCanvas(x: number, y: number, cw: number, ch: number, sc: number, zoom = 1, panX = 0, panY = 0): [number, number] {
+  return [cw / 2 + (x - panX) * sc * zoom, ch / 2 - (y - panY) * sc * zoom]
 }
 
 // Convert unified Robot to GoalkeeperRobot view (for GK drawing functions)
@@ -44,15 +44,16 @@ function asGKRobot(r: Robot): GoalkeeperRobot {
   return { pos: r.pos, orientation: r.orientation, state: r.gkState, radius: r.radius, params: r.gkParams }
 }
 
-export function render(ctx: CanvasRenderingContext2D, state: SimState, cw: number, ch: number, focusedRobot: number | null = null) {
-  const sc = Math.min(cw / state.court.width, ch / state.court.height)
-  const tc = (x: number, y: number) => toCanvas(x, y, cw, ch, sc)
+export function render(ctx: CanvasRenderingContext2D, state: SimState, cw: number, ch: number, focusedRobot: number | null = null, zoom = 1, pan: { x: number; y: number } = { x: 0, y: 0 }) {
+  const sc  = Math.min(cw / state.court.width, ch / state.court.height)
+  const scz = sc * zoom   // effective pixel scale — used for all element sizing
+  const tc  = (x: number, y: number) => toCanvas(x, y, cw, ch, sc, zoom, pan.x, pan.y)
 
   ctx.clearRect(0, 0, cw, ch)
-  drawCourt(ctx, state, cw, ch, sc, tc)
-  drawFieldMarkings(ctx, state, sc, tc)
-  drawOwnGoal(ctx, state, sc, tc)
-  drawGoal(ctx, state, sc, tc)
+  drawCourt(ctx, state, cw, ch, scz, tc)
+  drawFieldMarkings(ctx, state, scz, tc)
+  drawOwnGoal(ctx, state, scz, tc)
+  drawGoal(ctx, state, scz, tc)
 
   // Per-robot overlays (drawn under robots)
   state.robots.forEach((robot, i) => {
@@ -64,7 +65,7 @@ export function render(ctx: CanvasRenderingContext2D, state: SimState, cw: numbe
       if (state.overlays.showFOVCone) {
         const [rx, ry] = tc(robot.pos.x, robot.pos.y)
         const halfFOV  = robot.gkParams.fieldOfView / 2
-        const range    = 2.8 * sc
+        const range    = 2.8 * scz
         const start    = -(robot.orientation + halfFOV)
         const end      = -(robot.orientation - halfFOV)
         ctx.beginPath(); ctx.moveTo(rx, ry); ctx.arc(rx, ry, range, start, end); ctx.closePath()
@@ -78,33 +79,33 @@ export function render(ctx: CanvasRenderingContext2D, state: SimState, cw: numbe
     } else {
       const debug    = state.debugs[i]
       const isActive = state.activeIndex === i
-      if (state.overlays.showFOVCone)             drawFOVCone(ctx, robot, debug, sc, tc)
-      if (state.overlays.showChaseDistanceCircle && isActive) drawChaseCircle(ctx, robot, state.ball, sc, tc)
-      if (state.overlays.showAlignmentLine && isActive)       drawAlignmentLine(ctx, robot, state.ball, state.goal, sc, tc)
-      if (state.overlays.showShootAngleCone && isActive)      drawShootCone(ctx, robot, state.ball, state.goal, sc, tc)
-      if (state.overlays.showContactRange)        drawContactRange(ctx, robot, state.ball, sc, tc)
+      if (state.overlays.showFOVCone)             drawFOVCone(ctx, robot, debug, scz, tc)
+      if (state.overlays.showChaseDistanceCircle && isActive) drawChaseCircle(ctx, robot, state.ball, scz, tc)
+      if (state.overlays.showAlignmentLine && isActive)       drawAlignmentLine(ctx, robot, state.ball, state.goal, scz, tc)
+      if (state.overlays.showShootAngleCone && isActive)      drawShootCone(ctx, robot, state.ball, state.goal, scz, tc)
+      if (state.overlays.showContactRange)        drawContactRange(ctx, robot, state.ball, scz, tc)
       if (state.overlays.showTangentVector && debug.tangentialDir)
-        drawVector(ctx, robot.pos, debug.tangentialDir, sc, tc, '#eab308', 'tangent')
+        drawVector(ctx, robot.pos, debug.tangentialDir, scz, tc, '#eab308', 'tangent')
       if (state.overlays.showRadialVector && debug.radialDir)
-        drawVector(ctx, robot.pos, debug.radialDir, sc, tc, '#22d3ee', 'radial')
-      drawAssistTarget(ctx, robot, state.ball, state.court.width / 2, sc, tc, PLAYER_COLORS[i] ?? GK_COLOR)
+        drawVector(ctx, robot.pos, debug.radialDir, scz, tc, '#22d3ee', 'radial')
+      drawAssistTarget(ctx, robot, state.ball, state.court.width / 2, scz, tc, PLAYER_COLORS[i] ?? GK_COLOR)
     }
   })
 
-  if (state.overlays.showBallVelocity) drawBallVelocity(ctx, state, sc, tc)
-  drawBall(ctx, state, sc, tc)
+  if (state.overlays.showBallVelocity) drawBallVelocity(ctx, state, scz, tc)
+  drawBall(ctx, state, scz, tc)
 
   // Draw robots (striker style or GK style based on role)
   state.robots.forEach((robot, i) => {
     if (robot.role === 'goalkeeper') {
       const gkRobot = asGKRobot(robot)
-      drawGoalkeeper(ctx, gkRobot, state.overlays.showOrientationArrow, sc, tc)
-      if (state.overlays.showStateLabel) drawGoalkeeperLabel(ctx, gkRobot, sc, tc)
+      drawGoalkeeper(ctx, gkRobot, state.overlays.showOrientationArrow, scz, tc)
+      if (state.overlays.showStateLabel) drawGoalkeeperLabel(ctx, gkRobot, scz, tc)
     } else {
       const debug    = state.debugs[i]
       const isActive = state.activeIndex === i
-      drawRobot(ctx, robot, i, isActive, state.overlays.showOrientationArrow, debug, sc, tc)
-      if (state.overlays.showStateLabel) drawStateLabel(ctx, robot, i, isActive, sc, tc)
+      drawRobot(ctx, robot, i, isActive, state.overlays.showOrientationArrow, debug, scz, tc)
+      if (state.overlays.showStateLabel) drawStateLabel(ctx, robot, i, isActive, scz, tc)
     }
   })
 
@@ -114,10 +115,12 @@ export function render(ctx: CanvasRenderingContext2D, state: SimState, cw: numbe
     state.enemyRobots.forEach((robot, i) => {
       const isActive = robot.role === 'striker' && state.enemyActiveIndex === i
       const label = robot.role === 'goalkeeper' ? 'EK' : `E${++eStrikerNum}`
-      drawEnemyRobot(ctx, robot, isActive, sc, tc)
-      if (state.overlays.showStateLabel) drawEnemyLabel(ctx, robot, label, sc, tc)
+      drawEnemyRobot(ctx, robot, isActive, scz, tc)
+      if (state.overlays.showStateLabel) drawEnemyLabel(ctx, robot, label, scz, tc)
     })
   }
+
+  if (zoom > 1.0) drawMinimap(ctx, state, cw, ch, scz, pan)
 }
 
 // ── Court ─────────────────────────────────────────────────────
@@ -597,4 +600,93 @@ function drawEnemyLabel(
   ctx.textAlign = 'center'
   ctx.fillText(`${label} · ${stateName}`, rx, ry - offset)
   ctx.textAlign = 'left'
+}
+
+// ── Minimap overlay (shown when zoom > 1) ─────────────────────
+function drawMinimap(
+  ctx: CanvasRenderingContext2D, state: SimState,
+  cw: number, ch: number, scz: number,
+  pan: { x: number; y: number },
+) {
+  const MW = 168
+  const msc = Math.min(MW / state.court.width, 108 / state.court.height)
+  const MH  = Math.ceil(state.court.height * msc)
+  const MX  = 12
+  const MY  = ch - MH - 12
+
+  // coordinate helper: sim → minimap canvas
+  const tm = (x: number, y: number): [number, number] => [
+    MX + MW / 2 + x * msc,
+    MY + MH / 2 - y * msc,
+  ]
+
+  // Panel background
+  ctx.fillStyle = '#052e16e6'
+  ctx.fillRect(MX, MY, MW, MH)
+
+  // Clip all interior drawing to minimap bounds
+  ctx.save()
+  ctx.beginPath()
+  ctx.rect(MX, MY, MW, MH)
+  ctx.clip()
+
+  // Field outline
+  const [fx, fy] = tm(-state.court.width / 2, state.court.height / 2)
+  ctx.strokeStyle = 'rgba(255,255,255,0.35)'
+  ctx.lineWidth = 1
+  ctx.strokeRect(fx, fy, state.court.width * msc, state.court.height * msc)
+
+  // Halfway line
+  const [hx0, hy0] = tm(0, -state.court.height / 2)
+  const [hx1, hy1] = tm(0,  state.court.height / 2)
+  ctx.beginPath(); ctx.moveTo(hx0, hy0); ctx.lineTo(hx1, hy1); ctx.stroke()
+
+  // Centre circle
+  const [ccx, ccy] = tm(0, 0)
+  ctx.beginPath()
+  ctx.arc(ccx, ccy, state.fieldLayout.centreCircleRadius * msc, 0, Math.PI * 2)
+  ctx.stroke()
+
+  // Our robots
+  state.robots.forEach((robot, i) => {
+    const [rx, ry] = tm(robot.pos.x, robot.pos.y)
+    const col = robot.role === 'goalkeeper' ? GK_COLOR : (PLAYER_COLORS[i] ?? '#3b82f6')
+    ctx.beginPath(); ctx.arc(rx, ry, 3, 0, Math.PI * 2)
+    ctx.fillStyle = col; ctx.fill()
+    const ex = rx + Math.cos(-robot.orientation) * 5
+    const ey = ry + Math.sin(-robot.orientation) * 5
+    ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(ex, ey)
+    ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.stroke()
+  })
+
+  // Enemy robots
+  if (state.enemyMode !== 'off') {
+    state.enemyRobots.forEach((robot) => {
+      const [rx, ry] = tm(robot.pos.x, robot.pos.y)
+      const col = robot.role === 'goalkeeper' ? ENEMY_GK_BASE : ENEMY_BASE
+      ctx.beginPath(); ctx.arc(rx, ry, 3, 0, Math.PI * 2)
+      ctx.fillStyle = col; ctx.fill()
+    })
+  }
+
+  // Ball
+  const [bx, by] = tm(state.ball.pos.x, state.ball.pos.y)
+  ctx.beginPath(); ctx.arc(bx, by, 2.5, 0, Math.PI * 2)
+  ctx.fillStyle = '#ffffff'; ctx.fill()
+
+  // Viewport rectangle — shows which part of the field is currently visible
+  const vhw = cw / 2 / scz
+  const vhh = ch / 2 / scz
+  const [vx1, vy1] = tm(pan.x - vhw, pan.y + vhh)
+  const [vx2, vy2] = tm(pan.x + vhw, pan.y - vhh)
+  ctx.strokeStyle = '#60a5fa'
+  ctx.lineWidth = 1.5
+  ctx.strokeRect(vx1, vy1, vx2 - vx1, vy2 - vy1)
+
+  ctx.restore()
+
+  // Border on top of clipped content
+  ctx.strokeStyle = '#334155'
+  ctx.lineWidth = 1
+  ctx.strokeRect(MX, MY, MW, MH)
 }
