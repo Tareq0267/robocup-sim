@@ -4,11 +4,11 @@
 
 import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type SimState, type DebugData, type StateTransition, type GoalkeeperRobot, type GoalkeeperDebugData } from './types'
 import { getNextState, getInactiveState, computeAlignmentError, computeOrientationError, computeFovError, isOnCorrectSide, isAligned, isAtContactRange, isOrientationAligned, canSeeBall } from './stateMachine'
-import { searchBehavior, idleBehavior, assistBehavior, chaseBehavior, repositionBehavior, radialAdjustBehavior, readyBehavior, shootBehavior, getTargetOrientation } from './behaviors'
+import { searchBehavior, idleBehavior, assistBehavior, chaseBehavior, repositionBehavior, radialAdjustBehavior, readyBehavior, shootBehavior, getTargetOrientation, moveToPointBehavior } from './behaviors'
 import { goalieDecide, gkCanSeeBall, gkFovError, gkAlignmentError, ballInZone } from './goalkeeperStateMachine'
 import { gkFindBallBehavior, gkRetreatBehavior, gkAdjustBlockBehavior, gkChaseBehavior, gkKickBehavior, gkTargetOrientation } from './goalkeeperBehaviors'
 import { stepBall, applyContact, resolveOverlap, separateCircles } from './physics'
-import { add, scale, dist, rotateToward } from './math'
+import { add, scale, dist, rotateToward, normalize, sub } from './math'
 
 const MAX_HISTORY = 50
 
@@ -100,6 +100,64 @@ export function makeKickoffState(
 }
 
 // ----------------------------------------------------------------
+// Kickoff walk targets — returns the destination for each robot index.
+// Called every frame during gc.gameState === 'READY'.
+// ----------------------------------------------------------------
+function calcKickoffTargets(state: SimState): [{ x: number; y: number }, { x: number; y: number }, { x: number; y: number }] {
+  const gkIdx      = state.robots.findIndex(r => r.role === 'goalkeeper')
+  const strikerIdxs = ([0, 1, 2] as const).filter((i): i is 0 | 1 | 2 => i !== gkIdx)
+  const { kickoffSide } = state.gc
+  const { ourKickoffX, ourPrimaryY, ourSecondaryY, theirKickoffX, theirPrimaryY, theirSecondaryY } = state.team
+  const kx  = kickoffSide === 'ours' ? ourKickoffX  : theirKickoffX
+  const kpy = kickoffSide === 'ours' ? ourPrimaryY  : theirPrimaryY
+  const ksy = kickoffSide === 'ours' ? ourSecondaryY : theirSecondaryY
+
+  const targets: [{ x: number; y: number }, { x: number; y: number }, { x: number; y: number }] = [
+    { x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 },
+  ]
+  const safeGkIdx = gkIdx >= 0 ? gkIdx : 2
+  targets[safeGkIdx]        = { x: GK_KICKOFF_X, y: 0 }
+  targets[strikerIdxs[0]]   = { x: kx, y: kpy }
+  targets[strikerIdxs[1]]   = { x: kx, y: ksy }
+  return targets
+}
+
+// ----------------------------------------------------------------
+// Freekick target positions — mirrors GoToFreekickPosition::onRunning()
+// Returns [primaryTarget, secondaryTarget] for the two strikers.
+// ----------------------------------------------------------------
+function calcFreekickTargets(
+  ball:         Ball,
+  goal:         Goal,
+  ownGoal:      Goal,
+  freeKickSide: 'ours' | 'theirs',
+): [{ x: number; y: number }, { x: number; y: number }] {
+  const ATTACK_DIST  = 0.7
+  const DEFENSE_DIST = 1.9
+  const fieldHalfLen = Math.abs(ownGoal.center.x)
+
+  if (freeKickSide === 'ours') {
+    // Attack: 0.7m behind ball toward opponent goal; secondary 1.5m further back at y=0
+    const kickDir = Math.atan2(goal.center.y - ball.pos.y, goal.center.x - ball.pos.x)
+    const px = ball.pos.x - ATTACK_DIST * Math.cos(kickDir)
+    const py = ball.pos.y - ATTACK_DIST * Math.sin(kickDir)
+    return [
+      { x: px, y: py },
+      { x: Math.max(ownGoal.center.x + 1.3, px - 1.5), y: 0 },
+    ]
+  } else {
+    // Defense: 1.9m from ball on the goal→ball line; secondary spreads ±1m on Y
+    const defDir = Math.atan2(ball.pos.y, ball.pos.x + fieldHalfLen)
+    const px = ball.pos.x - DEFENSE_DIST * Math.cos(defDir)
+    const py = ball.pos.y - DEFENSE_DIST * Math.sin(defDir)
+    return [
+      { x: px, y: py },
+      { x: px, y: py > 0 ? py - 1.0 : py + 1.0 },
+    ]
+  }
+}
+
+// ----------------------------------------------------------------
 // Single-robot update — called once per striker robot per frame
 // ----------------------------------------------------------------
 function tickRobot(
@@ -111,9 +169,31 @@ function tickRobot(
   dt:          number,
   time:        number,
   prevHistory: StateTransition[],
+  fkOverride?: { frozen: boolean; target?: { x: number; y: number } },
 ): { robot: Robot; debug: DebugData } {
 
   const history = [...prevHistory]
+
+  // ── Freekick override ──────────────────────────────────────
+  if (fkOverride) {
+    const velocity = fkOverride.frozen || !fkOverride.target
+      ? { x: 0, y: 0 }
+      : moveToPointBehavior(robot, fkOverride.target, robot.params.chaseSpeed)
+    const state = fkOverride.frozen ? RobotState.IDLE : RobotState.ASSIST
+    const overRobot = { ...robot, state }
+    const rawPos = add(robot.pos, scale(velocity, dt))
+    const hw = court.width / 2 - robot.radius
+    const hh = court.height / 2 - robot.radius
+    const pos = { x: Math.max(-hw, Math.min(hw, rawPos.x)), y: Math.max(-hh, Math.min(hh, rawPos.y)) }
+    const targetOri = getTargetOrientation(overRobot, ball, goal)
+    const orientation = targetOri === null
+      ? robot.orientation + robot.params.rotationSpeed * dt
+      : rotateToward(robot.orientation, targetOri, robot.params.rotationSpeed, dt)
+    return {
+      robot: { ...overRobot, pos, orientation },
+      debug: { ...EMPTY_STRIKER_DEBUG, stateHistory: history },
+    }
+  }
 
   // ── 1. Determine next state ────────────────────────────────
   const { state: nextState, reason } = isActive
@@ -194,8 +274,41 @@ function tickGoalkeeper(
   dt:          number,
   time:        number,
   prevHistory: StateTransition[],
+  fkOverride?: { frozen: boolean; target?: { x: number; y: number } },
 ): { gk: GoalkeeperRobot; debug: GoalkeeperDebugData } {
   const history = [...prevHistory]
+
+  // ── Freekick / penalty override ───────────────────────────
+  // Mirrors GoalKeeperFreekick BT: GoToGoalBlockingPosition (frozen in STOP/SET)
+  if (fkOverride) {
+    const velocity = fkOverride.frozen || !fkOverride.target
+      ? { x: 0, y: 0 }
+      : (() => {
+          const d = dist(gk.pos, fkOverride.target!)
+          if (d < 0.05) return { x: 0, y: 0 }
+          return scale(normalize(sub(fkOverride.target!, gk.pos)), Math.min(0.1, d * 3))
+        })()
+    const hw = court.width  / 2 - gk.radius
+    const hh = court.height / 2 - gk.radius
+    const rawPos = add(gk.pos, scale(velocity, dt))
+    const pos = { x: Math.max(-hw, Math.min(hw, rawPos.x)), y: Math.max(-hh, Math.min(hh, rawPos.y)) }
+    const targetOri = gkTargetOrientation(gk, ball)
+    const orientation = targetOri === null
+      ? gk.orientation + gk.params.rotationSpeed * dt
+      : rotateToward(gk.orientation, targetOri, gk.params.rotationSpeed, dt)
+    const finalGk = { ...gk, pos, orientation }
+    return {
+      gk: finalGk,
+      debug: {
+        distanceToBall:    dist(finalGk.pos, ball.pos),
+        canSeeBall:        gkCanSeeBall(finalGk, ball),
+        fovError:          gkFovError(finalGk, ball),
+        ballInPenaltyArea: ballInZone(ball, state.fieldLayout.ownPenaltyArea),
+        alignmentError:    gkAlignmentError(finalGk, ball),
+        stateHistory:      history,
+      },
+    }
+  }
 
   // ── 1. Decide next state ───────────────────────────────────
   const { state: nextState, reason } = goalieDecide(gk, ball, state.fieldLayout.ownPenaltyArea, state.fieldLayout.ownGoalArea)
@@ -308,23 +421,54 @@ export function tick(state: SimState, dt: number): SimState {
     newSwapTimer = 0
   }
 
+  // ── Kickoff walk (READY state) ───────────────────────────
+  const isKickoffReady  = state.gc.gameState === 'READY'
+  const kickoffTargets  = isKickoffReady ? calcKickoffTargets(state) : null
+
+  // ── Freekick state ────────────────────────────────────────
+  const fkActive = state.gc.subStateType === 'FREE_KICK'
+  const fkFrozen = fkActive && (state.gc.subState === 'STOP' || state.gc.subState === 'SET')
+  const fkMove   = fkActive && state.gc.subState === 'GET_READY'
+  const fkTargets = fkMove
+    ? calcFreekickTargets(ball, goal, ownGoal, state.gc.freeKickSide)
+    : null
+  // GK goal-blocking target during GET_READY: 0.9m from goal line, centred
+  // Mirrors GoToGoalBlockingPosition dist_to_goalline=0.9 (robotedge)
+  const GK_FK_DIST = 0.9
+  const gkFkTarget = fkMove ? { x: ownGoal.center.x + GK_FK_DIST, y: 0 } : undefined
+
   // ── Tick each robot ────────────────────────────────────────
   const tickedRobots: Robot[]           = new Array(3)
   const newDebugs:    DebugData[]       = new Array(3)
   let   newGkDebug:   GoalkeeperDebugData = state.goalkeeperDebug
 
   for (let i = 0; i < 3; i++) {
+    const penalized = state.gc.penalties[i as 0 | 1 | 2]
     if (robots[i].role === 'goalkeeper') {
+      const gkFkOvr = penalized
+        ? { frozen: true }
+        : kickoffTargets ? { frozen: false, target: kickoffTargets[i as 0 | 1 | 2] }
+        : fkActive ? { frozen: fkFrozen, target: gkFkTarget } : undefined
       const gkResult = tickGoalkeeper(
         toGKRobot(robots[i]), ball, ownGoal, court, state, dt, time,
         state.goalkeeperDebug.stateHistory,
+        gkFkOvr,
       )
       tickedRobots[i] = fromGKRobot(robots[i], gkResult.gk)
       newDebugs[i]    = { ...EMPTY_STRIKER_DEBUG, stateHistory: state.debugs[i].stateHistory }
       newGkDebug      = gkResult.debug
     } else {
       const isActive = newActiveIndex === i
-      const r = tickRobot(robots[i], ball, goal, court, isActive, dt, time, state.debugs[i].stateHistory)
+      const strikerRank = i === newActiveIndex ? 0 : 1
+      // During GET_READY the active striker (rank 0) plays normally so it can kick.
+      // Only the secondary robot is sent to a support target.
+      const fkOverride = penalized
+        ? { frozen: true }
+        : kickoffTargets ? { frozen: false, target: kickoffTargets[i as 0 | 1 | 2] }
+        : fkActive && (fkFrozen || strikerRank > 0)
+          ? { frozen: fkFrozen, target: fkTargets?.[strikerRank] }
+          : undefined
+      const r = tickRobot(robots[i], ball, goal, court, isActive, dt, time, state.debugs[i].stateHistory, fkOverride)
       tickedRobots[i] = r.robot
       newDebugs[i]    = r.debug
     }
@@ -358,6 +502,11 @@ export function tick(state: SimState, dt: number): SimState {
   for (const fr of finalRobots) newBall = resolveOverlap(newBall, fr)
   newBall = stepBall(newBall, court, dt)
 
+  // Auto-pause once all robots reach their kickoff positions
+  const KICKOFF_ARRIVAL = 0.25
+  const kickoffDone = kickoffTargets !== null &&
+    finalRobots.every((r, i) => dist(r.pos, kickoffTargets[i as 0 | 1 | 2]) < KICKOFF_ARRIVAL)
+
   return {
     ...state,
     robots:          finalRobots,
@@ -368,5 +517,6 @@ export function tick(state: SimState, dt: number): SimState {
     gkSwapCooldown:  newGkSwapCooldown,
     ball:            newBall,
     time:            time + dt,
+    isPlaying:       kickoffDone ? false : state.isPlaying,
   }
 }
