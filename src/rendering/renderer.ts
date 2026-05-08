@@ -121,6 +121,7 @@ export function render(ctx: CanvasRenderingContext2D, state: SimState, cw: numbe
   }
 
   if (zoom > 1.0) drawMinimap(ctx, state, cw, ch, scz, pan)
+  drawScoreHUD(ctx, state, cw, ch)
 }
 
 // ── Court ─────────────────────────────────────────────────────
@@ -689,4 +690,51 @@ function drawMinimap(
   ctx.strokeStyle = '#334155'
   ctx.lineWidth = 1
   ctx.strokeRect(MX, MY, MW, MH)
+}
+
+// ── Score / time HUD (canvas-space overlay, unaffected by zoom/pan) ──
+function drawScoreHUD(
+  ctx: CanvasRenderingContext2D, state: SimState,
+  cw: number, _ch: number,
+) {
+  const { score, time, gc, isPlaying } = state
+  const m   = Math.floor(time / 60)
+  const s   = Math.floor(time % 60)
+  const timeStr  = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  const stateStr = isPlaying ? '▶ PLAYING' : gc.gameState
+
+  const cx = cw / 2
+  const W = 184, H = 46, X = cx - W / 2, Y = 10
+
+  ctx.save()
+
+  // Background panel
+  ctx.fillStyle = 'rgba(0,0,0,0.58)'
+  ctx.fillRect(X, Y, W, H)
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)'
+  ctx.lineWidth = 1
+  ctx.strokeRect(X, Y, W, H)
+
+  ctx.textBaseline = 'middle'
+  ctx.textAlign    = 'center'
+
+  // Score row
+  ctx.font      = 'bold 20px monospace'
+  ctx.fillStyle = '#60a5fa'
+  ctx.fillText(String(score.ours), cx - 34, Y + 17)
+
+  ctx.font      = '13px monospace'
+  ctx.fillStyle = 'rgba(255,255,255,0.2)'
+  ctx.fillText('—', cx, Y + 17)
+
+  ctx.font      = 'bold 20px monospace'
+  ctx.fillStyle = '#f87171'
+  ctx.fillText(String(score.theirs), cx + 34, Y + 17)
+
+  // Time + state row
+  ctx.font      = '10px monospace'
+  ctx.fillStyle = isPlaying ? '#4ade80' : '#4b5563'
+  ctx.fillText(`${timeStr}  ${stateStr}`, cx, Y + 36)
+
+  ctx.restore()
 }

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { GameControllerState, GcFreeKickType, GcGameState, GcSubState } from '../simulation/types'
 
 const COLLAPSED_H = 36
-const EXPANDED_H  = 264
+const EXPANDED_H  = 292
 
 interface Props {
   gc:              GameControllerState
@@ -31,11 +31,11 @@ function Btn({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`px-3 py-1.5 rounded text-xs font-mono border transition-colors whitespace-nowrap
+      className={`px-2.5 py-1 rounded text-[11px] font-mono border transition-colors whitespace-nowrap
         ${active
           ? activeClass
-          : 'bg-[#111] text-[#6b7280] border-[#262626] hover:text-[#9ca3af] hover:border-[#374151]'}
-        ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+          : 'bg-[#0d0d0d] text-[#4b5563] border-[#1e1e1e] hover:text-[#9ca3af] hover:border-[#374151]'}
+        ${disabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}
         ${className}`}
     >
       {label}
@@ -44,25 +44,34 @@ function Btn({
 }
 
 const GS_ACTIVE: Record<GcGameState, string> = {
-  INITIAL: 'bg-[#12122a] text-[#818cf8] border-[#3d3d7e]',
-  READY:   'bg-[#1c1800] text-[#fbbf24] border-[#4a3d00]',
-  SET:     'bg-[#1c0e00] text-[#fb923c] border-[#4a2a00]',
-  PLAY:    'bg-[#0f1f0f] text-[#4ade80] border-[#1e4d1e]',
-  END:     'bg-[#1f0f0f] text-[#f87171] border-[#4d1e1e]',
+  INITIAL: 'bg-[#0e0e1f] text-[#818cf8] border-[#3730a3]',
+  READY:   'bg-[#1c1600] text-[#fbbf24] border-[#78350f]',
+  SET:     'bg-[#1c0e00] text-[#fb923c] border-[#7c2d12]',
+  PLAY:    'bg-[#0a1a0a] text-[#4ade80] border-[#166534]',
+  END:     'bg-[#1a0a0a] text-[#f87171] border-[#7f1d1d]',
 }
 
 const GAME_STATES: { state: GcGameState; label: string }[] = [
-  { state: 'INITIAL', label: 'Initial'  },
-  { state: 'READY',   label: 'Ready'    },
-  { state: 'SET',     label: 'Set'      },
-  { state: 'PLAY',    label: '▶  Play'  },
-  { state: 'END',     label: 'End'      },
+  { state: 'INITIAL', label: 'Initial' },
+  { state: 'READY',   label: 'Ready'   },
+  { state: 'SET',     label: 'Set'     },
+  { state: 'PLAY',    label: '▶ Play'  },
+  { state: 'END',     label: 'End'     },
 ]
 
 const FK_SUB: { state: GcSubState; label: string; active: string }[] = [
-  { state: 'STOP',      label: '■  Stop',      active: 'bg-[#1f0f0f] text-[#f87171] border-[#4d1e1e]' },
-  { state: 'GET_READY', label: '→  Get Ready',  active: 'bg-[#1c1800] text-[#fbbf24] border-[#4a3d00]' },
-  { state: 'SET',       label: '●  Set',        active: 'bg-[#0f1f0f] text-[#4ade80] border-[#1e4d1e]' },
+  { state: 'STOP',      label: '■ Stop',      active: 'bg-[#1a0a0a] text-[#f87171] border-[#7f1d1d]' },
+  { state: 'GET_READY', label: '→ Get Ready', active: 'bg-[#1c1600] text-[#fbbf24] border-[#78350f]' },
+  { state: 'SET',       label: '● Set',       active: 'bg-[#0a1a0a] text-[#4ade80] border-[#166534]' },
+]
+
+const SET_PIECES: { type: GcFreeKickType; label: string }[] = [
+  { type: 'THROW_IN',  label: 'Throw-In'    },
+  { type: 'CORNER',    label: 'Corner'      },
+  { type: 'GOAL_KICK', label: 'Goal Kick'   },
+  { type: 'DIRECT',    label: 'Direct FK'   },
+  { type: 'INDIRECT',  label: 'Indirect FK' },
+  { type: 'PENALTY',   label: 'Penalty'     },
 ]
 
 export default function BottomBar({
@@ -84,83 +93,73 @@ export default function BottomBar({
   }
 
   const stateBadgeClass = isPlaying
-    ? 'bg-[#0f1f0f] text-[#4ade80] border-[#1e4d1e]'
+    ? 'bg-[#0a1a0a] text-[#4ade80] border-[#166534]'
     : isFk
-    ? 'bg-[#0e1020] text-[#a78bfa] border-[#2d2060]'
-    : 'bg-[#111] text-[#6b7280] border-[#262626]'
+    ? 'bg-[#0e0e1f] text-[#a78bfa] border-[#3730a3]'
+    : 'bg-[#0d0d0d] text-[#4b5563] border-[#1e1e1e]'
+
+  const showKickoff = gc.gameState === 'READY' || gc.gameState === 'INITIAL'
 
   return (
     <div
-      className="flex-shrink-0 bg-[#0d0d0d] border-t border-[#1e1e1e] overflow-hidden transition-[height] duration-200 ease-in-out"
+      className="flex-shrink-0 bg-[#0a0a0a] border-t border-[#1e1e1e] overflow-hidden transition-[height] duration-200 ease-in-out"
       style={{ height: open ? EXPANDED_H : COLLAPSED_H }}
     >
-      {/* ── Collapsed header ────────────────────────────────────── */}
+      {/* ── Collapsed header ─────────────────────────────────── */}
       <button
         onClick={() => setOpen(o => !o)}
         className="flex items-center w-full px-4 gap-3 hover:bg-[#111] transition-colors"
         style={{ height: COLLAPSED_H }}
       >
-        {/* Toggle arrow */}
-        <span className="text-[#374151] text-[10px]">{open ? '▼' : '▲'}</span>
+        <span className="text-[10px] text-[#2d3748]">{open ? '▼' : '▲'}</span>
 
-        {/* Label */}
-        <span className="text-[11px] font-mono uppercase tracking-widest text-[#4b5563]">
+        <span className="text-[11px] font-mono uppercase tracking-widest text-[#374151]">
           Game Controller
         </span>
 
-        {/* State badge */}
         <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${stateBadgeClass}`}>
-          {isPlaying ? '▶ PLAYING' : isFk ? `FK · ${gc.freeKickType.replace('_',' ')}` : gc.gameState}
+          {isPlaying ? '▶ PLAYING' : isFk ? `FK · ${gc.freeKickType.replace('_', ' ')}` : gc.gameState}
         </span>
 
-        {/* Score summary */}
-        <div className="flex items-center gap-2 ml-1">
-          <span className="text-sm font-mono font-bold text-[#4ade80]">{score.ours}</span>
-          <span className="text-[10px] font-mono text-[#374151]">—</span>
-          <span className="text-sm font-mono font-bold text-[#f87171]">{score.theirs}</span>
-        </div>
+        <span className="text-sm font-mono font-bold text-[#4ade80] tabular-nums">{score.ours}</span>
+        <span className="text-[10px] font-mono text-[#1e1e1e]">—</span>
+        <span className="text-sm font-mono font-bold text-[#f87171] tabular-nums">{score.theirs}</span>
 
-        {/* Timer */}
-        <span className="text-[11px] font-mono text-[#4b5563] tabular-nums">
-          {formatTime(time)}
-        </span>
+        <span className="text-[11px] font-mono text-[#374151] tabular-nums">{formatTime(time)}</span>
 
-        <span className="ml-auto text-[10px] font-mono text-[#262626]">
-          {open ? 'collapse' : 'expand'}
-        </span>
+        <span className="ml-auto text-[10px] font-mono text-[#1e1e1e]">{open ? 'collapse' : 'expand'}</span>
       </button>
 
-      {/* ── Expanded — 3-column GC layout ───────────────────────── */}
+      {/* ── Expanded ─────────────────────────────────────────── */}
       <div className="flex w-full" style={{ height: EXPANDED_H - COLLAPSED_H }}>
 
-        {/* ── LEFT — Our Team ─────────────────────────────────── */}
-        <div className="flex-1 flex flex-col items-center justify-center gap-3 border-r border-[#1e1e1e] px-6">
+        {/* LEFT — Our Team */}
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 border-r border-[#1e1e1e] px-5">
           <span className="text-[11px] font-mono uppercase tracking-widest text-[#4ade80] font-semibold">
             Our Team
           </span>
 
           <button
             onClick={() => scoreGoal('ours')}
-            className="w-full max-w-[120px] py-2 rounded text-sm font-mono font-semibold border cursor-pointer
-              bg-[#0f1a0f] text-[#4ade80] border-[#1e4d1e] hover:bg-[#1a3a1a] transition-colors"
+            className="w-full max-w-[110px] py-1.5 rounded text-xs font-mono font-semibold border
+              bg-[#0a1a0a] text-[#4ade80] border-[#166534] hover:bg-[#122212] transition-colors"
           >
             + Goal
           </button>
 
-          <div className="flex flex-col gap-1.5 w-full max-w-[160px] opacity-40 pointer-events-none select-none">
+          <div className="flex flex-col gap-1.5 w-full max-w-[150px]">
             <span className="text-[10px] font-mono text-[#374151] uppercase tracking-widest">Penalties</span>
-            <div className="flex gap-2">
+            <div className="flex gap-1.5">
               {(['P1', 'P2', 'GK'] as const).map((label, i) => (
                 <button
                   key={label}
-                  disabled
-                  className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-xs font-mono border cursor-not-allowed transition-colors ${
+                  onClick={() => togglePenalty(i as 0 | 1 | 2)}
+                  className={`flex-1 py-1.5 rounded text-[11px] font-mono border transition-colors ${
                     penalties[i]
-                      ? 'bg-[#1f0a0a] text-[#f87171] border-[#4d1010]'
-                      : 'bg-[#111] text-[#6b7280] border-[#262626]'
+                      ? 'bg-[#1a0a0a] text-[#f87171] border-[#7f1d1d] hover:bg-[#220e0e]'
+                      : 'bg-[#0d0d0d] text-[#4b5563] border-[#1e1e1e] hover:text-[#9ca3af] hover:border-[#374151]'
                   }`}
                 >
-                  <span className={`text-[8px] ${penalties[i] ? 'text-[#f87171]' : 'text-[#374151]'}`}>●</span>
                   {label}
                 </button>
               ))}
@@ -168,79 +167,106 @@ export default function BottomBar({
           </div>
         </div>
 
-        {/* ── CENTER — Match controls ──────────────────────────── */}
-        <div className="flex-[2] flex flex-col items-center justify-center gap-3 px-8">
+        {/* CENTER — Match controls */}
+        <div className="flex-[2.2] flex flex-col items-center justify-center gap-2 px-6">
 
-          {/* Score + Timer */}
-          <div className="flex items-center gap-8">
-            <span className="text-4xl font-mono font-bold text-[#4ade80]">{score.ours}</span>
-            <div className="flex flex-col items-center gap-0.5">
-              <span className="text-2xl font-mono text-[#9ca3af] tabular-nums font-semibold">
-                {formatTime(time)}
-              </span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-[#4b5563]">
-                {gc.firstHalf ? '1st Half' : '2nd Half'}
-              </span>
-            </div>
-            <span className="text-4xl font-mono font-bold text-[#f87171]">{score.theirs}</span>
+          {/* Score + timer */}
+          <div className="flex items-baseline gap-6">
+            <span className="text-3xl font-mono font-bold text-[#4ade80] tabular-nums">{score.ours}</span>
+            <span className="text-sm font-mono text-[#374151] tabular-nums">{formatTime(time)}</span>
+            <span className="text-3xl font-mono font-bold text-[#f87171] tabular-nums">{score.theirs}</span>
           </div>
 
-          {/* Greyed-out controls — full match control coming in a future update */}
-          <div className="flex flex-col items-center gap-3 opacity-30 pointer-events-none select-none">
+          {/* Game state buttons */}
+          <div className="flex gap-1">
+            {GAME_STATES.map(({ state, label }) => (
+              <Btn
+                key={state} label={label}
+                active={gc.gameState === state}
+                activeClass={GS_ACTIVE[state]}
+                onClick={() => handleStateClick(state)}
+              />
+            ))}
+          </div>
 
-            {/* Game state row */}
-            <div className="flex gap-1.5">
-              {GAME_STATES.map(({ state, label }) => (
+          {/* Kickoff side — shown in INITIAL / READY */}
+          {showKickoff && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono text-[#374151] uppercase tracking-widest">Kickoff</span>
+              {(['ours', 'theirs'] as const).map(side => (
                 <Btn
-                  key={state} label={label}
-                  active={false}
-                  activeClass=""
-                  onClick={() => {}}
+                  key={side}
+                  label={side === 'ours' ? 'Ours ↑' : '↓ Theirs'}
+                  active={gc.kickoffSide === side}
+                  activeClass={
+                    side === 'ours'
+                      ? 'bg-[#0a1a0a] text-[#4ade80] border-[#166534]'
+                      : 'bg-[#1a0a0a] text-[#f87171] border-[#7f1d1d]'
+                  }
+                  onClick={() => updateGc('kickoffSide', side)}
                 />
               ))}
             </div>
+          )}
 
-            {/* Set pieces */}
-            <div className="flex items-center gap-1 flex-wrap justify-center">
-              {([
-                { type: 'THROW_IN'  as GcFreeKickType, label: 'Throw-In'   },
-                { type: 'CORNER'    as GcFreeKickType, label: 'Corner'      },
-                { type: 'GOAL_KICK' as GcFreeKickType, label: 'Goal Kick'   },
-                { type: 'DIRECT'    as GcFreeKickType, label: 'Direct FK'   },
-                { type: 'INDIRECT'  as GcFreeKickType, label: 'Indirect FK' },
-                { type: 'PENALTY'   as GcFreeKickType, label: 'Penalty'     },
-              ]).map(({ type, label }) => (
-                <div key={type} className="flex">
-                  <Btn label={`${label} ↑`} active={false} activeClass="" className="rounded-r-none border-r-0" onClick={() => {}} />
-                  <Btn label="↓"            active={false} activeClass="" className="rounded-l-none"            onClick={() => {}} />
-                </div>
+          {/* FK sub-state — shown when FREE_KICK is active */}
+          {isFk && (
+            <div className="flex gap-1">
+              {FK_SUB.map(({ state, label, active: ac }) => (
+                <Btn
+                  key={state} label={label}
+                  active={gc.subState === state}
+                  activeClass={ac}
+                  onClick={() => updateGc('subState', state)}
+                />
               ))}
             </div>
+          )}
 
+          {/* Set pieces */}
+          <div className="flex items-center gap-0.5 flex-wrap justify-center">
+            {SET_PIECES.map(({ type, label }) => (
+              <div key={type} className="flex">
+                <Btn
+                  label={`${label} ↑`}
+                  active={isFk && gc.freeKickType === type && gc.freeKickSide === 'ours'}
+                  activeClass="bg-[#0a1a0a] text-[#4ade80] border-[#166534]"
+                  className="rounded-r-none border-r-0 !text-[10px] !px-2"
+                  onClick={() => triggerSetPiece(type, 'ours')}
+                />
+                <Btn
+                  label="↓"
+                  active={isFk && gc.freeKickType === type && gc.freeKickSide === 'theirs'}
+                  activeClass="bg-[#1a0a0a] text-[#f87171] border-[#7f1d1d]"
+                  className="rounded-l-none !text-[10px] !px-2"
+                  onClick={() => triggerSetPiece(type, 'theirs')}
+                />
+              </div>
+            ))}
           </div>
-
-          {/* Coming soon note */}
-          <span className="text-[10px] font-mono text-[#374151] tracking-wide">
-            Full match controls available in a future update
-          </span>
         </div>
 
-        {/* ── RIGHT — Their Team ───────────────────────────────── */}
-        <div className="flex-1 flex flex-col items-center justify-center gap-3 border-l border-[#1e1e1e] px-6">
+        {/* RIGHT — Their Team */}
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 border-l border-[#1e1e1e] px-5">
           <span className="text-[11px] font-mono uppercase tracking-widest text-[#f87171] font-semibold">
             Their Team
           </span>
 
           <button
             onClick={() => scoreGoal('theirs')}
-            className="w-full max-w-[120px] py-2 rounded text-sm font-mono font-semibold border cursor-pointer
-              bg-[#1a0f0f] text-[#f87171] border-[#4d1e1e] hover:bg-[#3a1a1a] transition-colors"
+            className="w-full max-w-[110px] py-1.5 rounded text-xs font-mono font-semibold border
+              bg-[#1a0a0a] text-[#f87171] border-[#7f1d1d] hover:bg-[#22100e] transition-colors"
           >
             + Goal
           </button>
 
-          <div className="text-[10px] font-mono text-[#262626] text-center leading-relaxed">
-            Opponent controlled<br />externally
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-[#374151] uppercase tracking-widest">Half</span>
+            <Btn
+              label={gc.firstHalf ? '1st ▸' : '2nd ▸'}
+              active={false} activeClass=""
+              onClick={() => updateGc('firstHalf', !gc.firstHalf)}
+            />
           </div>
         </div>
 

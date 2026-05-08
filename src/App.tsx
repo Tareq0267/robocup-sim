@@ -22,7 +22,7 @@ export default function App() {
       <ControlBar
         simState={simState}
         play={play} pause={pause} step={step} reset={reset}
-        setSpeed={setSpeed} scoreGoal={scoreGoal}
+        setSpeed={setSpeed}
       />
       <div className="flex flex-1 overflow-hidden">
         <LeftPanel
