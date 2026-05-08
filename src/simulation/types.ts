@@ -55,8 +55,14 @@ export interface RobotParams {
 // TEAM CONFIG — coordination settings between robots
 // ----------------------------------------------------------------
 export interface TeamConfig {
-  roleSwapDelay: number  // (s) How long the closer robot must stay closer before roles swap
-                         //     Resets to 0 if distances flip back before delay completes
+  roleSwapDelay:   number  // (s) How long the closer robot must stay closer before roles swap
+                           //     Resets to 0 if distances flip back before delay completes
+  ourKickoffX:     number  // (m) striker X when we kick off (real: -2.0)
+  ourPrimaryY:     number  // (m) primary striker Y when we kick off (real: +2.0)
+  ourSecondaryY:   number  // (m) secondary striker Y when we kick off (real: -1.5)
+  theirKickoffX:   number  // (m) striker X when they kick off (real: -1.53)
+  theirPrimaryY:   number  // (m) primary striker Y when they kick off (real: +2.0)
+  theirSecondaryY: number  // (m) secondary striker Y when they kick off (real: -1.5)
 }
 
 export type TeamRole = 'striker' | 'goalkeeper'

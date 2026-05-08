@@ -1,5 +1,5 @@
 import type { RobotParams, TeamConfig, GoalkeeperParams } from '../simulation/types'
-import { PARAM_META, ASSIST_PARAM_META, GK_PARAM_META, GK_BLOCK_PARAM_META } from '../simulation/config'
+import { PARAM_META, ASSIST_PARAM_META, GK_PARAM_META, GK_BLOCK_PARAM_META, KICKOFF_PARAM_META } from '../simulation/config'
 
 interface Props {
   params:        RobotParams
@@ -114,6 +114,18 @@ export default function ParameterPanel({ params, team, gkParams, setParam, setTe
           unit={meta.unit} min={meta.min} max={meta.max} step={meta.step} desc={meta.desc}
           accentClass="accent-amber-500"
           onChange={v => setGKParam(meta.key, v as GoalkeeperParams[typeof meta.key])}
+        />
+      ))}
+
+      {/* Kickoff positions */}
+      <div className="text-[10px] text-[#818cf8] uppercase tracking-widest pt-2 border-t border-[#1e1e1e]">
+        Kickoff Positions
+      </div>
+      {KICKOFF_PARAM_META.map(meta => (
+        <Slider key={meta.key} label={meta.label} value={team[meta.key] as number}
+          unit={meta.unit} min={meta.min} max={meta.max} step={meta.step} desc={meta.desc}
+          accentClass="accent-indigo-500"
+          onChange={v => setTeamConfig(meta.key, v as TeamConfig[typeof meta.key])}
         />
       ))}
     </div>

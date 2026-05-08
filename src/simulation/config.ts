@@ -52,7 +52,13 @@ export const DEFAULT_PARAMS: RobotParams = {
 }
 
 export const DEFAULT_TEAM: TeamConfig = {
-  roleSwapDelay: 1.0,  // seconds
+  roleSwapDelay:   1.0,
+  ourKickoffX:    -2.0,
+  ourPrimaryY:     2.0,
+  ourSecondaryY:  -1.5,
+  theirKickoffX:  -1.53,
+  theirPrimaryY:   2.0,
+  theirSecondaryY: -1.5,
 }
 
 export const DEFAULT_GK_PARAMS: GoalkeeperParams = {
@@ -200,4 +206,23 @@ export const ASSIST_PARAM_META: ParamMeta[] = [
   { key: 'assistSpeed',          label: 'Assist Speed',          unit: 'm/s', min: 0.05, max: 1.5, step: 0.05, desc: 'Assist vx_limit="0.2" — speed while moving to support position' },
   { key: 'assistBackDist',       label: 'Back Distance',         unit: 'm',   min: 0.5,  max: 6,   step: 0.1,  desc: 'Place assist target this far behind the ball along the goal→ball line (default: 2.0m)' },
   { key: 'assistDistToGoalLine', label: 'Goal Line Clearance',   unit: 'm',   min: 0.5,  max: 6,   step: 0.1,  desc: 'Assist dist_to_goalline="2.5" — minimum clearance between assist target and own goal line' },
+]
+
+export interface TeamParamMeta {
+  key:   keyof TeamConfig
+  label: string
+  unit:  string
+  min:   number
+  max:   number
+  step:  number
+  desc:  string
+}
+
+export const KICKOFF_PARAM_META: TeamParamMeta[] = [
+  { key: 'ourKickoffX',     label: 'Our Kickoff X',        unit: 'm', min: -7,  max: 0,  step: 0.05, desc: 'Striker X position when we kick off (real: -2.0)' },
+  { key: 'ourPrimaryY',     label: 'Our Primary Y',        unit: 'm', min: -4,  max: 4,  step: 0.1,  desc: 'Primary striker Y when we kick off (real: +2.0)' },
+  { key: 'ourSecondaryY',   label: 'Our Secondary Y',      unit: 'm', min: -4,  max: 4,  step: 0.1,  desc: 'Secondary striker Y when we kick off (real: -1.5)' },
+  { key: 'theirKickoffX',   label: 'Their Kickoff X',      unit: 'm', min: -7,  max: 0,  step: 0.05, desc: 'Striker X position when they kick off (real: -1.53)' },
+  { key: 'theirPrimaryY',   label: 'Their Primary Y',      unit: 'm', min: -4,  max: 4,  step: 0.1,  desc: 'Primary striker Y when they kick off (real: +2.0)' },
+  { key: 'theirSecondaryY', label: 'Their Secondary Y',    unit: 'm', min: -4,  max: 4,  step: 0.1,  desc: 'Secondary striker Y when they kick off (real: -1.5)' },
 ]
