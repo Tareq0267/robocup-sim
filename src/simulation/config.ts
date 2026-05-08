@@ -1,7 +1,7 @@
 // ================================================================
 // DEFAULT VALUES — change these to set starting conditions
 // ================================================================
-import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type OverlaySettings, type RobotParams, type TeamConfig, type FieldLayout, type GoalkeeperParams, type GoalkeeperDebugData } from './types'
+import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type OverlaySettings, type RobotParams, type TeamConfig, type FieldLayout, type GoalkeeperParams, type GoalkeeperDebugData, type GameControllerState } from './types'
 
 // Adult Size field: 14m × 9m
 export const DEFAULT_COURT: Court = {
@@ -174,6 +174,17 @@ export const DEFAULT_OVERLAYS: OverlaySettings = {
   showBallVelocity:        true,
   showStateLabel:          true,
   showContactRange:        false,
+}
+
+export const DEFAULT_GC: GameControllerState = {
+  gameState:    'INITIAL',
+  kickoffSide:  'ours',
+  subStateType: 'NONE',
+  subState:     'STOP',
+  freeKickType: 'DIRECT',
+  freeKickSide: 'ours',
+  penalties:    [false, false, false],
+  firstHalf:    true,
 }
 
 // ----------------------------------------------------------------

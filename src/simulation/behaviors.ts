@@ -13,6 +13,13 @@ export function searchBehavior(): Vec2 {
   return { x: 0, y: 0 }
 }
 
+// FREEKICK MOVE — move to a target point, slow down near it
+export function moveToPointBehavior(robot: Robot, target: Vec2, speed: number): Vec2 {
+  const d = dist(robot.pos, target)
+  if (d < 0.05) return { x: 0, y: 0 }
+  return scale(normalize(sub(target, robot.pos)), Math.min(speed, d * 3))
+}
+
 // IDLE — inactive robot: hold position, face ball (rotation handled by engine)
 export function idleBehavior(): Vec2 {
   return { x: 0, y: 0 }

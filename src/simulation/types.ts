@@ -190,6 +190,25 @@ export interface DebugData {
 }
 
 // ----------------------------------------------------------------
+// GAME CONTROLLER STATE — mirrors RoboCup GC protocol
+// ----------------------------------------------------------------
+export type GcGameState    = 'INITIAL' | 'READY' | 'SET' | 'PLAY' | 'END'
+export type GcSubStateType = 'NONE' | 'TIMEOUT' | 'FREE_KICK'
+export type GcSubState     = 'STOP' | 'GET_READY' | 'SET'
+export type GcFreeKickType = 'DIRECT' | 'INDIRECT' | 'PENALTY' | 'CORNER' | 'GOAL_KICK' | 'THROW_IN'
+
+export interface GameControllerState {
+  gameState:    GcGameState
+  kickoffSide:  'ours' | 'theirs'   // who kicks off at READY
+  subStateType: GcSubStateType       // FREE_KICK overrides normal PLAY
+  subState:     GcSubState           // phase within FREE_KICK
+  freeKickType: GcFreeKickType
+  freeKickSide: 'ours' | 'theirs'   // who takes the free kick
+  penalties:    [boolean, boolean, boolean]  // per robot (P1, P2, GK)
+  firstHalf:    boolean
+}
+
+// ----------------------------------------------------------------
 // OVERLAY TOGGLES
 // ----------------------------------------------------------------
 export interface OverlaySettings {
@@ -226,4 +245,5 @@ export interface SimState {
   debugs:          [DebugData, DebugData, DebugData]  // index matches robots[]
   goalkeeperDebug: GoalkeeperDebugData                // GK-specific debug for the current GK robot
   overlays:        OverlaySettings
+  gc:              GameControllerState
 }
