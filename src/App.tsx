@@ -4,6 +4,7 @@ import SimCanvas  from './components/SimCanvas'
 import ControlBar from './components/ControlBar'
 import LeftPanel  from './components/LeftPanel'
 import RightPanel from './components/RightPanel'
+import BottomBar  from './components/BottomBar'
 
 export default function App() {
   const {
@@ -36,6 +37,7 @@ export default function App() {
         </div>
         <RightPanel simState={simState} onFocusChange={setFocusedRobot} />
       </div>
+      <BottomBar />
     </div>
   )
 }
