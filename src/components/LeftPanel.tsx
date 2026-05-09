@@ -20,7 +20,7 @@ interface Props {
 const ENEMY_MODE_CYCLE: Record<EnemyMode, EnemyMode> = { off: 'static', static: 'active', active: 'off' }
 const ENEMY_MODE_LABEL: Record<EnemyMode, string>    = { off: 'Off', static: 'Static', active: 'Active' }
 const ENEMY_MODE_COLOR: Record<EnemyMode, string>    = {
-  off:    'text-[#475569] border-[#2a2a2a]',
+  off:    'text-[#6b7280] border-[#2a2a2a]',
   static: 'text-[#f59e0b] border-[#f59e0b44]',
   active: 'text-[#ef4444] border-[#ef444444]',
 }
@@ -118,7 +118,7 @@ export default function LeftPanel({
       <div className="w-9 flex-shrink-0 flex flex-col items-center bg-[#0d0d0d] border-r border-[#1e1e1e]">
         <button
           onClick={() => setCollapsed(false)}
-          className="w-full py-2 flex justify-center text-[#475569] hover:text-[#94a3b8] hover:bg-[#161616] transition-colors text-sm"
+          className="w-full py-2 flex justify-center text-[#6b7280] hover:text-[#94a3b8] hover:bg-[#161616] transition-colors text-sm"
           title="Expand"
         >
           ▶
@@ -151,7 +151,7 @@ export default function LeftPanel({
             className={`flex-1 py-2 text-xs font-mono capitalize transition-colors ${
               tab === t
                 ? 'text-[#e2e8f0] border-b-2 border-[#3b82f6] bg-[#111]'
-                : 'text-[#475569] hover:text-[#94a3b8]'
+                : 'text-[#6b7280] hover:text-[#94a3b8]'
             }`}
           >
             {t}
@@ -159,7 +159,7 @@ export default function LeftPanel({
         ))}
         <button
           onClick={() => setCollapsed(true)}
-          className="px-3 text-[#2d3748] hover:text-[#64748b] hover:bg-[#161616] transition-colors text-xs"
+          className="px-3 text-[#64748b] hover:text-[#64748b] hover:bg-[#161616] transition-colors text-xs"
           title="Collapse"
         >
           ◀
@@ -173,7 +173,7 @@ export default function LeftPanel({
 
             {/* Export / Import strip */}
             <div className="flex items-center gap-1 px-2 py-1.5 border-b border-[#1e1e1e] flex-shrink-0">
-              <span className="text-[10px] text-[#2d3748] uppercase tracking-widest font-mono">Tuning</span>
+              <span className="text-[10px] text-[#64748b] uppercase tracking-widest font-mono">Tuning</span>
               <div className="ml-auto flex gap-1">
                 <button
                   onClick={copyToClipboard}
@@ -186,7 +186,7 @@ export default function LeftPanel({
                   onClick={() => showTuning ? setShowTuning(false) : openTuning()}
                   className={`px-2 py-0.5 text-[10px] font-mono rounded border transition-colors ${
                     showTuning
-                      ? 'border-[#334155] text-[#475569] hover:bg-[#161616]'
+                      ? 'border-[#334155] text-[#6b7280] hover:bg-[#161616]'
                       : 'border-[#1a3a1a] text-[#4ade80] hover:bg-[#1a2e1a]'
                   }`}
                   title="Paste JSON to import params"
@@ -236,7 +236,7 @@ export default function LeftPanel({
         {tab === 'enemy' && (
           <div className="flex flex-col h-full">
             <div className="flex items-center gap-3 px-3 py-3 border-b border-[#1e1e1e] flex-shrink-0">
-              <span className="text-[10px] text-[#475569] uppercase tracking-widest">Enemy Team</span>
+              <span className="text-[10px] text-[#6b7280] uppercase tracking-widest">Enemy Team</span>
               <button
                 onClick={() => setEnemyMode(ENEMY_MODE_CYCLE[simState.enemyMode])}
                 className={`ml-auto px-3 py-1 rounded border text-xs font-mono font-semibold transition-colors ${ENEMY_MODE_COLOR[simState.enemyMode]}`}
@@ -245,7 +245,7 @@ export default function LeftPanel({
               </button>
             </div>
             {simState.enemyMode === 'off' ? (
-              <div className="flex-1 flex items-center justify-center text-[#2d3748] text-xs font-mono text-center px-4">
+              <div className="flex-1 flex items-center justify-center text-[#64748b] text-xs font-mono text-center px-4">
                 Enemy team disabled.<br />Click the toggle to enable.
               </div>
             ) : (

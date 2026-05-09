@@ -35,7 +35,7 @@ export default function DebugPanel({ simState, setParam, setTeamConfig, setGKPar
             className={`flex-1 py-2 text-xs font-mono transition-colors ${
               tab === t.id
                 ? 'text-[#e2e8f0] border-b-2 border-[#3b82f6] bg-[#111]'
-                : 'text-[#475569] hover:text-[#94a3b8]'
+                : 'text-[#6b7280] hover:text-[#94a3b8]'
             }`}
           >
             {t.label}

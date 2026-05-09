@@ -62,7 +62,7 @@ export default function RightPanel({ simState, onFocusChange }: Props) {
       <div className="w-9 flex-shrink-0 flex flex-col items-center bg-[#0d0d0d] border-l border-[#1e1e1e]">
         <button
           onClick={() => setCollapsed(false)}
-          className="w-full py-2 flex justify-center text-[#475569] hover:text-[#94a3b8] hover:bg-[#161616] transition-colors text-sm"
+          className="w-full py-2 flex justify-center text-[#6b7280] hover:text-[#94a3b8] hover:bg-[#161616] transition-colors text-sm"
           title="Expand"
         >
           ◀
@@ -103,7 +103,7 @@ export default function RightPanel({ simState, onFocusChange }: Props) {
       <div className="flex items-stretch border-b border-[#1e1e1e] flex-shrink-0">
         <button
           onClick={() => setCollapsed(true)}
-          className="px-3 text-[#2d3748] hover:text-[#64748b] hover:bg-[#161616] transition-colors text-xs"
+          className="px-3 text-[#64748b] hover:text-[#64748b] hover:bg-[#161616] transition-colors text-xs"
           title="Collapse"
         >
           ▶
@@ -115,7 +115,7 @@ export default function RightPanel({ simState, onFocusChange }: Props) {
             className={`flex-1 py-2 text-xs font-mono transition-colors ${
               tab === t.id
                 ? 'bg-[#111] border-b-2'
-                : 'text-[#475569] hover:text-[#94a3b8]'
+                : 'text-[#6b7280] hover:text-[#94a3b8]'
             }`}
             style={tab === t.id ? {
               color:       t.color ?? '#e2e8f0',

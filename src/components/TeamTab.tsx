@@ -19,7 +19,7 @@ function Row({ label, value, unit = '' }: { label: string; value: string | numbe
       <span className="text-[#64748b] text-xs">{label}</span>
       <span className="text-[#e2e8f0] text-xs font-mono">
         {typeof value === 'number' ? value.toFixed(2) : value}
-        {unit && <span className="text-[#475569] ml-1">{unit}</span>}
+        {unit && <span className="text-[#6b7280] ml-1">{unit}</span>}
       </span>
     </div>
   )
@@ -35,11 +35,11 @@ export default function TeamTab({ simState }: Props) {
     <div className="p-3 overflow-y-auto h-full text-xs font-mono space-y-3">
 
       {/* Time */}
-      <div className="text-[#475569] text-[10px]">t = {time.toFixed(2)}s</div>
+      <div className="text-[#6b7280] text-[10px]">t = {time.toFixed(2)}s</div>
 
       {/* Role assignment */}
       <div className="bg-[#0f1117] rounded p-2">
-        <div className="text-[10px] text-[#475569] uppercase tracking-widest mb-2">Role Assignment</div>
+        <div className="text-[10px] text-[#6b7280] uppercase tracking-widest mb-2">Role Assignment</div>
         <div className="flex gap-1.5 mb-2">
           {robots.map((r, i) => {
             const isActive = activeIndex === i
@@ -133,7 +133,7 @@ export default function TeamTab({ simState }: Props) {
 
             {isActive && !isGK && (
               <div className="mt-2">
-                <div className="flex justify-between text-[10px] text-[#475569] mb-0.5">
+                <div className="flex justify-between text-[10px] text-[#6b7280] mb-0.5">
                   <span>alignment</span>
                   <span>{(debug.alignmentError * 180 / Math.PI).toFixed(1)}°</span>
                 </div>
@@ -154,7 +154,7 @@ export default function TeamTab({ simState }: Props) {
 
       {/* Ball summary */}
       <div className="bg-[#0f1117] rounded p-2">
-        <div className="text-[10px] text-[#475569] uppercase tracking-widest mb-1">Ball</div>
+        <div className="text-[10px] text-[#6b7280] uppercase tracking-widest mb-1">Ball</div>
         <Row label="pos" value={`(${ball.pos.x.toFixed(2)}, ${ball.pos.y.toFixed(2)})`} />
         <Row label="speed" value={Math.sqrt(ball.velocity.x ** 2 + ball.velocity.y ** 2)} unit="m/s" />
       </div>

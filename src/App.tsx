@@ -16,13 +16,19 @@ export default function App() {
   } = useSimulation()
 
   const [focusedRobot, setFocusedRobot] = useState<number | null>(null)
+  const [lightMode, setLightMode] = useState(false)
 
   return (
-    <div className="flex flex-col w-screen h-screen bg-[#0a0a0a] overflow-hidden">
+    <div
+      data-theme={lightMode ? 'light' : 'dark'}
+      className="flex flex-col w-screen h-screen bg-[#0a0a0a] overflow-hidden"
+    >
       <ControlBar
         simState={simState}
         play={play} pause={pause} step={step} reset={reset}
         setSpeed={setSpeed}
+        lightMode={lightMode}
+        toggleTheme={() => setLightMode(m => !m)}
       />
       <div className="flex flex-1 overflow-hidden">
         <LeftPanel

@@ -1,17 +1,19 @@
 import type { SimState } from '../simulation/types'
 
 interface Props {
-  simState: SimState
-  play:     () => void
-  pause:    () => void
-  step:     () => void
-  reset:    () => void
-  setSpeed: (s: number) => void
+  simState:     SimState
+  play:         () => void
+  pause:        () => void
+  step:         () => void
+  reset:        () => void
+  setSpeed:     (s: number) => void
+  lightMode:    boolean
+  toggleTheme:  () => void
 }
 
 const SPEEDS = [0.25, 0.5, 1, 2, 4]
 
-export default function ControlBar({ simState, play, pause, step, reset, setSpeed }: Props) {
+export default function ControlBar({ simState, play, pause, step, reset, setSpeed, lightMode, toggleTheme }: Props) {
   const { isPlaying, speed, gc } = simState
 
   const stateColor =
@@ -38,14 +40,14 @@ export default function ControlBar({ simState, play, pause, step, reset, setSpee
       <button
         onClick={step}
         disabled={isPlaying}
-        className="px-3 py-1.5 rounded text-xs font-mono border border-[#1e1e1e] text-[#4b5563] hover:text-[#94a3b8] hover:border-[#374151] disabled:opacity-25 transition-colors"
+        className="px-3 py-1.5 rounded text-xs font-mono border border-[#1e1e1e] text-[#64748b] hover:text-[#94a3b8] hover:border-[#4b5563] disabled:opacity-25 transition-colors"
       >
         → Step
       </button>
 
       <button
         onClick={reset}
-        className="px-3 py-1.5 rounded text-xs font-mono border border-[#1e1e1e] text-[#4b5563] hover:text-[#94a3b8] hover:border-[#374151] transition-colors"
+        className="px-3 py-1.5 rounded text-xs font-mono border border-[#1e1e1e] text-[#64748b] hover:text-[#94a3b8] hover:border-[#4b5563] transition-colors"
       >
         ↺ Reset
       </button>
@@ -53,7 +55,7 @@ export default function ControlBar({ simState, play, pause, step, reset, setSpee
       <div className="w-px h-5 bg-[#1e1e1e] mx-0.5" />
 
       {/* Speed */}
-      <span className="text-[10px] font-mono text-[#2d3748] uppercase tracking-widest">Speed</span>
+      <span className="text-[10px] font-mono text-[#64748b] uppercase tracking-widest">Speed</span>
       <div className="flex gap-0.5">
         {SPEEDS.map(s => (
           <button
@@ -62,7 +64,7 @@ export default function ControlBar({ simState, play, pause, step, reset, setSpee
             className={`px-2 py-1 rounded text-xs font-mono border transition-colors ${
               speed === s
                 ? 'bg-[#111827] text-[#60a5fa] border-[#1e3a5f]'
-                : 'text-[#2d3748] border-[#181818] hover:text-[#94a3b8] hover:border-[#2d3748]'
+                : 'text-[#64748b] border-[#181818] hover:text-[#94a3b8] hover:border-[#4b5563]'
             }`}
           >
             {s}×
@@ -84,7 +86,14 @@ export default function ControlBar({ simState, play, pause, step, reset, setSpee
             : gc.gameState}
       </span>
 
-      <span className="ml-auto text-[10px] font-mono text-[#1a1f2e]">
+      <button
+        onClick={toggleTheme}
+        className="ml-auto px-2.5 py-1 rounded text-[10px] font-mono border border-[#1e1e1e] text-[#64748b] hover:text-[#94a3b8] hover:border-[#4b5563] transition-colors"
+      >
+        {lightMode ? 'Dark' : 'Light'}
+      </button>
+
+      <span className="text-[10px] font-mono text-[#1a1f2e]">
         scroll → zoom · drag field → pan · dbl-click → reset view
       </span>
     </div>

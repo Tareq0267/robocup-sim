@@ -167,14 +167,28 @@ Key files used as ground truth for this sim:
 - [x] Ball-robot contact and push
 - [x] Court boundary clamping
 
+### Opponent Robots
+- [x] Enemy team (3 robots) with configurable mode: Idle, Chase, Defend
+- [x] Enemy GK mode — mirrors our GK state machine (RETREAT / ADJUST_BLOCK / CHASE / KICK)
+- [x] Cross-team collision resolution (our robots vs enemy robots)
+- [x] Enemy team rendered in red; drag-to-reposition enemy robots
+- [x] Enemy params tab in LeftPanel (mode, speed, GK params)
+
 ### UI
 - [x] Parameter panel with sliders for all striker and GK params
-- [x] Right panel: Team tab, P1 tab, P2 tab, GK tab
+- [x] Right panel: Team tab, P1 tab, P2 tab, GK tab — resizable (180–560 px, drag left edge)
+- [x] Left panel resizable (180–560 px, drag right edge); content scales proportionally with panel width
 - [x] State transition log per robot
 - [x] Debug data (FOV error, alignment error, distance to ball, etc.)
 - [x] Visual overlays: FOV cone, orientation arrow, chase circle, alignment line, shoot cone, tangent/radial vectors, ball velocity, assist target marker
 - [x] Drag-to-reposition: ball, both strikers, goalkeeper
 - [x] Play/pause, speed control, simulation reset
+- [x] **Canvas zoom/pan** — scroll wheel zooms 1–5× toward cursor; drag empty field to pan; double-click resets view
+- [x] **Minimap** — bottom-left overlay when zoom > 1×; shows all robots + ball + blue viewport rectangle
+- [x] **Canvas score HUD** — floating score/timer/state panel drawn directly on the canvas at top-centre
+- [x] **Export / import params** — JSON copy-paste strip in params tab; copy current params to clipboard, paste and apply any snapshot
+- [x] **ControlBar redesign** — play/pause, step, reset, speed multipliers, game-state badge; score/timer moved to canvas HUD
+- [x] **Light mode** — toggle in ControlBar; `data-theme="light"` CSS overrides all Tailwind arbitrary-value colours without component refactoring
 
 ### Scoring & Kickoff
 - [x] Goal detection — ball centre touches goal line within goal mouth → score increments
@@ -209,7 +223,6 @@ Key files used as ground truth for this sim:
 - [ ] **Ball out of bounds detection** — automatic detection when ball leaves field, auto-triggering the correct set piece (throw-in / goal kick / corner); currently set pieces are triggered manually only
 - [ ] **Cross kick** — `decision=='cross'`, `speed_limit=0.4` low-power pass to teammate instead of full shot
 - [ ] **Cost-based role switching** — replace pure-distance swap with composite cost matching `updateCostToKick()` (distance + angle to goal + obstacle penalty)
-- [ ] **Opponent robots** — add 3 passive or simple opponent robots to test defensive scenarios
 - [ ] **Hardware speed caps** — enforce `vx_limit=2.0` and `vy_limit=0.4` as hard caps on all velocities (currently uncapped)
 - [ ] **`crabWalk` velocity model** — real robot applies `vx_factor=0.5` to forward component and caps lateral to `vy_limit=0.4`; sim uses raw world-frame velocities
 

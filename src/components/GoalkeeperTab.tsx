@@ -18,7 +18,7 @@ function Row({ label, value, unit = '', color = '' }: { label: string; value: st
       <span className="text-[#64748b] text-xs">{label}</span>
       <span className={`text-xs font-mono ${color || 'text-[#e2e8f0]'}`}>
         {typeof value === 'number' ? value.toFixed(3) : value}
-        {unit && <span className="text-[#475569] ml-1">{unit}</span>}
+        {unit && <span className="text-[#6b7280] ml-1">{unit}</span>}
       </span>
     </div>
   )
@@ -38,7 +38,7 @@ function Bool({ label, value }: { label: string; value: boolean }) {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-3">
-      <div className="text-[10px] text-[#475569] uppercase tracking-widest mb-1 mt-2">{title}</div>
+      <div className="text-[10px] text-[#6b7280] uppercase tracking-widest mb-1 mt-2">{title}</div>
       {children}
     </div>
   )
@@ -51,7 +51,7 @@ export default function GoalkeeperTab({ simState }: Props) {
   const { ball, time } = simState
 
   if (!gk) {
-    return <div className="p-3 text-[#475569] text-xs">No goalkeeper found</div>
+    return <div className="p-3 text-[#6b7280] text-xs">No goalkeeper found</div>
   }
 
   const color   = GK_STATE_COLORS[gk.gkState] ?? GK_COLOR
@@ -109,7 +109,7 @@ export default function GoalkeeperTab({ simState }: Props) {
       </Section>
 
       {/* Transition log */}
-      <div className="text-[10px] text-[#475569] uppercase tracking-widest mb-1 mt-3">Transition Log</div>
+      <div className="text-[10px] text-[#6b7280] uppercase tracking-widest mb-1 mt-3">Transition Log</div>
       <div className="space-y-1">
         {debug.stateHistory.length === 0 && (
           <div className="text-[#334155] text-xs italic">no transitions yet</div>
@@ -117,12 +117,12 @@ export default function GoalkeeperTab({ simState }: Props) {
         {debug.stateHistory.map((t, i) => (
           <div key={i} className="bg-[#0f1117] rounded p-1.5">
             <div className="flex items-center gap-1 mb-0.5">
-              <span className="text-[#475569]">{t.time.toFixed(2)}s</span>
+              <span className="text-[#6b7280]">{t.time.toFixed(2)}s</span>
               <span style={{ color: GK_STATE_COLORS[t.from] ?? '#60a5fa' }}>{t.from}</span>
               <span className="text-[#334155]">→</span>
               <span style={{ color: GK_STATE_COLORS[t.to] ?? '#60a5fa' }}>{t.to}</span>
             </div>
-            <div className="text-[#475569] text-[10px] leading-snug">{t.reason}</div>
+            <div className="text-[#6b7280] text-[10px] leading-snug">{t.reason}</div>
           </div>
         ))}
       </div>

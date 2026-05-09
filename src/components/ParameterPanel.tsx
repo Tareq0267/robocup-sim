@@ -31,7 +31,7 @@ function Slider({
             onChange={e => onChange(parseFloat(e.target.value))}
             className="w-16 text-right bg-[#1a1a2e] border border-[#2a2a3e] rounded px-1 py-0.5 text-xs text-[#e2e8f0] focus:outline-none focus:border-[#3b82f6]"
           />
-          <span className="text-[#475569] text-[10px] w-8">{unit}</span>
+          <span className="text-[#6b7280] text-[10px] w-8">{unit}</span>
         </div>
       </div>
       <input
@@ -39,7 +39,7 @@ function Slider({
         onChange={e => onChange(parseFloat(e.target.value))}
         className={`w-full h-1 ${accentClass} cursor-pointer`}
       />
-      <div className="text-[#475569] text-[10px] mt-1 leading-snug">{desc}</div>
+      <div className="text-[#6b7280] text-[10px] mt-1 leading-snug">{desc}</div>
     </div>
   )
 }
@@ -52,7 +52,7 @@ export default function ParameterPanel({ params, team, gkParams, setParam, setTe
       {/* Team settings */}
       {showTeam && (
         <>
-          <div className="text-[10px] text-[#475569] uppercase tracking-widest">Team</div>
+          <div className="text-[10px] text-[#6b7280] uppercase tracking-widest">Team</div>
           <Slider
             label="Role Swap Delay" value={team!.roleSwapDelay} unit="s"
             min={0.1} max={5} step={0.1}
@@ -63,7 +63,7 @@ export default function ParameterPanel({ params, team, gkParams, setParam, setTe
       )}
 
       {/* Striker settings (shared P1/P2) */}
-      <div className="text-[10px] text-[#475569] uppercase tracking-widest pt-1">
+      <div className="text-[10px] text-[#6b7280] uppercase tracking-widest pt-1">
         Strikers (P1 &amp; P2)
       </div>
       {PARAM_META.map(meta => {

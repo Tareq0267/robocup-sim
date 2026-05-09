@@ -5,3 +5,122 @@
 * { box-sizing: border-box; }
 body { margin: 0; background: #0a0a0a; color: #e2e8f0; font-family: ui-monospace, Consolas, monospace; }
 #root { width: 100vw; height: 100vh; overflow: hidden; }
+
+/* ================================================================
+   LIGHT MODE OVERRIDES
+   Applied when data-theme="light" is set on the root div.
+   Uses !important to override Tailwind's compiled arbitrary values.
+   ================================================================ */
+
+[data-theme="light"] body { background: #dde3ea; color: #0f172a; }
+
+/* ── Panel backgrounds ───────────────────────────────────────── */
+[data-theme="light"] .bg-\[\#0a0a0a\] { background-color: #dde3ea !important; }  /* app shell */
+[data-theme="light"] .bg-\[\#0d0d0d\] { background-color: #f0f4f8 !important; }  /* top bars */
+[data-theme="light"] .bg-\[\#080808\] { background-color: #d8dfe7 !important; }
+[data-theme="light"] .bg-\[\#111\]    { background-color: #e8edf3 !important; }  /* hover */
+[data-theme="light"] .bg-\[\#141414\] { background-color: #d4dbe4 !important; }
+[data-theme="light"] .bg-\[\#161616\] { background-color: #e2e8f0 !important; }
+[data-theme="light"] .bg-\[\#1a1a1a\] { background-color: #e8edf3 !important; }
+
+/* ── State-tinted backgrounds (keep hue, use -100 Tailwind) ──────
+   Dark versions are near-black; light versions should be clearly
+   tinted but not so pale that darkened text loses contrast.        */
+[data-theme="light"] .bg-\[\#111827\] { background-color: #dbeafe !important; }  /* blue  */
+[data-theme="light"] .bg-\[\#1e293b\] { background-color: #dbeafe !important; }  /* blue  */
+[data-theme="light"] .bg-\[\#0f1a0f\] { background-color: #dcfce7 !important; }  /* green */
+[data-theme="light"] .bg-\[\#0a1a0a\] { background-color: #dcfce7 !important; }  /* green */
+[data-theme="light"] .bg-\[\#122212\] { background-color: #bbf7d0 !important; }  /* green */
+[data-theme="light"] .bg-\[\#162916\] { background-color: #bbf7d0 !important; }  /* green */
+[data-theme="light"] .bg-\[\#1a2e1a\] { background-color: #bbf7d0 !important; }  /* green */
+[data-theme="light"] .bg-\[\#1a3a1a\] { background-color: #86efac !important; }  /* green */
+[data-theme="light"] .bg-\[\#1a0a0a\] { background-color: #fee2e2 !important; }  /* red   */
+[data-theme="light"] .bg-\[\#22100e\] { background-color: #fecaca !important; }  /* red   */
+[data-theme="light"] .bg-\[\#220e0e\] { background-color: #fecaca !important; }  /* red   */
+[data-theme="light"] .bg-\[\#3a1a1a\] { background-color: #fca5a5 !important; }  /* red   */
+[data-theme="light"] .bg-\[\#0d1a0d\] { background-color: #dcfce7 !important; }  /* green */
+[data-theme="light"] .bg-\[\#0e1020\] { background-color: #e0e7ff !important; }  /* indigo*/
+[data-theme="light"] .bg-\[\#12122a\] { background-color: #e0e7ff !important; }  /* indigo*/
+[data-theme="light"] .bg-\[\#1c1600\] { background-color: #fef9c3 !important; }  /* yellow*/
+[data-theme="light"] .bg-\[\#1c0e00\] { background-color: #ffedd5 !important; }  /* orange*/
+[data-theme="light"] .bg-\[\#1a2e4a\] { background-color: #bfdbfe !important; }  /* blue  */
+[data-theme="light"] .bg-\[\#1e3a5f\] { background-color: #bfdbfe !important; }  /* blue  */
+[data-theme="light"] .bg-\[\#1e1f2e\] { background-color: #e0e7ff !important; }  /* indigo*/
+[data-theme="light"] .bg-\[\#0e0e1f\] { background-color: #e0e7ff !important; }  /* indigo*/
+[data-theme="light"] .bg-\[\#1f0f0f\] { background-color: #fee2e2 !important; }  /* red   */
+[data-theme="light"] .bg-\[\#0f1f0f\] { background-color: #dcfce7 !important; }  /* green */
+[data-theme="light"] .bg-\[\#1f0a0a\] { background-color: #fee2e2 !important; }  /* red   */
+
+/* ── Hover backgrounds ───────────────────────────────────────── */
+[data-theme="light"] .hover\:bg-\[\#111\]:hover     { background-color: #d4dbe4 !important; }
+[data-theme="light"] .hover\:bg-\[\#161616\]:hover   { background-color: #d8dfe7 !important; }
+[data-theme="light"] .hover\:bg-\[\#2a2a2a\]:hover   { background-color: #cbd5e1 !important; }
+[data-theme="light"] .hover\:bg-\[\#1a3a1a\]:hover   { background-color: #86efac !important; }
+[data-theme="light"] .hover\:bg-\[\#1a2e1a\]:hover   { background-color: #86efac !important; }
+[data-theme="light"] .hover\:bg-\[\#1a2e4a\]:hover   { background-color: #93c5fd !important; }
+[data-theme="light"] .hover\:bg-\[\#162916\]:hover   { background-color: #86efac !important; }
+[data-theme="light"] .hover\:bg-\[\#122212\]:hover   { background-color: #86efac !important; }
+[data-theme="light"] .hover\:bg-\[\#22100e\]:hover   { background-color: #fca5a5 !important; }
+[data-theme="light"] .hover\:bg-\[\#220e0e\]:hover   { background-color: #fca5a5 !important; }
+[data-theme="light"] .hover\:bg-\[\#3a1a1a\]:hover   { background-color: #f87171 !important; }
+[data-theme="light"] .hover\:bg-\[\#1e293b\]:hover   { background-color: #93c5fd !important; }
+[data-theme="light"] .hover\:bg-\[\#1a3352\]:hover   { background-color: #60a5fa !important; }
+
+/* ── Border colors ───────────────────────────────────────────── */
+[data-theme="light"] .border-\[\#1e1e1e\]  { border-color: #94a3b8 !important; }
+[data-theme="light"] .border-\[\#2a2a2a\]  { border-color: #94a3b8 !important; }
+[data-theme="light"] .border-\[\#262626\]  { border-color: #cbd5e1 !important; }
+[data-theme="light"] .border-\[\#333\]     { border-color: #cbd5e1 !important; }
+[data-theme="light"] .border-\[\#181818\]  { border-color: #9ca3af !important; }
+[data-theme="light"] .border-\[\#1a1a1a\]  { border-color: #94a3b8 !important; }
+
+/* ── Text colors ─────────────────────────────────────────────── */
+[data-theme="light"] .text-\[\#e2e8f0\]  { color: #0f172a !important; }   /* primary — near-black */
+[data-theme="light"] .text-\[\#94a3b8\]  { color: #334155 !important; }   /* secondary */
+[data-theme="light"] .text-\[\#64748b\]  { color: #374151 !important; }   /* tertiary (was dim labels in dark) */
+[data-theme="light"] .text-\[\#6b7280\]  { color: #374151 !important; }   /* tertiary */
+[data-theme="light"] .text-\[\#2a2a2a\]  { color: #475569 !important; }   /* dimmer labels */
+[data-theme="light"] .text-\[\#1e1e1e\]  { color: #64748b !important; }   /* was #cbd5e1 — now readable */
+[data-theme="light"] .text-\[\#1a1f2e\]  { color: #94a3b8 !important; }   /* hint/decorative */
+
+/* ── Hover text ──────────────────────────────────────────────── */
+[data-theme="light"] .hover\:text-\[\#94a3b8\]:hover { color: #0f172a !important; }
+[data-theme="light"] .hover\:text-\[\#64748b\]:hover  { color: #334155 !important; }
+[data-theme="light"] .hover\:text-\[\#9ca3af\]:hover  { color: #1e293b !important; }
+
+/* ── Additional backgrounds (ParameterPanel, GoalkeeperTab, StateTab, TeamTab) ── */
+[data-theme="light"] .bg-\[\#0f1117\] { background-color: #e2e8f0 !important; }  /* card bg */
+[data-theme="light"] .bg-\[\#131820\] { background-color: #d4dbe4 !important; }  /* card hover */
+[data-theme="light"] .bg-\[\#1a1a2e\] { background-color: #dbeafe !important; }  /* blue input bg */
+[data-theme="light"] .bg-\[\#1e1e1e\] { background-color: #94a3b8 !important; }  /* dividers + progress bar track */
+
+/* ── Additional hover backgrounds ── */
+[data-theme="light"] .hover\:bg-\[\#131820\]:hover { background-color: #d4dbe4 !important; }
+
+/* ── Additional borders ── */
+[data-theme="light"] .border-\[\#2a2a3e\]  { border-color: #93c5fd !important; }  /* blue input border */
+[data-theme="light"] .border-\[\#334155\]  { border-color: #94a3b8 !important; }
+[data-theme="light"] .border-\[\#2d3748\]  { border-color: #94a3b8 !important; }
+
+/* ── Hover borders ── */
+[data-theme="light"] .hover\:border-\[\#4b5563\]:hover { border-color: #475569 !important; }
+
+/* ── Accent text — darken bright colours for light-bg contrast ───────────
+   In dark mode these sit on near-black tinted backgrounds.
+   In light mode those backgrounds become near-white, so the bright text
+   must be darkened to stay readable.                                       */
+[data-theme="light"] .text-\[\#4ade80\]  { color: #15803d !important; }   /* green  → green-700  */
+[data-theme="light"] .text-\[\#22c55e\]  { color: #16a34a !important; }   /* green  → green-600  */
+[data-theme="light"] .text-\[\#34d399\]  { color: #059669 !important; }   /* emerald→ emerald-600*/
+[data-theme="light"] .text-\[\#60a5fa\]  { color: #1d4ed8 !important; }   /* blue   → blue-700   */
+[data-theme="light"] .text-\[\#818cf8\]  { color: #4338ca !important; }   /* indigo → indigo-700 */
+[data-theme="light"] .text-\[\#a78bfa\]  { color: #6d28d9 !important; }   /* violet → violet-700 */
+[data-theme="light"] .text-\[\#a855f7\]  { color: #7e22ce !important; }   /* purple → purple-800 */
+[data-theme="light"] .text-\[\#22d3ee\]  { color: #0891b2 !important; }   /* cyan   → cyan-600   */
+[data-theme="light"] .text-\[\#fbbf24\]  { color: #b45309 !important; }   /* amber  → amber-700  */
+[data-theme="light"] .text-\[\#f59e0b\]  { color: #d97706 !important; }   /* amber  → amber-600  */
+[data-theme="light"] .text-\[\#eab308\]  { color: #a16207 !important; }   /* yellow → yellow-700 */
+[data-theme="light"] .text-\[\#fb923c\]  { color: #c2410c !important; }   /* orange → orange-700 */
+[data-theme="light"] .text-\[\#f97316\]  { color: #ea580c !important; }   /* orange → orange-600 */
+[data-theme="light"] .text-\[\#f87171\]  { color: #b91c1c !important; }   /* red    → red-700    */
+[data-theme="light"] .text-\[\#ef4444\]  { color: #dc2626 !important; }   /* red    → red-600    */

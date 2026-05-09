@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import type { GameControllerState, GcFreeKickType, GcGameState, GcSubState } from '../simulation/types'
 
-const COLLAPSED_H = 36
-const EXPANDED_H  = 292
+const COLLAPSED_H = 48
+const EXPANDED_H  = 340
 
 interface Props {
   gc:              GameControllerState
@@ -31,10 +31,10 @@ function Btn({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`px-2.5 py-1 rounded text-[11px] font-mono border transition-colors whitespace-nowrap
+      className={`px-3.5 py-1.5 rounded text-xs font-mono border transition-colors whitespace-nowrap
         ${active
           ? activeClass
-          : 'bg-[#0d0d0d] text-[#4b5563] border-[#1e1e1e] hover:text-[#9ca3af] hover:border-[#374151]'}
+          : 'bg-[#0d0d0d] text-[#64748b] border-[#1e1e1e] hover:text-[#9ca3af] hover:border-[#4b5563]'}
         ${disabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}
         ${className}`}
     >
@@ -96,7 +96,7 @@ export default function BottomBar({
     ? 'bg-[#0a1a0a] text-[#4ade80] border-[#166534]'
     : isFk
     ? 'bg-[#0e0e1f] text-[#a78bfa] border-[#3730a3]'
-    : 'bg-[#0d0d0d] text-[#4b5563] border-[#1e1e1e]'
+    : 'bg-[#0d0d0d] text-[#64748b] border-[#1e1e1e]'
 
   const showKickoff = gc.gameState === 'READY' || gc.gameState === 'INITIAL'
 
@@ -111,23 +111,23 @@ export default function BottomBar({
         className="flex items-center w-full px-4 gap-3 hover:bg-[#111] transition-colors"
         style={{ height: COLLAPSED_H }}
       >
-        <span className="text-[10px] text-[#2d3748]">{open ? '▼' : '▲'}</span>
+        <span className="text-xs text-[#64748b]">{open ? '▼' : '▲'}</span>
 
-        <span className="text-[11px] font-mono uppercase tracking-widest text-[#374151]">
+        <span className="text-xs font-mono uppercase tracking-widest text-[#64748b]">
           Game Controller
         </span>
 
-        <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${stateBadgeClass}`}>
+        <span className={`px-2.5 py-1 rounded text-xs font-mono border ${stateBadgeClass}`}>
           {isPlaying ? '▶ PLAYING' : isFk ? `FK · ${gc.freeKickType.replace('_', ' ')}` : gc.gameState}
         </span>
 
-        <span className="text-sm font-mono font-bold text-[#4ade80] tabular-nums">{score.ours}</span>
-        <span className="text-[10px] font-mono text-[#1e1e1e]">—</span>
-        <span className="text-sm font-mono font-bold text-[#f87171] tabular-nums">{score.theirs}</span>
+        <span className="text-base font-mono font-bold text-[#4ade80] tabular-nums">{score.ours}</span>
+        <span className="text-xs font-mono text-[#1e1e1e]">—</span>
+        <span className="text-base font-mono font-bold text-[#f87171] tabular-nums">{score.theirs}</span>
 
-        <span className="text-[11px] font-mono text-[#374151] tabular-nums">{formatTime(time)}</span>
+        <span className="text-xs font-mono text-[#64748b] tabular-nums">{formatTime(time)}</span>
 
-        <span className="ml-auto text-[10px] font-mono text-[#1e1e1e]">{open ? 'collapse' : 'expand'}</span>
+        <span className="ml-auto text-xs font-mono text-[#1e1e1e]">{open ? 'collapse' : 'expand'}</span>
       </button>
 
       {/* ── Expanded ─────────────────────────────────────────── */}
@@ -135,20 +135,20 @@ export default function BottomBar({
 
         {/* LEFT — Our Team */}
         <div className="flex-1 flex flex-col items-center justify-center gap-3 border-r border-[#1e1e1e] px-5">
-          <span className="text-[11px] font-mono uppercase tracking-widest text-[#4ade80] font-semibold">
+          <span className="text-xs font-mono uppercase tracking-widest text-[#4ade80] font-semibold">
             Our Team
           </span>
 
           <button
             onClick={() => scoreGoal('ours')}
-            className="w-full max-w-[110px] py-1.5 rounded text-xs font-mono font-semibold border
+            className="w-full max-w-[140px] py-2.5 rounded text-sm font-mono font-bold border
               bg-[#0a1a0a] text-[#4ade80] border-[#166534] hover:bg-[#122212] transition-colors"
           >
             + Goal
           </button>
 
-          <div className="flex flex-col gap-1.5 w-full max-w-[150px]">
-            <span className="text-[10px] font-mono text-[#374151] uppercase tracking-widest">Penalties</span>
+          <div className="flex flex-col gap-1.5 w-full max-w-[150px] opacity-25 pointer-events-none select-none">
+            <span className="text-[10px] font-mono text-[#64748b] uppercase tracking-widest">Penalties</span>
             <div className="flex gap-1.5">
               {(['P1', 'P2', 'GK'] as const).map((label, i) => (
                 <button
@@ -157,7 +157,7 @@ export default function BottomBar({
                   className={`flex-1 py-1.5 rounded text-[11px] font-mono border transition-colors ${
                     penalties[i]
                       ? 'bg-[#1a0a0a] text-[#f87171] border-[#7f1d1d] hover:bg-[#220e0e]'
-                      : 'bg-[#0d0d0d] text-[#4b5563] border-[#1e1e1e] hover:text-[#9ca3af] hover:border-[#374151]'
+                      : 'bg-[#0d0d0d] text-[#64748b] border-[#1e1e1e] hover:text-[#9ca3af] hover:border-[#4b5563]'
                   }`}
                 >
                   {label}
@@ -173,95 +173,100 @@ export default function BottomBar({
           {/* Score + timer */}
           <div className="flex items-baseline gap-6">
             <span className="text-3xl font-mono font-bold text-[#4ade80] tabular-nums">{score.ours}</span>
-            <span className="text-sm font-mono text-[#374151] tabular-nums">{formatTime(time)}</span>
+            <span className="text-sm font-mono text-[#64748b] tabular-nums">{formatTime(time)}</span>
             <span className="text-3xl font-mono font-bold text-[#f87171] tabular-nums">{score.theirs}</span>
           </div>
 
-          {/* Game state buttons */}
-          <div className="flex gap-1">
-            {GAME_STATES.map(({ state, label }) => (
-              <Btn
-                key={state} label={label}
-                active={gc.gameState === state}
-                activeClass={GS_ACTIVE[state]}
-                onClick={() => handleStateClick(state)}
-              />
-            ))}
-          </div>
+          {/* Game controls — greyed out pending full GC integration */}
+          <div className="opacity-25 pointer-events-none select-none flex flex-col items-center gap-2">
 
-          {/* Kickoff side — shown in INITIAL / READY */}
-          {showKickoff && (
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono text-[#374151] uppercase tracking-widest">Kickoff</span>
-              {(['ours', 'theirs'] as const).map(side => (
-                <Btn
-                  key={side}
-                  label={side === 'ours' ? 'Ours ↑' : '↓ Theirs'}
-                  active={gc.kickoffSide === side}
-                  activeClass={
-                    side === 'ours'
-                      ? 'bg-[#0a1a0a] text-[#4ade80] border-[#166534]'
-                      : 'bg-[#1a0a0a] text-[#f87171] border-[#7f1d1d]'
-                  }
-                  onClick={() => updateGc('kickoffSide', side)}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* FK sub-state — shown when FREE_KICK is active */}
-          {isFk && (
+            {/* Game state buttons */}
             <div className="flex gap-1">
-              {FK_SUB.map(({ state, label, active: ac }) => (
+              {GAME_STATES.map(({ state, label }) => (
                 <Btn
                   key={state} label={label}
-                  active={gc.subState === state}
-                  activeClass={ac}
-                  onClick={() => updateGc('subState', state)}
+                  active={gc.gameState === state}
+                  activeClass={GS_ACTIVE[state]}
+                  onClick={() => handleStateClick(state)}
                 />
               ))}
             </div>
-          )}
 
-          {/* Set pieces */}
-          <div className="flex items-center gap-0.5 flex-wrap justify-center">
-            {SET_PIECES.map(({ type, label }) => (
-              <div key={type} className="flex">
-                <Btn
-                  label={`${label} ↑`}
-                  active={isFk && gc.freeKickType === type && gc.freeKickSide === 'ours'}
-                  activeClass="bg-[#0a1a0a] text-[#4ade80] border-[#166534]"
-                  className="rounded-r-none border-r-0 !text-[10px] !px-2"
-                  onClick={() => triggerSetPiece(type, 'ours')}
-                />
-                <Btn
-                  label="↓"
-                  active={isFk && gc.freeKickType === type && gc.freeKickSide === 'theirs'}
-                  activeClass="bg-[#1a0a0a] text-[#f87171] border-[#7f1d1d]"
-                  className="rounded-l-none !text-[10px] !px-2"
-                  onClick={() => triggerSetPiece(type, 'theirs')}
-                />
+            {/* Kickoff side — shown in INITIAL / READY */}
+            {showKickoff && (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono text-[#64748b] uppercase tracking-widest">Kickoff</span>
+                {(['ours', 'theirs'] as const).map(side => (
+                  <Btn
+                    key={side}
+                    label={side === 'ours' ? 'Ours ↑' : '↓ Theirs'}
+                    active={gc.kickoffSide === side}
+                    activeClass={
+                      side === 'ours'
+                        ? 'bg-[#0a1a0a] text-[#4ade80] border-[#166534]'
+                        : 'bg-[#1a0a0a] text-[#f87171] border-[#7f1d1d]'
+                    }
+                    onClick={() => updateGc('kickoffSide', side)}
+                  />
+                ))}
               </div>
-            ))}
+            )}
+
+            {/* FK sub-state — shown when FREE_KICK is active */}
+            {isFk && (
+              <div className="flex gap-1">
+                {FK_SUB.map(({ state, label, active: ac }) => (
+                  <Btn
+                    key={state} label={label}
+                    active={gc.subState === state}
+                    activeClass={ac}
+                    onClick={() => updateGc('subState', state)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Set pieces */}
+            <div className="flex items-center gap-0.5 flex-wrap justify-center">
+              {SET_PIECES.map(({ type, label }) => (
+                <div key={type} className="flex">
+                  <Btn
+                    label={`${label} ↑`}
+                    active={isFk && gc.freeKickType === type && gc.freeKickSide === 'ours'}
+                    activeClass="bg-[#0a1a0a] text-[#4ade80] border-[#166534]"
+                    className="rounded-r-none border-r-0 !text-[11px] !px-2.5"
+                    onClick={() => triggerSetPiece(type, 'ours')}
+                  />
+                  <Btn
+                    label="↓"
+                    active={isFk && gc.freeKickType === type && gc.freeKickSide === 'theirs'}
+                    activeClass="bg-[#1a0a0a] text-[#f87171] border-[#7f1d1d]"
+                    className="rounded-l-none !text-[11px] !px-2.5"
+                    onClick={() => triggerSetPiece(type, 'theirs')}
+                  />
+                </div>
+              ))}
+            </div>
+
           </div>
         </div>
 
         {/* RIGHT — Their Team */}
         <div className="flex-1 flex flex-col items-center justify-center gap-3 border-l border-[#1e1e1e] px-5">
-          <span className="text-[11px] font-mono uppercase tracking-widest text-[#f87171] font-semibold">
+          <span className="text-xs font-mono uppercase tracking-widest text-[#f87171] font-semibold">
             Their Team
           </span>
 
           <button
             onClick={() => scoreGoal('theirs')}
-            className="w-full max-w-[110px] py-1.5 rounded text-xs font-mono font-semibold border
+            className="w-full max-w-[140px] py-2.5 rounded text-sm font-mono font-bold border
               bg-[#1a0a0a] text-[#f87171] border-[#7f1d1d] hover:bg-[#22100e] transition-colors"
           >
             + Goal
           </button>
 
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono text-[#374151] uppercase tracking-widest">Half</span>
+            <span className="text-[10px] font-mono text-[#64748b] uppercase tracking-widest">Half</span>
             <Btn
               label={gc.firstHalf ? '1st ▸' : '2nd ▸'}
               active={false} activeClass=""

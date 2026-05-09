@@ -30,11 +30,11 @@ export default function OverlayPanel({ simState, setOverlay, setBallStatic }: Pr
     <div className="p-3 overflow-y-auto h-full space-y-2">
       {/* Ball mode */}
       <div className="mb-3">
-        <div className="text-[10px] text-[#475569] uppercase tracking-widest mb-2">Ball Mode</div>
+        <div className="text-[10px] text-[#6b7280] uppercase tracking-widest mb-2">Ball Mode</div>
         <div className="bg-[#0f1117] rounded p-2 flex items-center justify-between">
           <div>
             <div className="text-xs text-[#e2e8f0]">Static Ball</div>
-            <div className="text-[10px] text-[#475569] mt-0.5">Ball ignores physics — drag it freely</div>
+            <div className="text-[10px] text-[#6b7280] mt-0.5">Ball ignores physics — drag it freely</div>
           </div>
           <button
             onClick={() => setBallStatic(!simState.ball.isStatic)}
@@ -47,7 +47,7 @@ export default function OverlayPanel({ simState, setOverlay, setBallStatic }: Pr
         </div>
       </div>
 
-      <div className="text-[10px] text-[#475569] uppercase tracking-widest mb-2">Canvas Overlays</div>
+      <div className="text-[10px] text-[#6b7280] uppercase tracking-widest mb-2">Canvas Overlays</div>
       {OVERLAYS.map(({ key, label, desc }) => (
         <div
           key={key}
@@ -69,7 +69,7 @@ export default function OverlayPanel({ simState, setOverlay, setBallStatic }: Pr
           </div>
           <div>
             <div className="text-xs text-[#e2e8f0]">{label}</div>
-            <div className="text-[10px] text-[#475569] mt-0.5">{desc}</div>
+            <div className="text-[10px] text-[#6b7280] mt-0.5">{desc}</div>
           </div>
         </div>
       ))}
