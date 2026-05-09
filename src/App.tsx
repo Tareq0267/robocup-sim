@@ -9,7 +9,7 @@ import BottomBar  from './components/BottomBar'
 export default function App() {
   const {
     simState,
-    play, pause, step, reset, scoreGoal, kickoff, updateGc, triggerSetPiece,
+    play, pause, step, reset, scoreGoal, updateGc, triggerSetPiece,
     setSpeed, setParam, setTeamConfig, setGKParam, setOverlay,
     setBallStatic, dragBall, dragRobot, dragEnemyRobot,
     setEnemyMode, setEnemyParam, setEnemyGKParam,
