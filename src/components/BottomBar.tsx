@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import type { GameControllerState, GcFreeKickType, GcGameState, GcSubState } from '../simulation/types'
 
-const COLLAPSED_H = 48
-const EXPANDED_H  = 340
+const COLLAPSED_H = 36
+const EXPANDED_H  = 292
 
 interface Props {
   gc:              GameControllerState
@@ -31,7 +31,7 @@ function Btn({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`px-3.5 py-1.5 rounded text-xs font-mono border transition-colors whitespace-nowrap
+      className={`px-2.5 py-1 rounded text-[11px] font-mono border transition-colors whitespace-nowrap
         ${active
           ? activeClass
           : 'bg-[#0d0d0d] text-[#64748b] border-[#1e1e1e] hover:text-[#9ca3af] hover:border-[#4b5563]'}
@@ -111,23 +111,23 @@ export default function BottomBar({
         className="flex items-center w-full px-4 gap-3 hover:bg-[#111] transition-colors"
         style={{ height: COLLAPSED_H }}
       >
-        <span className="text-xs text-[#64748b]">{open ? '▼' : '▲'}</span>
+        <span className="text-[10px] text-[#64748b]">{open ? '▼' : '▲'}</span>
 
-        <span className="text-xs font-mono uppercase tracking-widest text-[#64748b]">
+        <span className="text-[11px] font-mono uppercase tracking-widest text-[#64748b]">
           Game Controller
         </span>
 
-        <span className={`px-2.5 py-1 rounded text-xs font-mono border ${stateBadgeClass}`}>
+        <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${stateBadgeClass}`}>
           {isPlaying ? '▶ PLAYING' : isFk ? `FK · ${gc.freeKickType.replace('_', ' ')}` : gc.gameState}
         </span>
 
-        <span className="text-base font-mono font-bold text-[#4ade80] tabular-nums">{score.ours}</span>
-        <span className="text-xs font-mono text-[#1e1e1e]">—</span>
-        <span className="text-base font-mono font-bold text-[#f87171] tabular-nums">{score.theirs}</span>
+        <span className="text-sm font-mono font-bold text-[#4ade80] tabular-nums">{score.ours}</span>
+        <span className="text-[10px] font-mono text-[#1e1e1e]">—</span>
+        <span className="text-sm font-mono font-bold text-[#f87171] tabular-nums">{score.theirs}</span>
 
-        <span className="text-xs font-mono text-[#64748b] tabular-nums">{formatTime(time)}</span>
+        <span className="text-[11px] font-mono text-[#64748b] tabular-nums">{formatTime(time)}</span>
 
-        <span className="ml-auto text-xs font-mono text-[#1e1e1e]">{open ? 'collapse' : 'expand'}</span>
+        <span className="ml-auto text-[10px] font-mono text-[#1e1e1e]">{open ? 'collapse' : 'expand'}</span>
       </button>
 
       {/* ── Expanded ─────────────────────────────────────────── */}
@@ -234,14 +234,14 @@ export default function BottomBar({
                     label={`${label} ↑`}
                     active={isFk && gc.freeKickType === type && gc.freeKickSide === 'ours'}
                     activeClass="bg-[#0a1a0a] text-[#4ade80] border-[#166534]"
-                    className="rounded-r-none border-r-0 !text-[11px] !px-2.5"
+                    className="rounded-r-none border-r-0 !text-[10px] !px-2"
                     onClick={() => triggerSetPiece(type, 'ours')}
                   />
                   <Btn
                     label="↓"
                     active={isFk && gc.freeKickType === type && gc.freeKickSide === 'theirs'}
                     activeClass="bg-[#1a0a0a] text-[#f87171] border-[#7f1d1d]"
-                    className="rounded-l-none !text-[11px] !px-2.5"
+                    className="rounded-l-none !text-[10px] !px-2"
                     onClick={() => triggerSetPiece(type, 'theirs')}
                   />
                 </div>
