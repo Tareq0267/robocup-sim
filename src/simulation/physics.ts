@@ -82,8 +82,16 @@ export function resolveOverlap(ball: Ball, robot: Robot): Ball {
   }
 }
 
-// Step ball forward by dt seconds
-export function stepBall(ball: Ball, court: Court, dt: number): Ball {
+// Step ball forward by dt seconds.
+// goalHalfWidth / goalDepth: when provided, the end walls open up within the
+// goal mouth so the ball can travel into the net and bounce off the back wall.
+export function stepBall(
+  ball:          Ball,
+  court:         Court,
+  dt:            number,
+  goalHalfWidth: number = 0,
+  goalDepth:     number = 0,
+): Ball {
   if (ball.isStatic) return ball
 
   // Apply friction
@@ -96,15 +104,31 @@ export function stepBall(ball: Ball, court: Court, dt: number): Ball {
   // Move
   let pos: Vec2 = add(ball.pos, scale(velocity, dt))
 
-  // Wall collisions (bounce)
-  const hw = court.width  / 2 - ball.radius
-  const hh = court.height / 2 - ball.radius
+  const hw     = court.width  / 2 - ball.radius   // field end wall
+  const hh     = court.height / 2 - ball.radius   // side walls
+  const hwNet  = court.width  / 2 + goalDepth - ball.radius  // goal back wall
 
   let vx = velocity.x
   let vy = velocity.y
 
-  if (pos.x < -hw) { pos = { ...pos, x: -hw }; vx = Math.abs(vx) * RESTITUTION }
-  if (pos.x >  hw) { pos = { ...pos, x:  hw }; vx = -Math.abs(vx) * RESTITUTION }
+  // End walls — open within goal mouth, solid outside it
+  const inGoalMouth = goalHalfWidth > 0 && Math.abs(pos.y) <= goalHalfWidth
+  if (pos.x > hw) {
+    if (inGoalMouth) {
+      if (pos.x > hwNet) { pos = { ...pos, x: hwNet }; vx = -Math.abs(vx) * RESTITUTION }
+    } else {
+      pos = { ...pos, x: hw }; vx = -Math.abs(vx) * RESTITUTION
+    }
+  }
+  if (pos.x < -hw) {
+    if (inGoalMouth) {
+      if (pos.x < -hwNet) { pos = { ...pos, x: -hwNet }; vx = Math.abs(vx) * RESTITUTION }
+    } else {
+      pos = { ...pos, x: -hw }; vx = Math.abs(vx) * RESTITUTION
+    }
+  }
+
+  // Side walls (always solid)
   if (pos.y < -hh) { pos = { ...pos, y: -hh }; vy = Math.abs(vy) * RESTITUTION }
   if (pos.y >  hh) { pos = { ...pos, y:  hh }; vy = -Math.abs(vy) * RESTITUTION }
 

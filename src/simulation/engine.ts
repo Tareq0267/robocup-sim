@@ -357,7 +357,7 @@ function tickGoalkeeper(
   }
 
   // ── 3. Update position ─────────────────────────────────────
-  const hw = court.width  / 2 - gk.radius
+  const hw = court.width  / 2 - gk.radius + ROBOT_FIELD_PADDING
   const hh = court.height / 2 - gk.radius
   const rawPos = add(updatedGk.pos, scale(velocity, dt))
   const clampedPos = {
@@ -690,7 +690,7 @@ export function tick(state: SimState, dt: number): SimState {
     }
   }
 
-  newBall = stepBall(newBall, court, dt)
+  newBall = stepBall(newBall, court, dt, state.goal.width / 2, state.goal.depth)
 
   // Auto-pause once all robots (and enemy team when active) reach kickoff positions
   const enemyKickoffDone = state.enemyMode !== 'active' || !isKickoffReady || (() => {
