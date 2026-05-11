@@ -9,9 +9,11 @@ interface Props {
   isPlaying:       boolean
   time:            number
   score:           { ours: number; theirs: number }
+  autoGoal:        boolean
   penalties:       [boolean, boolean, boolean]
   updateGc:        <K extends keyof GameControllerState>(key: K, value: GameControllerState[K]) => void
   scoreGoal:       (side: 'ours' | 'theirs') => void
+  setAutoGoal:     (v: boolean) => void
   triggerSetPiece: (type: GcFreeKickType, side: 'ours' | 'theirs') => void
 }
 
@@ -75,8 +77,8 @@ const SET_PIECES: { type: GcFreeKickType; label: string }[] = [
 ]
 
 export default function BottomBar({
-  gc, isPlaying, time, score, penalties,
-  updateGc, scoreGoal, triggerSetPiece,
+  gc, isPlaying, time, score, autoGoal, penalties,
+  updateGc, scoreGoal, setAutoGoal, triggerSetPiece,
 }: Props) {
   const [open, setOpen] = useState(false)
   const isFk = gc.subStateType === 'FREE_KICK'
@@ -169,6 +171,18 @@ export default function BottomBar({
 
         {/* CENTER — Match controls */}
         <div className="flex-[2.2] flex flex-col items-center justify-center gap-2 px-6">
+
+          {/* Auto goal toggle */}
+          <button
+            onClick={() => setAutoGoal(!autoGoal)}
+            className={`px-3 py-1 rounded text-[11px] font-mono border transition-colors ${
+              autoGoal
+                ? 'bg-[#0a1a0a] text-[#4ade80] border-[#166534]'
+                : 'bg-[#0d0d0d] text-[#64748b] border-[#1e1e1e] hover:text-[#9ca3af] hover:border-[#4b5563]'
+            }`}
+          >
+            {autoGoal ? '⬤ Auto Goal On' : '○ Auto Goal Off'}
+          </button>
 
           {/* Score + timer */}
           <div className="flex items-baseline gap-6">

@@ -2,7 +2,7 @@
 // SIMULATION ENGINE — one tick per frame
 // ================================================================
 
-import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type SimState, type DebugData, type StateTransition, type GoalkeeperRobot, type GoalkeeperDebugData } from './types'
+import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type SimState, type DebugData, type StateTransition, type GoalkeeperRobot, type GoalkeeperDebugData, type GcGameState, type GcSubState, type GcSubStateType } from './types'
 import { getNextState, getInactiveState, computeAlignmentError, computeOrientationError, computeFovError, isOnCorrectSide, isAligned, isAtContactRange, isOrientationAligned, canSeeBall } from './stateMachine'
 import { searchBehavior, idleBehavior, assistBehavior, chaseBehavior, repositionBehavior, radialAdjustBehavior, readyBehavior, shootBehavior, getTargetOrientation, moveToPointBehavior } from './behaviors'
 import { goalieDecide, gkCanSeeBall, gkFovError, gkAlignmentError, ballInZone } from './goalkeeperStateMachine'
@@ -658,6 +658,36 @@ export function tick(state: SimState, dt: number): SimState {
   }
   if (state.enemyMode !== 'off') {
     for (const er of finalEnemyRobots) newBall = resolveOverlap(newBall, er)
+  }
+
+  // Auto goal detection — check if ball would cross a goal line this frame
+  if (state.autoGoal && !newBall.isStatic) {
+    const halfLen = court.width / 2
+    const goalHW  = state.goal.width / 2
+    const px = newBall.pos.x + newBall.velocity.x * dt
+    const py = newBall.pos.y + newBall.velocity.y * dt
+    let goalScored: 'ours' | 'theirs' | null = null
+    if (px >= halfLen  && Math.abs(py) <= goalHW) goalScored = 'ours'
+    if (px <= -halfLen && Math.abs(py) <= goalHW) goalScored = 'theirs'
+    if (goalScored) {
+      const newScore = goalScored === 'ours'
+        ? { ours: state.score.ours + 1, theirs: state.score.theirs }
+        : { ours: state.score.ours,     theirs: state.score.theirs + 1 }
+      const kickoffSide: 'ours' | 'theirs' = goalScored === 'ours' ? 'theirs' : 'ours'
+      return {
+        ...state,
+        score:     newScore,
+        isPlaying: true,
+        ball:      { ...state.ball, pos: { x: 0, y: 0 }, velocity: { x: 0, y: 0 }, isStatic: true },
+        gc: {
+          ...state.gc,
+          gameState:    'READY'     as GcGameState,
+          kickoffSide,
+          subStateType: 'NONE'      as GcSubStateType,
+          subState:     'STOP'      as GcSubState,
+        },
+      }
+    }
   }
 
   newBall = stepBall(newBall, court, dt)

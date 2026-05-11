@@ -247,6 +247,7 @@ export interface SimState {
   isPlaying:       boolean
   speed:           number
   score:           { ours: number; theirs: number }
+  autoGoal:        boolean
   debugs:          [DebugData, DebugData, DebugData]  // index matches robots[]
   goalkeeperDebug: GoalkeeperDebugData                // GK-specific debug for the current GK robot
   overlays:        OverlaySettings

@@ -40,6 +40,7 @@ function makeInitialState(): SimState {
     isPlaying:   false,
     speed:       1,
     score:       { ours: 0, theirs: 0 },
+    autoGoal:    false,
     debugs: [
       { ...EMPTY_DEBUG, stateHistory: [] },
       { ...EMPTY_DEBUG, stateHistory: [] },
@@ -129,7 +130,8 @@ export function useSimulation() {
   // Reset robots and ball to kickoff positions without changing the score.
   const kickoff = useCallback((side: 'ours' | 'theirs') =>
     setSimState(s => makeKickoffState(s, s.score, side)), [])
-  const setSpeed = useCallback((speed: number) => setSimState(s => ({ ...s, speed })), [])
+  const setSpeed    = useCallback((speed: number) => setSimState(s => ({ ...s, speed })), [])
+  const setAutoGoal = useCallback((v: boolean)   => setSimState(s => ({ ...s, autoGoal: v })), [])
 
   // Striker params are shared — update all robots (any can become striker)
   const setParam = useCallback(<K extends keyof RobotParams>(key: K, value: RobotParams[K]) =>
@@ -270,7 +272,7 @@ export function useSimulation() {
   return {
     simState,
     play, pause, step, reset, scoreGoal, kickoff, updateGc, triggerSetPiece,
-    setSpeed, setParam, setTeamConfig, setGKParam, setOverlay,
+    setSpeed, setAutoGoal, setParam, setTeamConfig, setGKParam, setOverlay,
     setBallStatic, dragBall, dragRobot, dragEnemyRobot,
     setEnemyMode, setEnemyParam, setEnemyGKParam,
   }

@@ -10,7 +10,7 @@ export default function App() {
   const {
     simState,
     play, pause, step, reset, scoreGoal, updateGc, triggerSetPiece,
-    setSpeed, setParam, setTeamConfig, setGKParam, setOverlay,
+    setSpeed, setAutoGoal, setParam, setTeamConfig, setGKParam, setOverlay,
     setBallStatic, dragBall, dragRobot, dragEnemyRobot,
     setEnemyMode, setEnemyParam, setEnemyGKParam,
   } = useSimulation()
@@ -52,9 +52,11 @@ export default function App() {
         isPlaying={simState.isPlaying}
         time={simState.time}
         score={simState.score}
+        autoGoal={simState.autoGoal}
         penalties={simState.gc.penalties}
         updateGc={updateGc}
         scoreGoal={scoreGoal}
+        setAutoGoal={setAutoGoal}
         triggerSetPiece={triggerSetPiece}
       />
     </div>
