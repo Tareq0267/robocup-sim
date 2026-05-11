@@ -5,16 +5,17 @@ const COLLAPSED_H = 36
 const EXPANDED_H  = 292
 
 interface Props {
-  gc:              GameControllerState
-  isPlaying:       boolean
-  time:            number
-  score:           { ours: number; theirs: number }
-  autoGoal:        boolean
-  penalties:       [boolean, boolean, boolean]
-  updateGc:        <K extends keyof GameControllerState>(key: K, value: GameControllerState[K]) => void
-  scoreGoal:       (side: 'ours' | 'theirs') => void
-  setAutoGoal:     (v: boolean) => void
-  triggerSetPiece: (type: GcFreeKickType, side: 'ours' | 'theirs') => void
+  gc:               GameControllerState
+  isPlaying:        boolean
+  time:             number
+  score:            { ours: number; theirs: number }
+  autoGoal:         boolean
+  kickoffCountdown: number
+  penalties:        [boolean, boolean, boolean]
+  updateGc:         <K extends keyof GameControllerState>(key: K, value: GameControllerState[K]) => void
+  scoreGoal:        (side: 'ours' | 'theirs') => void
+  setAutoGoal:      (v: boolean) => void
+  triggerSetPiece:  (type: GcFreeKickType, side: 'ours' | 'theirs') => void
 }
 
 function formatTime(t: number): string {
@@ -77,7 +78,7 @@ const SET_PIECES: { type: GcFreeKickType; label: string }[] = [
 ]
 
 export default function BottomBar({
-  gc, isPlaying, time, score, autoGoal, penalties,
+  gc, isPlaying, time, score, autoGoal, kickoffCountdown, penalties,
   updateGc, scoreGoal, setAutoGoal, triggerSetPiece,
 }: Props) {
   const [open, setOpen] = useState(false)
@@ -94,7 +95,10 @@ export default function BottomBar({
     if (isFk && state !== 'PLAY') updateGc('subStateType', 'NONE')
   }
 
-  const stateBadgeClass = isPlaying
+  const isCountdown = kickoffCountdown > 0
+  const stateBadgeClass = isCountdown
+    ? 'bg-[#1c1600] text-[#fbbf24] border-[#78350f]'
+    : isPlaying
     ? 'bg-[#0a1a0a] text-[#4ade80] border-[#166534]'
     : isFk
     ? 'bg-[#0e0e1f] text-[#a78bfa] border-[#3730a3]'
@@ -120,7 +124,7 @@ export default function BottomBar({
         </span>
 
         <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${stateBadgeClass}`}>
-          {isPlaying ? '▶ PLAYING' : isFk ? `FK · ${gc.freeKickType.replace('_', ' ')}` : gc.gameState}
+          {isCountdown ? `▶ ${Math.ceil(kickoffCountdown)}s` : isPlaying ? '▶ PLAYING' : isFk ? `FK · ${gc.freeKickType.replace('_', ' ')}` : gc.gameState}
         </span>
 
         <span className="text-sm font-mono font-bold text-[#4ade80] tabular-nums">{score.ours}</span>

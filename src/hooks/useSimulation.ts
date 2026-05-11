@@ -40,7 +40,8 @@ function makeInitialState(): SimState {
     isPlaying:   false,
     speed:       1,
     score:       { ours: 0, theirs: 0 },
-    autoGoal:    false,
+    autoGoal:         false,
+    kickoffCountdown: 0,
     debugs: [
       { ...EMPTY_DEBUG, stateHistory: [] },
       { ...EMPTY_DEBUG, stateHistory: [] },
@@ -94,12 +95,13 @@ export function useSimulation() {
 
   // During READY (post-goal kickoff walk), pressing play starts actual play.
   const play  = useCallback(() => setSimState(s => {
-    if (s.gc.gameState === 'READY') {
+    if (s.gc.gameState === 'READY' || s.kickoffCountdown > 0) {
       return {
         ...s,
-        isPlaying: true,
-        ball: { ...s.ball, isStatic: false },
-        gc: { ...s.gc, gameState: 'PLAY' as GcGameState },
+        isPlaying:        true,
+        kickoffCountdown: 0,
+        ball:             { ...s.ball, isStatic: false },
+        gc:               { ...s.gc, gameState: 'PLAY' as GcGameState },
       }
     }
     return { ...s, isPlaying: true }

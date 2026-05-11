@@ -393,6 +393,21 @@ function tickGoalkeeper(
 // Main tick — updates all three robots + ball + coordination
 // ----------------------------------------------------------------
 export function tick(state: SimState, dt: number): SimState {
+  // ── Kickoff countdown (auto-play after goal when autoGoal is on) ──
+  if (state.kickoffCountdown > 0) {
+    const remaining = state.kickoffCountdown - dt
+    if (remaining <= 0) {
+      return {
+        ...state,
+        kickoffCountdown: 0,
+        isPlaying:        true,
+        ball:             { ...state.ball, isStatic: false },
+        gc:               { ...state.gc, gameState: 'PLAY' as GcGameState },
+      }
+    }
+    return { ...state, kickoffCountdown: remaining }
+  }
+
   const { ball, goal, court, team, time, ownGoal } = state
   let robots: [Robot, Robot, Robot] = [...state.robots] as [Robot, Robot, Robot]
 
@@ -711,7 +726,8 @@ export function tick(state: SimState, dt: number): SimState {
     gkSwapCooldown:       newGkSwapCooldown,
     ball:                 newBall,
     time:                 time + dt,
-    isPlaying:            kickoffDone ? false : state.isPlaying,
+    isPlaying:            kickoffDone && !state.autoGoal ? false : state.isPlaying,
+    kickoffCountdown:     kickoffDone && state.autoGoal ? 5 : state.kickoffCountdown,
     enemyRobots:          finalEnemyRobots,
     enemyDebugs:          newEnemyDebugs,
     enemyGoalkeeperDebug: newEnemyGkDebug,

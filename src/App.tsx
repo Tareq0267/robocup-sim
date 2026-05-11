@@ -53,6 +53,7 @@ export default function App() {
         time={simState.time}
         score={simState.score}
         autoGoal={simState.autoGoal}
+        kickoffCountdown={simState.kickoffCountdown}
         penalties={simState.gc.penalties}
         updateGc={updateGc}
         scoreGoal={scoreGoal}

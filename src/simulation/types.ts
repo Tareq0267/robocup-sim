@@ -247,7 +247,8 @@ export interface SimState {
   isPlaying:       boolean
   speed:           number
   score:           { ours: number; theirs: number }
-  autoGoal:        boolean
+  autoGoal:          boolean
+  kickoffCountdown:  number   // seconds remaining before auto-play; 0 = inactive
   debugs:          [DebugData, DebugData, DebugData]  // index matches robots[]
   goalkeeperDebug: GoalkeeperDebugData                // GK-specific debug for the current GK robot
   overlays:        OverlaySettings
