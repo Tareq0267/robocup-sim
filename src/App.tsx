@@ -16,7 +16,7 @@ export default function App() {
   } = useSimulation()
 
   const [focusedRobot, setFocusedRobot] = useState<number | null>(null)
-  const [lightMode, setLightMode] = useState(false)
+  const [lightMode, setLightMode] = useState(true)
 
   return (
     <div
