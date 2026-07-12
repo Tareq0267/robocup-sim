@@ -6,14 +6,14 @@ interface Props {
   simState:       SimState
   focusedRobot:   number | null
   dragBall:       (pos: Vec2) => void
-  dragRobot:      (pos: Vec2, index: 0 | 1 | 2) => void
-  dragEnemyRobot: (pos: Vec2, index: 0 | 1 | 2) => void
+  dragRobot:      (pos: Vec2, index: number) => void
+  dragEnemyRobot: (pos: Vec2, index: number) => void
 }
 
 type DragTarget =
   | { kind: 'ball' }
-  | { kind: 'robot';  index: 0 | 1 | 2 }
-  | { kind: 'enemy';  index: 0 | 1 | 2 }
+  | { kind: 'robot';  index: number }
+  | { kind: 'enemy';  index: number }
   | { kind: 'pan' }
   | null
 
@@ -82,17 +82,17 @@ export default function SimCanvas({ simState, focusedRobot, dragBall, dragRobot,
 
     if (d(p.x, p.y, ball.pos.x, ball.pos.y) < ball.radius + 0.2) return { kind: 'ball' }
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < robots.length; i++) {
       const r = robots[i]
       if (d(p.x, p.y, r.pos.x, r.pos.y) < r.radius + 0.2)
-        return { kind: 'robot', index: i as 0 | 1 | 2 }
+        return { kind: 'robot', index: i }
     }
 
     if (enemyMode !== 'off') {
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < enemyRobots.length; i++) {
         const r = enemyRobots[i]
         if (d(p.x, p.y, r.pos.x, r.pos.y) < r.radius + 0.2)
-          return { kind: 'enemy', index: i as 0 | 1 | 2 }
+          return { kind: 'enemy', index: i }
       }
     }
 

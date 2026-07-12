@@ -204,7 +204,7 @@ export interface GameControllerState {
   subState:     GcSubState           // phase within FREE_KICK
   freeKickType: GcFreeKickType
   freeKickSide: 'ours' | 'theirs'   // who takes the free kick
-  penalties:    [boolean, boolean, boolean]  // per robot (P1, P2, GK)
+  penalties:    boolean[]  // per robot, index matches SimState.robots[]
   firstHalf:    boolean
 }
 
@@ -230,10 +230,16 @@ export interface OverlaySettings {
 export type EnemyMode = 'off' | 'static' | 'active'
 
 // ----------------------------------------------------------------
+// GAME MODE — controls squad size (1 GK + N field players) and field size
+// ----------------------------------------------------------------
+export type GameMode = '3v3' | '5v5'
+
+// ----------------------------------------------------------------
 // FULL SIMULATION STATE
 // ----------------------------------------------------------------
 export interface SimState {
-  robots:          [Robot, Robot, Robot]  // exactly one has role==='goalkeeper'
+  gameMode:        GameMode
+  robots:          Robot[]                // exactly one has role==='goalkeeper'
   activeIndex:     number                 // index of lead striker (role==='striker', closest to ball)
   swapTimer:       number                 // striker lead-swap hysteresis timer
   gkSwapCooldown:  number                 // seconds remaining before next GK role swap is allowed
@@ -249,16 +255,16 @@ export interface SimState {
   score:           { ours: number; theirs: number }
   autoGoal:          boolean
   kickoffCountdown:  number   // seconds remaining before auto-play; 0 = inactive
-  debugs:          [DebugData, DebugData, DebugData]  // index matches robots[]
+  debugs:          DebugData[]  // index matches robots[]
   goalkeeperDebug: GoalkeeperDebugData                // GK-specific debug for the current GK robot
   overlays:        OverlaySettings
   gc:              GameControllerState
   // ── Enemy team ─────────────────────────────────────────────
   enemyMode:            EnemyMode
-  enemyRobots:          [Robot, Robot, Robot]
+  enemyRobots:          Robot[]
   enemyActiveIndex:     number
   enemySwapTimer:       number
   enemyGkSwapCooldown:  number
-  enemyDebugs:          [DebugData, DebugData, DebugData]
+  enemyDebugs:          DebugData[]
   enemyGoalkeeperDebug: GoalkeeperDebugData
 }

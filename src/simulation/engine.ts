@@ -12,9 +12,6 @@ import { add, scale, dist, rotateToward, normalize, sub } from './math'
 
 const MAX_HISTORY = 50
 
-// GK kickoff X — goal area front edge: -length/2 + goalAreaLength = -7+1 = -6.0
-const GK_KICKOFF_X = -6.0
-
 // How far outside the field boundary robots are allowed to walk (to reach corner/sideline balls)
 const ROBOT_FIELD_PADDING = 1.0
 
@@ -45,6 +42,28 @@ function fromGKRobot(r: Robot, gk: GoalkeeperRobot): Robot {
   return { ...r, pos: gk.pos, orientation: gk.orientation, gkState: gk.state }
 }
 
+// Kickoff positions for N strikers. First two use the tunable primary/secondary
+// Y sliders exactly as before (reproduces 3v3 kickoff formation exactly when
+// n===2); any additional assist slots (5v5) spread further back, symmetric
+// about y=0, at a small X offset behind the primary/secondary line.
+function strikerKickoffPositions(
+  n: number, kx: number, primaryY: number, secondaryY: number, backSign: 1 | -1,
+): { x: number; y: number }[] {
+  const positions: { x: number; y: number }[] = []
+  if (n >= 1) positions.push({ x: kx, y: primaryY })
+  if (n >= 2) positions.push({ x: kx, y: secondaryY })
+  const extra = n - 2
+  if (extra > 0) {
+    const SPACING = 1.6
+    const EXTRA_X_OFFSET = 1.5
+    for (let i = 0; i < extra; i++) {
+      const offset = i - (extra - 1) / 2
+      positions.push({ x: kx + backSign * EXTRA_X_OFFSET, y: offset * SPACING })
+    }
+  }
+  return positions
+}
+
 // Reset to kickoff positions after a goal is manually scored.
 // kickoffSide: 'ours' = we kick off (we conceded), 'theirs' = opponent kicks off (we scored).
 export function makeKickoffState(
@@ -53,32 +72,26 @@ export function makeKickoffState(
   kickoffSide: 'ours' | 'theirs',
 ): SimState {
   const gkIdx = state.robots.findIndex(r => r.role === 'goalkeeper')
-  const strikerIdxs = ([0, 1, 2] as const).filter((i): i is 0 | 1 | 2 => i !== gkIdx)
-  if (gkIdx < 0 || strikerIdxs.length < 2) return state
+  const strikerIdxs = state.robots.map((_, i) => i).filter(i => i !== gkIdx)
+  if (gkIdx < 0 || strikerIdxs.length < 1) return state
 
   const { ourKickoffX, ourPrimaryY, ourSecondaryY, theirKickoffX, theirPrimaryY, theirSecondaryY } = state.team
-  const kx   = kickoffSide === 'ours' ? ourKickoffX   : theirKickoffX
-  const kpy  = kickoffSide === 'ours' ? ourPrimaryY   : theirPrimaryY
-  const ksy  = kickoffSide === 'ours' ? ourSecondaryY : theirSecondaryY
-  const sPos0 = { x: kx, y: kpy }
-  const sPos1 = { x: kx, y: ksy }
-  const gkPos = { x: GK_KICKOFF_X, y: 0 }
-  const [sa, sb] = strikerIdxs
+  const kx  = kickoffSide === 'ours' ? ourKickoffX   : theirKickoffX
+  const kpy = kickoffSide === 'ours' ? ourPrimaryY   : theirPrimaryY
+  const ksy = kickoffSide === 'ours' ? ourSecondaryY : theirSecondaryY
+  const gkPos = { x: state.fieldLayout.ownGoalArea.maxX, y: 0 }
 
-  const newRobots = [...state.robots] as [Robot, Robot, Robot]
+  const strikerPositions = strikerKickoffPositions(strikerIdxs.length, kx, kpy, ksy, -1)
+  const newRobots = [...state.robots]
 
-  newRobots[sa] = {
-    ...state.robots[sa],
-    pos:         { ...sPos0 },
-    orientation: 0,
-    state:       kickoffSide === 'ours' ? RobotState.CHASING : RobotState.SEARCHING,
-  }
-  newRobots[sb] = {
-    ...state.robots[sb],
-    pos:         { ...sPos1 },
-    orientation: 0,
-    state:       RobotState.SEARCHING,
-  }
+  strikerIdxs.forEach((idx, rank) => {
+    newRobots[idx] = {
+      ...state.robots[idx],
+      pos:         { ...strikerPositions[rank] },
+      orientation: 0,
+      state:       rank === 0 && kickoffSide === 'ours' ? RobotState.CHASING : RobotState.SEARCHING,
+    }
+  })
   newRobots[gkIdx] = {
     ...state.robots[gkIdx],
     pos:         { ...gkPos },
@@ -91,14 +104,10 @@ export function makeKickoffState(
     score,
     robots:         newRobots,
     ball:           { ...state.ball, pos: { x: 0, y: 0 }, velocity: { x: 0, y: 0 } },
-    activeIndex:    sa,
+    activeIndex:    strikerIdxs[0],
     swapTimer:      0,
     gkSwapCooldown: 0,
-    debugs: [
-      { ...EMPTY_STRIKER_DEBUG, stateHistory: [] },
-      { ...EMPTY_STRIKER_DEBUG, stateHistory: [] },
-      { ...EMPTY_STRIKER_DEBUG, stateHistory: [] },
-    ],
+    debugs: state.robots.map(() => ({ ...EMPTY_STRIKER_DEBUG, stateHistory: [] })),
   }
 }
 
@@ -106,31 +115,28 @@ export function makeKickoffState(
 // Kickoff walk targets — returns the destination for each robot index.
 // Called every frame during gc.gameState === 'READY'.
 // ----------------------------------------------------------------
-function calcKickoffTargets(state: SimState): [{ x: number; y: number }, { x: number; y: number }, { x: number; y: number }] {
-  const gkIdx      = state.robots.findIndex(r => r.role === 'goalkeeper')
-  const strikerIdxs = ([0, 1, 2] as const).filter((i): i is 0 | 1 | 2 => i !== gkIdx)
+function calcKickoffTargets(state: SimState): { x: number; y: number }[] {
+  const gkIdx       = state.robots.findIndex(r => r.role === 'goalkeeper')
+  const strikerIdxs = state.robots.map((_, i) => i).filter(i => i !== gkIdx)
   const { kickoffSide } = state.gc
   const { ourKickoffX, ourPrimaryY, ourSecondaryY, theirKickoffX, theirPrimaryY, theirSecondaryY } = state.team
   const kx  = kickoffSide === 'ours' ? ourKickoffX  : theirKickoffX
   const kpy = kickoffSide === 'ours' ? ourPrimaryY  : theirPrimaryY
   const ksy = kickoffSide === 'ours' ? ourSecondaryY : theirSecondaryY
 
-  const targets: [{ x: number; y: number }, { x: number; y: number }, { x: number; y: number }] = [
-    { x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 },
-  ]
-  const safeGkIdx = gkIdx >= 0 ? gkIdx : 2
-  targets[safeGkIdx]        = { x: GK_KICKOFF_X, y: 0 }
-  targets[strikerIdxs[0]]   = { x: kx, y: kpy }
-  targets[strikerIdxs[1]]   = { x: kx, y: ksy }
+  const targets: { x: number; y: number }[] = state.robots.map(() => ({ x: 0, y: 0 }))
+  if (gkIdx >= 0) targets[gkIdx] = { x: state.fieldLayout.ownGoalArea.maxX, y: 0 }
+  const strikerPositions = strikerKickoffPositions(strikerIdxs.length, kx, kpy, ksy, -1)
+  strikerIdxs.forEach((idx, rank) => { targets[idx] = strikerPositions[rank] })
   return targets
 }
 
 // ----------------------------------------------------------------
 // Enemy kickoff walk targets — X-mirror of our team's kickoff positions.
 // ----------------------------------------------------------------
-function calcEnemyKickoffTargets(state: SimState): [{ x: number; y: number }, { x: number; y: number }, { x: number; y: number }] {
+function calcEnemyKickoffTargets(state: SimState): { x: number; y: number }[] {
   const gkIdx       = state.enemyRobots.findIndex(r => r.role === 'goalkeeper')
-  const strikerIdxs = ([0, 1, 2] as const).filter((i): i is 0 | 1 | 2 => i !== gkIdx)
+  const strikerIdxs = state.enemyRobots.map((_, i) => i).filter(i => i !== gkIdx)
   const { kickoffSide } = state.gc
   const { ourKickoffX, ourPrimaryY, ourSecondaryY, theirKickoffX, theirPrimaryY, theirSecondaryY } = state.team
   // Mirror X: when enemy kicks off ('theirs'), they position like we do for 'ours'
@@ -138,49 +144,59 @@ function calcEnemyKickoffTargets(state: SimState): [{ x: number; y: number }, { 
   const kpy = kickoffSide === 'theirs' ? ourPrimaryY    : theirPrimaryY
   const ksy = kickoffSide === 'theirs' ? ourSecondaryY  : theirSecondaryY
 
-  const targets: [{ x: number; y: number }, { x: number; y: number }, { x: number; y: number }] = [
-    { x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 },
-  ]
-  const safeGkIdx = gkIdx >= 0 ? gkIdx : 2
-  targets[safeGkIdx]       = { x: -GK_KICKOFF_X, y: 0 }  // mirror: +6.0
-  targets[strikerIdxs[0]]  = { x: kx, y: kpy }
-  targets[strikerIdxs[1]]  = { x: kx, y: ksy }
+  const targets: { x: number; y: number }[] = state.enemyRobots.map(() => ({ x: 0, y: 0 }))
+  if (gkIdx >= 0) targets[gkIdx] = { x: state.fieldLayout.opponentGoalArea.minX, y: 0 }  // mirror of ownGoalArea.maxX
+  const strikerPositions = strikerKickoffPositions(strikerIdxs.length, kx, kpy, ksy, 1)
+  strikerIdxs.forEach((idx, rank) => { targets[idx] = strikerPositions[rank] })
   return targets
 }
 
 // ----------------------------------------------------------------
 // Freekick target positions — mirrors GoToFreekickPosition::onRunning()
-// Returns [primaryTarget, secondaryTarget] for the two strikers.
+// Returns [primaryTarget, ...secondaryTargets] — index 0 (primary/active
+// striker) is unused by callers today but kept for clarity; indices 1..N are
+// the non-active strikers, spread symmetrically around the original
+// secondary spot so 3v3 (exactly 1 non-active striker) is reproduced exactly.
 // ----------------------------------------------------------------
 function calcFreekickTargets(
-  ball:         Ball,
-  goal:         Goal,
-  ownGoal:      Goal,
-  freeKickSide: 'ours' | 'theirs',
-): [{ x: number; y: number }, { x: number; y: number }] {
+  ball:           Ball,
+  goal:           Goal,
+  ownGoal:        Goal,
+  freeKickSide:   'ours' | 'theirs',
+  nonActiveCount: number,
+): { x: number; y: number }[] {
   const ATTACK_DIST  = 0.7
   const DEFENSE_DIST = 1.9
   const fieldHalfLen = Math.abs(ownGoal.center.x)
+
+  let primary:   { x: number; y: number }
+  let secondary: { x: number; y: number }
 
   if (freeKickSide === 'ours') {
     // Attack: 0.7m behind ball toward opponent goal; secondary 1.5m further back at y=0
     const kickDir = Math.atan2(goal.center.y - ball.pos.y, goal.center.x - ball.pos.x)
     const px = ball.pos.x - ATTACK_DIST * Math.cos(kickDir)
     const py = ball.pos.y - ATTACK_DIST * Math.sin(kickDir)
-    return [
-      { x: px, y: py },
-      { x: Math.max(ownGoal.center.x + 1.3, px - 1.5), y: 0 },
-    ]
+    primary   = { x: px, y: py }
+    secondary = { x: Math.max(ownGoal.center.x + 1.3, px - 1.5), y: 0 }
   } else {
     // Defense: 1.9m from ball on the goal→ball line; secondary spreads ±1m on Y
     const defDir = Math.atan2(ball.pos.y, ball.pos.x + fieldHalfLen)
     const px = ball.pos.x - DEFENSE_DIST * Math.cos(defDir)
     const py = ball.pos.y - DEFENSE_DIST * Math.sin(defDir)
-    return [
-      { x: px, y: py },
-      { x: px, y: py > 0 ? py - 1.0 : py + 1.0 },
-    ]
+    primary   = { x: px, y: py }
+    secondary = { x: px, y: py > 0 ? py - 1.0 : py + 1.0 }
   }
+
+  const targets: { x: number; y: number }[] = [primary]
+  for (let i = 0; i < nonActiveCount; i++) {
+    if (i === 0) { targets.push(secondary); continue }
+    const extra = i - 1
+    const side  = extra % 2 === 0 ? 1 : -1
+    const step  = Math.floor(extra / 2) + 1
+    targets.push({ x: secondary.x, y: secondary.y + side * step * 1.0 })
+  }
+  return targets
 }
 
 // ----------------------------------------------------------------
@@ -409,7 +425,7 @@ export function tick(state: SimState, dt: number): SimState {
   }
 
   const { ball, goal, court, team, time, ownGoal } = state
-  let robots: [Robot, Robot, Robot] = [...state.robots] as [Robot, Robot, Robot]
+  let robots: Robot[] = [...state.robots]
 
   // ── GK role swap (2 s cooldown) ───────────────────────────
   // Trigger: GK is farther from own goal than ALL strikers
@@ -418,39 +434,34 @@ export function tick(state: SimState, dt: number): SimState {
 
   if (newGkSwapCooldown <= 0) {
     const gkIdx = robots.findIndex(r => r.role === 'goalkeeper')
-    const strikerIdxs = ([0, 1, 2] as const).filter(i => i !== gkIdx)
+    const strikerIdxs = robots.map((_, i) => i).filter(i => i !== gkIdx)
 
-    if (gkIdx >= 0 && strikerIdxs.length === 2) {
+    if (gkIdx >= 0 && strikerIdxs.length >= 1) {
       const gkDistToGoal = dist(robots[gkIdx].pos, ownGoal.center)
-      const allStrikersCloser = strikerIdxs.every(
-        si => dist(robots[si].pos, ownGoal.center) < gkDistToGoal
-      )
+      const strikerDists = strikerIdxs.map(si => ({ idx: si, d: dist(robots[si].pos, ownGoal.center) }))
+      const allStrikersCloser = strikerDists.every(sd => sd.d < gkDistToGoal)
 
       if (allStrikersCloser) {
-        const [sa, sb] = strikerIdxs
-        const newGkIdx = dist(robots[sa].pos, ownGoal.center) <= dist(robots[sb].pos, ownGoal.center)
-          ? sa : sb
-        robots = [...robots] as [Robot, Robot, Robot]
-        robots[gkIdx]    = { ...robots[gkIdx],    role: 'striker',    state: RobotState.SEARCHING }
-        robots[newGkIdx] = { ...robots[newGkIdx], role: 'goalkeeper', state: RobotState.IDLE, gkState: GoalkeeperState.RETREAT }
+        const newGk = strikerDists.reduce((best, sd) => sd.d < best.d ? sd : best)
+        robots = [...robots]
+        robots[gkIdx]      = { ...robots[gkIdx],      role: 'striker',    state: RobotState.SEARCHING }
+        robots[newGk.idx]  = { ...robots[newGk.idx],  role: 'goalkeeper', state: RobotState.IDLE, gkState: GoalkeeperState.RETREAT }
         newGkSwapCooldown = 2.0
       }
     }
   }
 
   // ── Striker lead swap with hysteresis ─────────────────────
-  const gkIdxNow      = robots.findIndex(r => r.role === 'goalkeeper')
-  const strikerIdxsNow = ([0, 1, 2] as const).filter(i => i !== gkIdxNow)
-  const [sa, sb]       = strikerIdxsNow
+  const gkIdxNow       = robots.findIndex(r => r.role === 'goalkeeper')
+  const strikerIdxsNow = robots.map((_, i) => i).filter(i => i !== gkIdxNow)
 
-  const da = dist(robots[sa].pos, ball.pos)
-  const db = dist(robots[sb].pos, ball.pos)
-  const closerStrikerIdx = da <= db ? sa : sb
+  const strikerDistsToBall = strikerIdxsNow.map(si => ({ idx: si, d: dist(robots[si].pos, ball.pos) }))
+  const closerStrikerIdx   = strikerDistsToBall.reduce((best, sd) => sd.d < best.d ? sd : best).idx
 
   let newSwapTimer   = state.swapTimer
   let newActiveIndex = state.activeIndex
   // Ensure activeIndex points to a striker after a role swap
-  if (robots[newActiveIndex]?.role !== 'striker') newActiveIndex = sa
+  if (robots[newActiveIndex]?.role !== 'striker') newActiveIndex = strikerIdxsNow[0]
 
   if (closerStrikerIdx !== newActiveIndex) {
     newSwapTimer += dt
@@ -462,6 +473,14 @@ export function tick(state: SimState, dt: number): SimState {
     newSwapTimer = 0
   }
 
+  // Rank each non-active striker (0 = active, 1..N = the rest, in index order) —
+  // used to pick a spread-out free-kick support target per robot.
+  const strikerRankByIndex = new Map<number, number>()
+  let nonActiveRank = 1
+  for (const idx of strikerIdxsNow) {
+    strikerRankByIndex.set(idx, idx === newActiveIndex ? 0 : nonActiveRank++)
+  }
+
   // ── Kickoff walk (READY state) ───────────────────────────
   const isKickoffReady  = state.gc.gameState === 'READY'
   const kickoffTargets  = isKickoffReady ? calcKickoffTargets(state) : null
@@ -471,7 +490,7 @@ export function tick(state: SimState, dt: number): SimState {
   const fkFrozen = fkActive && (state.gc.subState === 'STOP' || state.gc.subState === 'SET')
   const fkMove   = fkActive && state.gc.subState === 'GET_READY'
   const fkTargets = fkMove
-    ? calcFreekickTargets(ball, goal, ownGoal, state.gc.freeKickSide)
+    ? calcFreekickTargets(ball, goal, ownGoal, state.gc.freeKickSide, strikerIdxsNow.length - 1)
     : null
   // GK goal-blocking target during GET_READY: 0.9m from goal line, centred
   // Mirrors GoToGoalBlockingPosition dist_to_goalline=0.9 (robotedge)
@@ -479,16 +498,16 @@ export function tick(state: SimState, dt: number): SimState {
   const gkFkTarget = fkMove ? { x: ownGoal.center.x + GK_FK_DIST, y: 0 } : undefined
 
   // ── Tick each robot ────────────────────────────────────────
-  const tickedRobots: Robot[]           = new Array(3)
-  const newDebugs:    DebugData[]       = new Array(3)
+  const tickedRobots: Robot[]           = new Array(robots.length)
+  const newDebugs:    DebugData[]       = new Array(robots.length)
   let   newGkDebug:   GoalkeeperDebugData = state.goalkeeperDebug
 
-  for (let i = 0; i < 3; i++) {
-    const penalized = state.gc.penalties[i as 0 | 1 | 2]
+  for (let i = 0; i < robots.length; i++) {
+    const penalized = state.gc.penalties[i] ?? false
     if (robots[i].role === 'goalkeeper') {
       const gkFkOvr = penalized
         ? { frozen: true }
-        : kickoffTargets ? { frozen: false, target: kickoffTargets[i as 0 | 1 | 2] }
+        : kickoffTargets ? { frozen: false, target: kickoffTargets[i] }
         : fkActive ? { frozen: fkFrozen, target: gkFkTarget } : undefined
       const gkResult = tickGoalkeeper(
         toGKRobot(robots[i]), ball, ownGoal, court, state, dt, time,
@@ -496,50 +515,48 @@ export function tick(state: SimState, dt: number): SimState {
         gkFkOvr,
       )
       tickedRobots[i] = fromGKRobot(robots[i], gkResult.gk)
-      newDebugs[i]    = { ...EMPTY_STRIKER_DEBUG, stateHistory: state.debugs[i].stateHistory }
+      newDebugs[i]    = { ...EMPTY_STRIKER_DEBUG, stateHistory: state.debugs[i]?.stateHistory ?? [] }
       newGkDebug      = gkResult.debug
     } else {
       const isActive = newActiveIndex === i
-      const strikerRank = i === newActiveIndex ? 0 : 1
+      const strikerRank = strikerRankByIndex.get(i) ?? 0
       // During GET_READY the active striker (rank 0) plays normally so it can kick.
-      // Only the secondary robot is sent to a support target.
+      // Non-active strikers (rank > 0) are sent to a spread-out support target.
       const fkOverride = penalized
         ? { frozen: true }
-        : kickoffTargets ? { frozen: false, target: kickoffTargets[i as 0 | 1 | 2] }
+        : kickoffTargets ? { frozen: false, target: kickoffTargets[i] }
         : fkActive && (fkFrozen || strikerRank > 0)
           ? { frozen: fkFrozen, target: fkTargets?.[strikerRank] }
           : undefined
-      const r = tickRobot(robots[i], ball, goal, court, isActive, dt, time, state.debugs[i].stateHistory, fkOverride)
+      const r = tickRobot(robots[i], ball, goal, court, isActive, dt, time, state.debugs[i]?.stateHistory ?? [], fkOverride)
       tickedRobots[i] = r.robot
       newDebugs[i]    = r.debug
     }
   }
 
-  // ── Collision resolution (all 3 pairs) ────────────────────
-  let p0 = tickedRobots[0].pos
-  let p1 = tickedRobots[1].pos
-  let p2 = tickedRobots[2].pos
-  ;[p0, p1] = separateCircles(p0, tickedRobots[0].radius, p1, tickedRobots[1].radius, court)
-  ;[p0, p2] = separateCircles(p0, tickedRobots[0].radius, p2, tickedRobots[2].radius, court)
-  ;[p1, p2] = separateCircles(p1, tickedRobots[1].radius, p2, tickedRobots[2].radius, court)
+  // ── Collision resolution (every pair) ─────────────────────
+  const resolvedPositions = tickedRobots.map(r => r.pos)
+  for (let a = 0; a < tickedRobots.length; a++) {
+    for (let b = a + 1; b < tickedRobots.length; b++) {
+      const [pa, pb] = separateCircles(resolvedPositions[a], tickedRobots[a].radius, resolvedPositions[b], tickedRobots[b].radius, court)
+      resolvedPositions[a] = pa
+      resolvedPositions[b] = pb
+    }
+  }
 
-  const finalRobots: [Robot, Robot, Robot] = [
-    { ...tickedRobots[0], pos: p0 },
-    { ...tickedRobots[1], pos: p1 },
-    { ...tickedRobots[2], pos: p2 },
-  ]
+  const finalRobots: Robot[] = tickedRobots.map((r, i) => ({ ...r, pos: resolvedPositions[i] }))
 
   const KICKOFF_ARRIVAL = 0.25
 
   // ── Enemy team ────────────────────────────────────────────
   // Enemy attacks our ownGoal (left, -7); defends goal (right, +7).
   // Swap own/opponent penalty areas so GK state machine uses correct zones.
-  let finalEnemyRobots: [Robot, Robot, Robot] = [...state.enemyRobots] as [Robot, Robot, Robot]
+  let finalEnemyRobots: Robot[] = [...state.enemyRobots]
   let newEnemyActiveIndex    = state.enemyActiveIndex
   let newEnemySwapTimer      = state.enemySwapTimer
   let newEnemyGkSwapCooldown = state.enemyGkSwapCooldown
-  let newEnemyDebugs: [DebugData, DebugData, DebugData]   = state.enemyDebugs
-  let newEnemyGkDebug: GoalkeeperDebugData                = state.enemyGoalkeeperDebug
+  let newEnemyDebugs: DebugData[]          = state.enemyDebugs
+  let newEnemyGkDebug: GoalkeeperDebugData = state.enemyGoalkeeperDebug
 
   if (state.enemyMode === 'active') {
     const enemyFieldState: SimState = {
@@ -557,18 +574,18 @@ export function tick(state: SimState, dt: number): SimState {
 
     // GK swap (same logic, measuring distance to enemy's defence goal)
     let eGkCooldown = Math.max(0, state.enemyGkSwapCooldown - dt)
-    let eRobots: [Robot, Robot, Robot] = [...state.enemyRobots] as [Robot, Robot, Robot]
+    let eRobots: Robot[] = [...state.enemyRobots]
     if (eGkCooldown <= 0) {
       const egkIdx = eRobots.findIndex(r => r.role === 'goalkeeper')
-      const eSIdxs = ([0, 1, 2] as const).filter(i => i !== egkIdx)
-      if (egkIdx >= 0 && eSIdxs.length === 2) {
+      const eSIdxs = eRobots.map((_, i) => i).filter(i => i !== egkIdx)
+      if (egkIdx >= 0 && eSIdxs.length >= 1) {
         const gkD = dist(eRobots[egkIdx].pos, enemyDefenseGoal.center)
-        if (eSIdxs.every(si => dist(eRobots[si].pos, enemyDefenseGoal.center) < gkD)) {
-          const [ea, eb] = eSIdxs
-          const newGk = dist(eRobots[ea].pos, enemyDefenseGoal.center) <= dist(eRobots[eb].pos, enemyDefenseGoal.center) ? ea : eb
-          eRobots = [...eRobots] as [Robot, Robot, Robot]
-          eRobots[egkIdx] = { ...eRobots[egkIdx], role: 'striker',    state: RobotState.SEARCHING }
-          eRobots[newGk]  = { ...eRobots[newGk],  role: 'goalkeeper', state: RobotState.IDLE, gkState: GoalkeeperState.RETREAT }
+        const eStrikerDists = eSIdxs.map(si => ({ idx: si, d: dist(eRobots[si].pos, enemyDefenseGoal.center) }))
+        if (eStrikerDists.every(sd => sd.d < gkD)) {
+          const newGk = eStrikerDists.reduce((best, sd) => sd.d < best.d ? sd : best)
+          eRobots = [...eRobots]
+          eRobots[egkIdx]     = { ...eRobots[egkIdx],     role: 'striker',    state: RobotState.SEARCHING }
+          eRobots[newGk.idx]  = { ...eRobots[newGk.idx], role: 'goalkeeper', state: RobotState.IDLE, gkState: GoalkeeperState.RETREAT }
           eGkCooldown = 2.0
         }
       }
@@ -576,13 +593,11 @@ export function tick(state: SimState, dt: number): SimState {
     newEnemyGkSwapCooldown = eGkCooldown
 
     // Striker swap
-    const egkNow  = eRobots.findIndex(r => r.role === 'goalkeeper')
-    const eSNow   = ([0, 1, 2] as const).filter(i => i !== egkNow)
-    const [esa, esb] = eSNow
-    const eda = dist(eRobots[esa].pos, ball.pos)
-    const edb = dist(eRobots[esb].pos, ball.pos)
-    const eCloser = eda <= edb ? esa : esb
-    if (eRobots[newEnemyActiveIndex]?.role !== 'striker') newEnemyActiveIndex = esa
+    const egkNow = eRobots.findIndex(r => r.role === 'goalkeeper')
+    const eSNow  = eRobots.map((_, i) => i).filter(i => i !== egkNow)
+    const eDistsToBall = eSNow.map(si => ({ idx: si, d: dist(eRobots[si].pos, ball.pos) }))
+    const eCloser = eDistsToBall.reduce((best, sd) => sd.d < best.d ? sd : best).idx
+    if (eRobots[newEnemyActiveIndex]?.role !== 'striker') newEnemyActiveIndex = eSNow[0]
     if (eCloser !== newEnemyActiveIndex) {
       newEnemySwapTimer += dt
       if (newEnemySwapTimer >= team.roleSwapDelay) { newEnemyActiveIndex = eCloser; newEnemySwapTimer = 0 }
@@ -592,12 +607,12 @@ export function tick(state: SimState, dt: number): SimState {
     const eKickoffTargets = isKickoffReady ? calcEnemyKickoffTargets(state) : null
 
     // Tick each enemy robot
-    const tickedE: Robot[]     = new Array(3)
-    const eDbgs:   DebugData[] = new Array(3)
-    for (let i = 0; i < 3; i++) {
+    const tickedE: Robot[]     = new Array(eRobots.length)
+    const eDbgs:   DebugData[] = new Array(eRobots.length)
+    for (let i = 0; i < eRobots.length; i++) {
       if (eRobots[i].role === 'goalkeeper') {
         const eGkOvr = eKickoffTargets
-          ? { frozen: false, target: eKickoffTargets[i as 0 | 1 | 2] }
+          ? { frozen: false, target: eKickoffTargets[i] }
           : undefined
         const res = tickGoalkeeper(
           toGKRobot(eRobots[i]), ball, enemyDefenseGoal, court,
@@ -606,17 +621,17 @@ export function tick(state: SimState, dt: number): SimState {
           eGkOvr,
         )
         tickedE[i]       = fromGKRobot(eRobots[i], res.gk)
-        eDbgs[i]         = { ...EMPTY_STRIKER_DEBUG, stateHistory: state.enemyDebugs[i].stateHistory }
+        eDbgs[i]         = { ...EMPTY_STRIKER_DEBUG, stateHistory: state.enemyDebugs[i]?.stateHistory ?? [] }
         newEnemyGkDebug  = res.debug
       } else {
         const isEActive   = newEnemyActiveIndex === i
         const eFkOverride = eKickoffTargets
-          ? { frozen: false, target: eKickoffTargets[i as 0 | 1 | 2] }
+          ? { frozen: false, target: eKickoffTargets[i] }
           : undefined
         const res = tickRobot(
           eRobots[i], ball, enemyAttackGoal, court,
           isEActive, dt, time,
-          state.enemyDebugs[i].stateHistory,
+          state.enemyDebugs[i]?.stateHistory ?? [],
           eFkOverride,
         )
         tickedE[i] = res.robot
@@ -624,25 +639,25 @@ export function tick(state: SimState, dt: number): SimState {
       }
     }
 
-    // Intra-enemy collision
-    let ep0 = tickedE[0].pos, ep1 = tickedE[1].pos, ep2 = tickedE[2].pos
-    ;[ep0, ep1] = separateCircles(ep0, tickedE[0].radius, ep1, tickedE[1].radius, court)
-    ;[ep0, ep2] = separateCircles(ep0, tickedE[0].radius, ep2, tickedE[2].radius, court)
-    ;[ep1, ep2] = separateCircles(ep1, tickedE[1].radius, ep2, tickedE[2].radius, court)
-    finalEnemyRobots = [
-      { ...tickedE[0], pos: ep0 },
-      { ...tickedE[1], pos: ep1 },
-      { ...tickedE[2], pos: ep2 },
-    ]
-    newEnemyDebugs = eDbgs as [DebugData, DebugData, DebugData]
+    // Intra-enemy collision (every pair)
+    const eResolvedPositions = tickedE.map(r => r.pos)
+    for (let a = 0; a < tickedE.length; a++) {
+      for (let b = a + 1; b < tickedE.length; b++) {
+        const [pa, pb] = separateCircles(eResolvedPositions[a], tickedE[a].radius, eResolvedPositions[b], tickedE[b].radius, court)
+        eResolvedPositions[a] = pa
+        eResolvedPositions[b] = pb
+      }
+    }
+    finalEnemyRobots = tickedE.map((r, i) => ({ ...r, pos: eResolvedPositions[i] }))
+    newEnemyDebugs = eDbgs
   }
 
   // Cross-team collision (our finalRobots vs enemy — only when enemy is present)
-  let crossOur   = [...finalRobots]   as [Robot, Robot, Robot]
-  let crossEnemy = [...finalEnemyRobots] as [Robot, Robot, Robot]
+  let crossOur   = [...finalRobots]
+  let crossEnemy = [...finalEnemyRobots]
   if (state.enemyMode !== 'off') {
-    for (let oi = 0; oi < 3; oi++) {
-      for (let ei = 0; ei < 3; ei++) {
+    for (let oi = 0; oi < crossOur.length; oi++) {
+      for (let ei = 0; ei < crossEnemy.length; ei++) {
         const [np, ne] = separateCircles(crossOur[oi].pos, crossOur[oi].radius, crossEnemy[ei].pos, crossEnemy[ei].radius, court)
         crossOur[oi]   = { ...crossOur[oi],   pos: np }
         crossEnemy[ei] = { ...crossEnemy[ei], pos: ne }
@@ -710,16 +725,16 @@ export function tick(state: SimState, dt: number): SimState {
   // Auto-pause once all robots (and enemy team when active) reach kickoff positions
   const enemyKickoffDone = state.enemyMode !== 'active' || !isKickoffReady || (() => {
     const t = calcEnemyKickoffTargets(state)
-    return finalEnemyRobots.every((r, i) => dist(r.pos, t[i as 0 | 1 | 2]) < KICKOFF_ARRIVAL)
+    return finalEnemyRobots.every((r, i) => dist(r.pos, t[i]) < KICKOFF_ARRIVAL)
   })()
   const kickoffDone = kickoffTargets !== null &&
-    trueFinalRobots.every((r, i) => dist(r.pos, kickoffTargets[i as 0 | 1 | 2]) < KICKOFF_ARRIVAL) &&
+    trueFinalRobots.every((r, i) => dist(r.pos, kickoffTargets[i]) < KICKOFF_ARRIVAL) &&
     enemyKickoffDone
 
   return {
     ...state,
     robots:               trueFinalRobots,
-    debugs:               newDebugs as [DebugData, DebugData, DebugData],
+    debugs:               newDebugs,
     goalkeeperDebug:      newGkDebug,
     activeIndex:          newActiveIndex,
     swapTimer:            newSwapTimer,

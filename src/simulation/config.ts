@@ -1,7 +1,7 @@
 // ================================================================
 // DEFAULT VALUES — change these to set starting conditions
 // ================================================================
-import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type OverlaySettings, type RobotParams, type TeamConfig, type FieldLayout, type GoalkeeperParams, type GoalkeeperDebugData, type GameControllerState } from './types'
+import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type OverlaySettings, type RobotParams, type TeamConfig, type FieldLayout, type GoalkeeperParams, type GoalkeeperDebugData, type GameControllerState, type GameMode } from './types'
 
 // Adult Size field: 14m × 9m
 export const DEFAULT_COURT: Court = {
@@ -31,6 +31,41 @@ export const DEFAULT_FIELD_LAYOUT: FieldLayout = {
   opponentGoalArea:    { minX:  6.0, maxX:  7.0, minY: -2.0, maxY: 2.0 },
   centreCircleRadius:  1.5,
   penaltyMarkDist:     2.1,
+}
+
+// ----------------------------------------------------------------
+// 5v5 FIELD — HSL 2026 draft "L-Field": 22m × 14m
+// Zones scaled from Adult-Size by the field's growth ratio
+// (length ×22/14≈1.571, width ×14/9≈1.556) to keep goal/penalty-area
+// proportions consistent with 3v3.
+// ----------------------------------------------------------------
+const LEN_RATIO = 22 / 14   // ≈ 1.571
+const WID_RATIO = 14 / 9    // ≈ 1.556
+
+export const DEFAULT_COURT_5V5: Court = {
+  width:  22,
+  height: 14,
+}
+
+export const DEFAULT_GOAL_5V5: Goal = {
+  center: { x: 11.0, y: 0 },
+  width:  DEFAULT_GOAL.width  * WID_RATIO,
+  depth:  DEFAULT_GOAL.depth  * LEN_RATIO,
+}
+
+export const DEFAULT_OWN_GOAL_5V5: Goal = {
+  center: { x: -11.0, y: 0 },
+  width:  DEFAULT_OWN_GOAL.width * WID_RATIO,
+  depth:  DEFAULT_OWN_GOAL.depth * LEN_RATIO,
+}
+
+export const DEFAULT_FIELD_LAYOUT_5V5: FieldLayout = {
+  ownPenaltyArea:      { minX: -11.0, maxX: -11.0 + 3.0 * LEN_RATIO, minY: -3.0 * WID_RATIO, maxY: 3.0 * WID_RATIO },
+  ownGoalArea:         { minX: -11.0, maxX: -11.0 + 1.0 * LEN_RATIO, minY: -2.0 * WID_RATIO, maxY: 2.0 * WID_RATIO },
+  opponentPenaltyArea: { minX:  11.0 - 3.0 * LEN_RATIO, maxX:  11.0, minY: -3.0 * WID_RATIO, maxY: 3.0 * WID_RATIO },
+  opponentGoalArea:    { minX:  11.0 - 1.0 * LEN_RATIO, maxX:  11.0, minY: -2.0 * WID_RATIO, maxY: 2.0 * WID_RATIO },
+  centreCircleRadius:  1.5 * WID_RATIO,
+  penaltyMarkDist:     2.1 * LEN_RATIO,
 }
 
 export const DEFAULT_PARAMS: RobotParams = {
@@ -79,72 +114,55 @@ export const DEFAULT_GK_PARAMS: GoalkeeperParams = {
 }
 
 // Booster T1: 47cm wide × 23cm deep footprint, radius ≈ half-diagonal
-export const DEFAULT_ROBOT_1: Robot = {
-  pos:         { x: -3.5, y:  0.8 },
-  orientation: 0,
-  state:       RobotState.CHASING,
-  radius:      0.26,
-  params:      { ...DEFAULT_PARAMS },
-  role:        'striker',
-  gkState:     GoalkeeperState.RETREAT,
-  gkParams:    { ...DEFAULT_GK_PARAMS },
+const ROBOT_RADIUS = 0.26
+
+// Evenly-spaced, symmetric-about-0 Y positions for N field players.
+// n=2 → [0.8, -0.8] (matches the original 3v3 hand-picked spawn spots exactly).
+// n=4 → [2.4, 0.8, -0.8, -2.4] (same 1.6m spacing, extended outward for 5v5).
+function fieldPlayerYPositions(n: number): number[] {
+  const SPACING = 1.6
+  const ys: number[] = []
+  for (let i = 0; i < n; i++) {
+    const offset = i - (n - 1) / 2
+    ys.push(-offset * SPACING)
+  }
+  return ys
 }
 
-export const DEFAULT_ROBOT_2: Robot = {
-  pos:         { x: -3.5, y: -0.8 },
-  orientation: 0,
-  state:       RobotState.IDLE,
-  radius:      0.26,
-  params:      { ...DEFAULT_PARAMS },
-  role:        'striker',
-  gkState:     GoalkeeperState.RETREAT,
-  gkParams:    { ...DEFAULT_GK_PARAMS },
-}
+// Builds one team's starting robots: N field players (first one active/CHASING,
+// rest IDLE) + 1 goalkeeper. Positions scale with the field's half-length so
+// 3v3 (halfLength=7) reproduces the original hand-placed spawn spots exactly.
+export function createTeamRobots(gameMode: GameMode, side: 'ours' | 'enemy'): Robot[] {
+  const fieldPlayerCount = gameMode === '5v5' ? 4 : 2
+  const halfLength       = gameMode === '5v5' ? 11 : 7
+  const xSign            = side === 'ours' ? -1 : 1
+  const orientation       = side === 'ours' ? 0 : Math.PI
 
-// Robot that starts as goalkeeper (can swap to striker via role switch)
-export const DEFAULT_ROBOT_GK: Robot = {
-  pos:         { x: -6.5, y: 0 },
-  orientation: 0,
-  state:       RobotState.IDLE,
-  radius:      0.26,
-  params:      { ...DEFAULT_PARAMS },
-  role:        'goalkeeper',
-  gkState:     GoalkeeperState.RETREAT,
-  gkParams:    { ...DEFAULT_GK_PARAMS },
-}
+  const gkOffset = 0.5 * (halfLength / 7)  // preserves the original 0.5m goal-line offset at 3v3 scale
+  const gk: Robot = {
+    pos:         { x: xSign * (halfLength - gkOffset), y: 0 },
+    orientation,
+    state:       RobotState.IDLE,
+    radius:      ROBOT_RADIUS,
+    params:      { ...DEFAULT_PARAMS },
+    role:        'goalkeeper',
+    gkState:     GoalkeeperState.RETREAT,
+    gkParams:    { ...DEFAULT_GK_PARAMS },
+  }
 
-// ── Enemy team defaults — mirror of our team, facing left (orientation π) ──
-export const DEFAULT_ENEMY_ROBOT_1: Robot = {
-  pos:         { x: 3.5, y:  0.8 },
-  orientation: Math.PI,
-  state:       RobotState.CHASING,
-  radius:      0.26,
-  params:      { ...DEFAULT_PARAMS },
-  role:        'striker',
-  gkState:     GoalkeeperState.RETREAT,
-  gkParams:    { ...DEFAULT_GK_PARAMS },
-}
+  const fieldX = xSign * (halfLength / 2)
+  const fieldPlayers: Robot[] = fieldPlayerYPositions(fieldPlayerCount).map((y, i) => ({
+    pos:         { x: fieldX, y },
+    orientation,
+    state:       i === 0 ? RobotState.CHASING : RobotState.IDLE,
+    radius:      ROBOT_RADIUS,
+    params:      { ...DEFAULT_PARAMS },
+    role:        'striker' as const,
+    gkState:     GoalkeeperState.RETREAT,
+    gkParams:    { ...DEFAULT_GK_PARAMS },
+  }))
 
-export const DEFAULT_ENEMY_ROBOT_2: Robot = {
-  pos:         { x: 3.5, y: -0.8 },
-  orientation: Math.PI,
-  state:       RobotState.IDLE,
-  radius:      0.26,
-  params:      { ...DEFAULT_PARAMS },
-  role:        'striker',
-  gkState:     GoalkeeperState.RETREAT,
-  gkParams:    { ...DEFAULT_GK_PARAMS },
-}
-
-export const DEFAULT_ENEMY_GK: Robot = {
-  pos:         { x: 6.5, y: 0 },
-  orientation: Math.PI,
-  state:       RobotState.IDLE,
-  radius:      0.26,
-  params:      { ...DEFAULT_PARAMS },
-  role:        'goalkeeper',
-  gkState:     GoalkeeperState.RETREAT,
-  gkParams:    { ...DEFAULT_GK_PARAMS },
+  return [...fieldPlayers, gk]
 }
 
 export const EMPTY_GK_DEBUG: GoalkeeperDebugData = {

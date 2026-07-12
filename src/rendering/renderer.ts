@@ -30,7 +30,7 @@ const GK_STATE_COLORS: Record<string, string> = {
 const GK_COLOR = '#f97316'  // orange accent for goalkeeper
 
 // Player accent colours — used when robot is acting as striker
-const PLAYER_COLORS = ['#3b82f6', '#14b8a6', '#a78bfa']  // blue, teal, violet
+const PLAYER_COLORS = ['#3b82f6', '#14b8a6', '#a78bfa', '#f59e0b']  // blue, teal, violet, amber
 
 const BODY_DEPTH = 0.23   // Booster T1: 23cm front-to-back
 const BODY_WIDTH = 0.47   // Booster T1: 47cm shoulder-to-shoulder

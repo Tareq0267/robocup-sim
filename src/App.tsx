@@ -12,7 +12,7 @@ export default function App() {
     play, pause, step, reset, scoreGoal, updateGc, triggerSetPiece,
     setSpeed, setAutoGoal, setParam, setTeamConfig, setGKParam, setOverlay,
     setBallStatic, dragBall, dragRobot, dragEnemyRobot,
-    setEnemyMode, setEnemyParam, setEnemyGKParam,
+    setEnemyMode, setEnemyParam, setEnemyGKParam, setGameMode,
   } = useSimulation()
 
   const [focusedRobot, setFocusedRobot] = useState<number | null>(null)
@@ -27,6 +27,7 @@ export default function App() {
         simState={simState}
         play={play} pause={pause} step={step} reset={reset}
         setSpeed={setSpeed}
+        setGameMode={setGameMode}
         lightMode={lightMode}
         toggleTheme={() => setLightMode(m => !m)}
       />
@@ -55,6 +56,7 @@ export default function App() {
         autoGoal={simState.autoGoal}
         kickoffCountdown={simState.kickoffCountdown}
         penalties={simState.gc.penalties}
+        robots={simState.robots}
         updateGc={updateGc}
         scoreGoal={scoreGoal}
         setAutoGoal={setAutoGoal}

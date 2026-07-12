@@ -23,7 +23,7 @@ const TABS: { id: Tab; label: string }[] = [
 
 export default function DebugPanel({ simState, setParam, setTeamConfig, setGKParam, setOverlay, setBallStatic }: Props) {
   const [tab, setTab] = useState<Tab>('state')
-  const gkRobot = simState.robots.find(r => r.role === 'goalkeeper') ?? simState.robots[2]
+  const gkRobot = simState.robots.find(r => r.role === 'goalkeeper') ?? simState.robots[simState.robots.length - 1]
 
   return (
     <div className="flex flex-col h-full bg-[#0d0d0d] border-l border-[#1e1e1e]">

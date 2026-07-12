@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { GameControllerState, GcFreeKickType, GcGameState, GcSubState } from '../simulation/types'
+import type { GameControllerState, GcFreeKickType, GcGameState, GcSubState, Robot } from '../simulation/types'
 
 const COLLAPSED_H = 36
 const EXPANDED_H  = 292
@@ -11,7 +11,8 @@ interface Props {
   score:            { ours: number; theirs: number }
   autoGoal:         boolean
   kickoffCountdown: number
-  penalties:        [boolean, boolean, boolean]
+  penalties:        boolean[]
+  robots:           Robot[]
   updateGc:         <K extends keyof GameControllerState>(key: K, value: GameControllerState[K]) => void
   scoreGoal:        (side: 'ours' | 'theirs') => void
   setAutoGoal:      (v: boolean) => void
@@ -78,14 +79,19 @@ const SET_PIECES: { type: GcFreeKickType; label: string }[] = [
 ]
 
 export default function BottomBar({
-  gc, isPlaying, time, score, autoGoal, kickoffCountdown, penalties,
+  gc, isPlaying, time, score, autoGoal, kickoffCountdown, penalties, robots,
   updateGc, scoreGoal, setAutoGoal, triggerSetPiece,
 }: Props) {
   const [open, setOpen] = useState(false)
   const isFk = gc.subStateType === 'FREE_KICK'
 
-  function togglePenalty(i: 0 | 1 | 2) {
-    const next: [boolean, boolean, boolean] = [...penalties] as [boolean, boolean, boolean]
+  // Label by current role (not fixed index) — GK/striker roles can swap mid-game,
+  // and the number of field players varies with the 3v3/5v5 squad size.
+  let fieldRank = 0
+  const penaltyLabels = robots.map(r => r.role === 'goalkeeper' ? 'GK' : `P${++fieldRank}`)
+
+  function togglePenalty(i: number) {
+    const next = [...penalties]
     next[i] = !next[i]
     updateGc('penalties', next)
   }
@@ -153,20 +159,20 @@ export default function BottomBar({
             + Goal
           </button>
 
-          <div className="flex flex-col gap-1.5 w-full max-w-[150px] opacity-25 pointer-events-none select-none">
+          <div className="flex flex-col gap-1.5 w-full max-w-[220px] opacity-25 pointer-events-none select-none">
             <span className="text-[10px] font-mono text-[#64748b] uppercase tracking-widest">Penalties</span>
-            <div className="flex gap-1.5">
-              {(['P1', 'P2', 'GK'] as const).map((label, i) => (
+            <div className="flex gap-1.5 flex-wrap">
+              {robots.map((_, i) => (
                 <button
-                  key={label}
-                  onClick={() => togglePenalty(i as 0 | 1 | 2)}
-                  className={`flex-1 py-1.5 rounded text-[11px] font-mono border transition-colors ${
+                  key={i}
+                  onClick={() => togglePenalty(i)}
+                  className={`flex-1 min-w-[32px] py-1.5 rounded text-[11px] font-mono border transition-colors ${
                     penalties[i]
                       ? 'bg-[#1a0a0a] text-[#f87171] border-[#7f1d1d] hover:bg-[#220e0e]'
                       : 'bg-[#0d0d0d] text-[#64748b] border-[#1e1e1e] hover:text-[#9ca3af] hover:border-[#4b5563]'
                   }`}
                 >
-                  {label}
+                  {penaltyLabels[i]}
                 </button>
               ))}
             </div>
