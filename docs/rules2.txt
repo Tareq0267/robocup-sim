@@ -1,0 +1,2508 @@
+                         Rule Book
+     RoboCup Humanoid Soccer League (HSL)
+
+          RoboCup Humanoid Soccer League Technical Committee
+                       https://hsl.robocup.org/
+
+        (DRAFT 2026 Working Rules Document, as of 2026-04-30)
+
+  Questions or comments on these rules should be submitted via the following channels:
+
+· https://github.com/RoboCup-HumanoidSoccerLeague/HSL-Rules/
+  issues;
+
+· Discord server: https://discord.gg/67upw6Nn, channel #rule-book;
+· Email: hsl_tc@lists.robocup.org
+Rule Book                   RoboCup Humanoid Soccer League  2026-04-30
+
+                            Contents
+
+I Purpose and Scope of the RoboCup Humanoid Soccer League   1
+
+Vision and Mission Statement . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 1
+
+Core Vision and Requirements for Legal Standard Robot Platforms . . . . . . . . . . . 2
+
+Core Vision and Requirements for Constructed Robots . . . . . . . . . . . . . . . . . . 2
+
+II Notes and modifications                                  3
+
+Notes on the Laws of the Game . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+
+Official Languages . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+
+Measurements . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+
+Gender-Neutral Language . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+
+General Modifications . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+
+III Laws of the Game                                        4
+
+§ 1 The Field of Play . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+
+§ 2 The Ball . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+
+§ 3 Teams and Players . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+
+§ 4 The Players' Equipment . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21
+
+§ 5 Human Officials . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23
+
+§ 6 Judgement . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27
+
+§ 7 The Course of the Game . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 30
+
+§ 8 The Start and Restart of Play . . . . . . . . . . . . . . . . . . . . . . . . . . . . 35
+
+§ 9 The Ball In and Out of Play . . . . . . . . . . . . . . . . . . . . . . . . . . . . 39
+
+§ 10 The Method of Scoring . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 39
+
+§ 11 Offsides . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 40
+
+§ 12 Fouls and Misconduct . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 40
+
+§ 13 Free Kicks . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 48
+
+§ 14 Penalty Kick and Penalty Shoot-Out . . . . . . . . . . . . . . . . . . . . . . . . 51
+
+§ 15 Kick-in / Throw-in . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 55
+
+§ 16 Goal Kick . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 56
+
+§ 17 Corner Kick . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 57
+
+IV Law Changes                                              59
+
+A Field Technical Drawings                                  60
+
+                            II
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+I Purpose and Scope of the RoboCup Humanoid Soccer League
+
+This document defines the purpose, scope, and rules of the RoboCup Humanoid Soccer League for
+the international RoboCup competition, at the forefront of research, innovation, and education in
+humanoid soccer across all forms.
+
+Vision and Mission Statement
+
+The RoboCup Humanoid Soccer League (HSL) will drive innovative research that advances the
+software and hardware of autonomous robots, with a particular emphasis on robots deployed in
+real-time, dynamic, partially observable, and multi-agent environments. The HSL is well suited to
+advance research, development, and education in:
+
+    · Multi-robot systems (5+ robots) requiring decentralized coordination with limited communi-
+       cation over noisy channels.
+
+    · Robots that approach or approximate Human-like capabilities.
+    · A league that promotes research,
+    · Localization and state-estimation.
+    · Dynamic humanoid motor control.
+    · Real-time and on-board robot perception.
+    · Software engineering for autonomous robots.
+    · Hardware engineering for autonomous robots.
+    · Across topics, robot learning in all its forms.
+
+In addition, the HSL aim to:
+
+    · Grow the community of humanoid soccer within RoboCup.
+    · Further education in robotics and is designed such that both teams with a primary focus in
+
+       research and teams with a primary focus in education are able to participate.
+    · Encourage active sharing of software and hardware designs for league-wide collaboration.
+    · Measure the capabilities of the league against the 2050 vision of RoboCup.
+    · Drive the vision and direction of the rules to encourage good quality soccer between between
+
+       evenly matched teams.
+
+                                                          1
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+Core Vision and Requirements for Legal Standard Robot Platforms
+
+The HSL encourages and welcomes the use of standard humanoid robot platforms available within
+the market to advance the state of humanoid robot soccer and the vision of the HSL.
+
+With the HSL vision in mind, the core characteristics for standard humanoid platforms used within
+the HSL are:
+
+1. Capable of dynamic motions such as fast walking, kicking a ball off the ground, and getting
+   up from the ground;
+
+2. Capable of running state-of-the-art AI neural network models for perception, decision-making,
+   and control;
+
+3. Sufficiently small and affordable to reasonably allow teams to fund multiple robots and travel
+   with them to competitions;
+
+4. Able to be programmed at a low level of control;
+
+5. Well-documented to enable effective use and development by teams.
+
+Core Vision and Requirements for Constructed Robots
+
+The HSL equally encourages and welcomes the use of fully custom built or modified humanoid
+robot platforms. To create a welcoming and fair environment for all robot platforms, the HSL
+ensures the following:
+
+   1. Both store-bought and custom-built robots can participate in a fair competition without risking
+       damage to their robots.
+
+   2. The tournament is designed such that games are interesting for all participating teams and
+       match-ups are fair.
+
+   3. The tournament is designed such that all currently existing teams are able to participate.
+   4. Details about hardware and software of the robots is made available to teams and organizers
+
+       to ensure a fair competition and encourage scientific exchange.
+   5. League resources are distributed such that both store-bought and custom-built robots equally
+
+       benefit from them.
+   6. Robots are designed with the goal of RoboCup in mind, thus restricting the allowed sensors
+
+       where possible to humanoid sensors. Exceptions to this rule can be made if it benefits
+       scientific progress.
+
+                                                          2
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+II Notes and modifications
+
+Notes on the Laws of the Game
+
+Official Languages
+
+RoboCup Humanoid Soccer League Technical Committee publishes the Laws of the Game in
+English.
+
+Measurements
+
+If there is any divergence between metric and imperial units, the metric units are authoritative.
+
+Gender-Neutral Language
+
+References to human referees, assistant referees, and officials are formulated using gender-neutral
+language. References to robot players use the neutral pronoun it and its.
+
+General Modifications
+
+Subject to the agreement of the member association concerned and provided the principles of these
+Laws are maintained, the Laws may be modified in their application for regional matches. Any or
+all of the following modifications are permissible:
+
+    · size of the field of play
+    · size, weight and material of the ball
+    · width between the goalposts and height of the crossbar from the ground
+    · duration of the periods of play
+    · substitutions
+
+                            3
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+III Laws of the Game
+
+§ 1 The Field of Play
+
+The competition consists of three distinct divisions, categorized specifically by the maximum
+physical height and weight of the robotic platforms.
+
+To ensure a fair and proportionate competitive environment, the field dimensions, number of players
+and ball size will vary to align with the specific requirements of each division (see § 3 for more
+details).
+
+§ 1.1 Field surface
+
+The matches are played on artificial turf with a height between approximately 20 to 30 mm, except
+for the small division, which has a height between 8 and 12 mm, also approximately.
+
+The color of artificial turf must be green. No particular shade is required, but the green must contrast
+well with the field markings and the ball and should not be very dark.
+
+§ 1.2 Field markings
+
+The field of play must be rectangular and marked with continuous lines. These lines belong to the
+areas of which they are boundaries.
+
+The color of the field markings should be white, whether applied by tape, paint, or made from white
+turf.
+
+The two longer boundary lines are called touchlines (or sidelines). The two shorter lines are called
+goal lines. The field of play is divided into two halves by a halfway line, which joins the midpoints
+of the two touchlines.
+
+A team's half is the half of the field that is closest to the team's own goal, where it primarily defends
+against opposing attacks.
+
+The center mark is at the midpoint of the halfway line. A circle is marked around it, defining the
+center circle, a region used for kick-offs and other specific plays.
+
+The goal area and the penalty area are defined using lines drawn at right angles to the goal line.
+
+All lines must be of the same width, which must be between 5 and 12 cm.
+
+                      4
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+  Figure 1: Annotated diagram illustrating the standard markings and key areas of a soccer field.
+Figure 1 shows the field markings with the lines and its names.
+§ 1.3 The goal area
+Two lines are drawn at right angles to the goal line; the length and distance from the midpoint of the
+goal line depend on the division.
+These lines extend into the field of play and are joined by a line drawn parallel with the goal line.
+The area bounded by these lines and the goal line is the goal area.
+§ 1.4 The penalty area
+Two lines are drawn at right angles to the goal line; the length and distance from the midpoint of the
+goal line depend on the division.
+These lines extend into the field of play and are joined by a line drawn parallel with the goal line.
+The area bounded by these lines and the goal line is the penalty area.
+
+                                                          5
+Rule Book               RoboCup Humanoid Soccer League     2026-04-30
+
+Field                             Width (meters)           Length (meters)
+S-Field (small field)                      6                        9
+M-Field (middle field)
+L-Field (large field)                   6 to 9                   9 to 14
+                                       9 to 14                  14 to 22
+
+                        Table 1: Approximate field sizes.
+
+Within each penalty area, a penalty mark is made.
+§ 1.5 The corner arc
+
+A quarter circle from each corner is drawn inside the field of play. The radius of the arc is 0.5m for
+the M-Field and 1.0m for the L-Field. The S-Field does not have corner arcs.
+
+§ 1.6 Dimensions
+
+There are three field sizes that can be used for the proposed divisions, described in Table 1.
+
+Table 2 shows the dimensions of the S-, M- and L-Fields. Diagrams of the three soccer fields are
+shown in Figures 2 to 4. Note that the Middle Division can be played on the S-Field or the M-Field,
+while the Large Division can be played on both the M-Field and the L-Field. More detailed technical
+drawings are provided in Section A.
+
+Note that measurements are from the outside of the lines as the lines are part of the area they enclose
+(as it is in the FIFA Rules).
+
+§ 1.7 Goals
+
+A goal must be placed on the center of each goal line. A goal consists of two vertical posts
+equidistant from the corners and joined at the top by a horizontal crossbar.
+
+The goalposts and crossbar must be made of wood, metal, or other approved material and must not
+be dangerous to the players.
+
+The goalposts and crossbar of both goals must be of the same shape, which must be square,                need a
+rectangular, round, elliptical, or a hybrid of these options.                                            figure how
+                                                                                                         goalposts
+The goalposts and crossbar must have the same width, which is not less than 7 cm and does not            must be
+exceed 12 cm. The goalposts and the crossbar must be white. Goal nets and any net supports may           placed on
+be white, gray, or black.                                                                                the goal
+                                                                                                         line
+
+Goals must be anchored securely to the ground.
+
+                                                6
+Rule Book  RoboCup Humanoid Soccer League                                 2026-04-30
+
+ID Description                           S-Field              M-Field         L-Field
+                                    (former KidSize           (former
+      (all values in meters)                                 AdultSize)  (similar to MSL)
+A Field length                          and SPL)                                22.0
+B Field width                              9.0                  14.0            14.0
+C Goal length (depth)                      6.0                   9.0
+D Goal width                                                 0.7 to 1.2      1.0 to 2.0
+E Goal Area length                      0.5 to 1.0           2.4 to 2.6      2.6 to 3.1
+F Goal Area width                      1.8 to 1.9                1.0
+G Penalty Area length                                            4.0             1.0
+H Penalty Area width                       1.0                   3.0             5.0
+ I Penalty Mark distance                   3.0                   6.0             3.5
+J Center Circle diameter                   2.0                   2.0             7.0
+K Border strip width (min.)                4.0                   3.0             2.5
+L Corner Arc radius                        1.5                   1.0             4.0
+                                           1.5                   0.5
+      Line width                                                                 1.0
+      Penalty and center mark size        none                                  0.12
+                                                       0.05                     0.15
+                                                       0.10
+
+           Table 2: Exemplary field dimensions by field type, in meters.
+
+Off-the-shelf goals may be used if they satisfy these requirements.
+§ 1.8 Technical Area
+
+The Technical Area is the designated zone located on the sidelines. The GameController operator is
+positioned centrally, aligned with the mid-field line. At a minimum, this area includes the official
+tables and the space behind them. The boundaries may be extended at the committee's discretion
+through visual markings or official announcements during the event.
+
+Each team is assigned a dedicated space on either side of the Game Controller operator:
+
+    · Home Team: Occupies the space to the right of the operator.
+
+    · Away Team: Occupies the space to the left of the operator.
+
+This space is intended for all activities necessary for playing, including (but not limited to) operating
+laptops, storing spair robots, and performing robot repairs.
+
+                                    7
+Rule Book                RoboCup Humanoid Soccer League                               2026-04-30
+                                                                             G
+                   K
+            K
+
+                      E
+
+          C                              J  H                                   I  B
+              DF
+
+                                         A
+
+          Figure 2: Schematic diagram of the small soccer field ­ S-Field (scale: 1/80)
+
+Division                 Width (meters)     Height (meters)                        Depth (meters)
+Small                       1.8 to 1.9          1.2 to 1.3                            0.5 to 1.0
+Middle                       2.4 to 2.6         1.5 to 1.9                            0.7 to 1.2
+Large                        2.6 to 3.1         1.8 to 2.0                            1.0 to 2.0
+
+                         Table 3: Allowed ranges for goal dimensions.
+
+§ 1.9 Definition of Inside and Outside
+
+A robot is considered inside a region of the field if any part of its body is touching the ground inside
+the region or its boundary lines. It is considered outside the region only when no part of its body is
+touching the ground inside the region and its boundary lines.
+
+The ball is considered inside a region of the field if any part of it overlaps or touches the boundary
+lines that define that region, or if it is fully contained within the region, in the air or on the ground.
+It is considered outside the region only when no part of it, or its downwards projection, remains
+within or on the boundary lines of that region. This definition applies to any designated area of the
+field, except the goal.
+
+Exception for the goal: The ball is only considered inside the goal (and thus a goal is scored) if,
+and only if, the entire ball has wholly crossed the goal-side edge of the goal line between the goal
+
+                                                          8
+Rule Book     RoboCup Humanoid Soccer League            2026-04-30
+         K                                                L
+
+    K                                            G
+
+           E  J                               H  I  B
+
+     CD F
+
+                                                         A
+
+          Figure 3: Schematic diagram of the medium soccer field ­ M-Field (scale: 1/100)
+
+posts and below the crossbar, i. e. when no part of the ball remains on or above the goal line, and
+the entire ball is within the volume enclosed by the goal frame and the net.
+§ 1.10 Venue Setup
+
+Fields may be located close to one another. Barriers will not necessarily be constructed between
+adjacent fields to block the robots from seeing other fields, goals, or balls. However, barriers will be
+constructed to block sight between any fields that are not located at least three meters apart. Hence,
+for each side of a field that is adjacent to another field, either barriers will separate the fields or at
+least 3 m will be between the carpet of adjacent fields.
+§ 1.11 Lighting Conditions
+
+The HSL does not mandate specific or controlled lighting conditions for a match venue. It is
+expected that the venue provides reasonable lighting suitable for general visibility (e. g. indoor with
+artificial lighting, outdoor with natural lighting, or a combination of both).
+The lighting conditions depend on the actual venue. Fields should be placed near or under windows
+where possible.
+
+                                                          9
+Rule Book  RoboCup Humanoid Soccer League        2026-04-30
+      K                                             L
+
+  K                                           G
+
+       E   J                               H     IB
+    CD F
+
+                                                          A
+
+            Figure 4: Schematic diagram of the large soccer field ­ L-Field (scale: 1/150)
+
+Whether window lighting is used or not, ceiling lights should be provided as necessary so that most
+of the field is at least 300 lx (preferably 400 lx). This lighting may include variations such as glare,
+brightness, shadows, or mixed lighting conditions that can change throughout the match.
+However, the lighting must be predominantly white, and colored lighting that significantly changes
+the perceived color of the field or ball is not allowed.
+Teams participating in the HSL are encouraged to design their robots to handle a variety of typical
+lighting environments that may be encountered during a match. Natural and non-natural light must
+be free to reach the field. The technical committee can delimit a zone near the field where humans
+must not stand and where any items blocking the light sources are forbidden.
+
+§ 2 The Ball
+
+§ 2.1 Qualities and measurements
+
+All balls must be spherical, made of or resembles the weight, form, movement characteristics and
+appearance of leather or other suitable material.
+
+                                                         10
+Rule Book  RoboCup Humanoid Soccer League             2026-04-30
+
+The balls for each division1 are defined in Table 4.
+
+Division   Ball Type
+Small      FIFA Mini Ball
+Middle     FIFA size 3 or 4
+Large      FIFA size 5
+
+           Table 4: Balls used in each division
+
+§ 2.2 Replacement of a defective ball
+
+If the ball bursts or becomes defective during the course of a match: the match is stopped. It is
+restarted according to the drop ball rule (see § 8).
+If the ball bursts or becomes defective whilst not in play at a kick-off, goal kick, corner kick, free
+kick, penalty kick or throw-in: the match is restarted accordingly.
+If the ball becomes defective during a penalty kick or penalties (penalty shoot-out) as it moves
+forward and before it touches a player, crossbar or goalposts, the penalty kick is retaken.
+The ball may not be changed during the match without the referee's permission.
+§ 2.3 Additional balls
+
+Additional balls which meet the requirements of § 2 may be placed around the field of play and
+their use is under the referee's control.
+
+    1The TC and OC will decide on only one type of the ball per division that will be used by all teams during the 2026
+competition.
+
+                                                         11
+Rule Book                RoboCup Humanoid Soccer League  2026-04-30
+
+§ 3 Teams and Players
+
+§ 3.1 Divisions and Configurations
+
+A team belongs to one division, which is one of Small, Middle and Large. Main competition
+matches only take place between members in the same division.
+
+Teams in each division can choose to play in two team configurations: Foundation - with a smaller
+number of players; and Advanced - with a larger number of players. If in a game one of the teams
+chooses to play in a Foundation configuration, then both teams must play in this configuration to
+ensure fairness. The maximum number of players in a game for each configuration is shown in
+Table 5.
+
+In the Middle division, starting from the quarter-finals onwards, all matches will be played in the
+Advanced configuration.
+
+The division and the configuration preference of a team must be submitted before the competition.
+The division must not change during the competition itself. The division must be submitted at the
+time of team registration. In addition, each team shall submit its preferred configuration prior to the
+competition, by a deadline specified by the organizers, in order to enable proper field planning. A
+team may request to play in a different configuration during the competition by submitting a request
+to the organizers. Approval of such a request is at the sole discretion of the organizers.
+
+§ 3.2 Number of Players
+
+A match is played by two teams, each with a maximum number of players determined by the
+division the game takes place in and the configuration level of the playing teams, as illustrated by
+the following table:
+
+Division                      Foundation teams           Advanced teams
+Small                                   4                         7
+Mid                                      3                        5
+Large                                    3                        5
+
+                         Table 5: Number of players
+
+At most one player per team on the field may be designated as goalkeeper, the others are all field
+players. When playing at full strength, a team must have a goalkeeper on the field.
+
+                                    12
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 3.3 Number of Substitutes
+
+In addition, each team may prepare substitute players outside the field. The number of substitute
+players is not limited. A substitute player may be substituted in to become a field player or
+goalkeeper.
+
+§ 3.4 Substitution Procedure
+
+In all matches, the jersey numbers of the substitutes must be given to the referee prior to the start of
+the match. Any substitute whose jersey number is not given to the referee at this time may not take
+part in the match.
+
+To replace a player with a substitute, the following conditions must be observed:
+
+    · The referee must be informed before any proposed substitution is made.
+    · The substitution may only occur during a stoppage in the match.
+    · The player being replaced must first be removed from the field.
+    · The substitute only enters the field of play after the player being replaced has left and after
+
+       receiving a signal from the referee.
+    · The substitute enters the field of play at the standard re-entry point (on the touchline at the
+
+       height of the penalty mark in the robot's own half, as used for returning from a penalty).
+    · The substitution is completed when the substitute enters the field of play.
+    · From that moment, the substitute becomes a player and the player replaced becomes a
+
+       substituted player.
+    · All substitutes are subject to the authority and jurisdiction of the referee, whether called upon
+
+       to play or not.
+
+§ 3.4.1 Changing the Goalkeeper Any of the other players may change places with the goal-
+keeper, provided that:
+
+    · The referee is informed before the change is made.
+    · The change is requested during a stoppage in the match.
+
+           13
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 3.5 Robot Players
+
+§ 3.5.1 The Design of the Robots Robots participating in the HSL must have a human-like body
+shape with a torso, head, two arms, and two legs, as well as human-like symmetry and proportions
+regarding sizes of the body parts and weight distribution.
+
+The robots must be able to stand upright on their feet, to walk on their legs and to be able to recover
+from a fall (get back to a standing position).
+
+The only allowed modes of locomotion are bipedal walking, running, and jumping. Soccer related
+movements such as dribbling, kicking, or other forms of ball handling are also allowed.
+
+The design of the robot's arms, including their length and placement, shall permit arm use and
+behaviors that are reasonably comparable to those of humans. Examples of permitted uses include
+assisting in getting up after a fall or picking up and throwing the ball (where otherwise allowed by
+the rules).
+
+Arm configurations that enable behaviors significantly different from those of humans are not
+permitted. In particular, robots must not use their arms to provide continuous support for locomotion,
+such as walking on arms or using arms as additional legs.
+
+§ 3.5.2 Size Restrictions All robots participating in the HSL must comply with the following
+restrictions:
+
+The length of the legs Hleg, including the feet, satisfies 0.35·Htop  Hleg  0.7·Htop, where Htop
+is the height of the top of the robot. The length of the leg is measured from the first rotating joint
+where its axis lies in the plane parallel to the standing ground to the tip of the foot.
+
+A classic piece of human anatomy and art history, Leonardo da Vinci's "Vitruvian Man" famously
+depicts a man whose arm span is equal to his height, creating a 1:1 ratio. Therefore, the arm span,
+Aspan, including the hands, should satisfy 0.8·Htop  Aspan  1.2·Htop.
+
+Based on Htop, the following size restrictions apply for each division:
+
+    · Small: Htop  1.1 meters;
+    · Middle: Htop  1.25 meters;
+    · Large: Htop  1.9 meters.
+
+Htop is defined as the height of the robot when standing upright (with fully extended knees). Htop is
+measured with the head of the robot oriented in such a way that it is tilted to either its maximum
+upwards tilt angle or the horizon line, whichever is lower.
+
+The height of the head Hhead, including the neck, satisfies 0.1 · Htop  Hhead  0.3 · Htop. Hhead is
+defined as the vertical distance from the axis of the first arm joint at the shoulder to the top of the
+head.
+
+                                                         14
+Rule Book                            RoboCup Humanoid Soccer League                           2026-04-30
+
+§ 3.5.3 Weight Restrictions The robot's Body-Mass Index (BMI) is defined as follows: BMI =
+
+ , M    where  M  is  the  mass  of  the  robot  in  kg  and  Htop  its  height  in  meters.
+
+Htop 2
+
+The Body Mass Index (BMI) of the robot should be: 5  BMI  30.
+
+The following weight restrictions apply for each division:
+
+· Small: Weight 15 kilograms;
+· Middle: Weight  25 kilograms;
+· Large: Weight  80 kilograms.
+
+§ 3.6 Approved Standard Platforms
+
+The following commercially available robotic platforms are approved for participation in the HSL.
+
+The following are the list of pre-approved standard platforms that require no modifications:
+
+Manufacturer          Model                              Restrictions
+Aldebaran             Nao V5, and Nao V6
+Robotis               DARwIn-OP
+Booster               T1, and K1
+Fourier               GR1, GR1-Pro, and GR2
+Unitiree              G1++, H1++
+
+Additional humanoid robot platforms can be approved upon request. Please send your request for            Change
+approval to rc-spl-tc@lists.robocup.org.                                                                  to new
+                                                                                                          mailing
+§ 3.7 Hardware                                                                                            list when
+                                                                                                          ready
+
+Modifications or additions to the robot hardware are permitted as long as the resulting robot does
+not become non-compliant with these rules.
+
+No additional hardware is permitted, including off-board sensing or processing systems. Additional
+sensors besides those originally installed on the robots are likewise not allowed.
+
+§ 3.8 Sensors
+
+Teams participating in the HSL competitions are encouraged to equip their robots with sensors that
+have an equivalent in human senses. These sensors must be placed at a position roughly equivalent
+to the location of the human's biological sensors.
+
+                                                         15
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+The sensors and their placement shall be chosen such that they allow the robot a spatial perception
+similar to humans. The sensors are evaluated along the following two general guidelines:
+
+   1. Foster and encourage research and development towards human-like perception capabilities.
+       Sensors aiming to directly emulate human senses, like a camera or a microphone. Use of such
+       sensors is explicitly encouraged.
+
+   2. Enable research and development under the constraints of the current state of the art in
+       technology and research, as long as this does not undermine current research efforts as
+       declared in point 1.
+       Sensors that compensate for current shortcomings in technology and state of research, like
+       one-dimensional distance sensors with limited range, or two vertically arranged cameras in
+       the robot NAO.
+
+Generally, passive sensors are preferred to active sensors that actively emit signals.
+
+§ 3.8.1 Intrinsic Perception and Proprioception Any sensing capability aiming at measuring
+the internal state of the robot is permitted. This includes temperature, current consumed by the
+motors, joint positions, etc.
+
+§ 3.8.2 Visual Perception The visual sensors, e.g., cameras of the robot shall be arranged such
+that the combined visual field is contiguous and limited to dimensions similar to a human, which
+corresponds to limitations in the opening angle: horizontal  220 and vertical  160. Please note
+that these ranges may be adjusted to more human-like viewing angles in the future.
+
+The visual sensors shall be located in the head of the robot.
+
+The combined dynamic visual field that can be observed by the robot solely by moving its cameras
+(similar to human eye movements) and the head is limited to horizontal  340 and vertical  220.
+
+The cameras are restricted to visual information in the range of the light visible to humans.
+
+The cameras can provide dense visual information, such as a rasterized image, or sparse information,
+such as visual events (event cameras).
+
+§ 3.8.3 Visual (dense) Depth Perception Passive integrated devices that provide dense depth
+information, such as stereo cameras, are permitted and encouraged.
+
+Active integrated devices that provide depth information, such as cameras with an active infrared
+projector or time-of-flight cameras, are permitted but discouraged. Their use might be prohibited in
+the future.
+
+           16
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 3.8.4 Orientation Sensors providing information regarding the robot's orientation in space
+with relation to the ground are permitted. This includes sensors such as gyrometer, accelerometer,
+as well as integrated inertial measurement units (IMU), as long as they provide only relative
+measurements and no measurements of the absolute direction, such as a compass.
+
+An IMU with an integrated compass can be used as long as the compass not used.
+
+The sensors can be placed in the head and/or in the torso of the robot.
+
+§ 3.8.5 Sound Perception The sound sensors, e.g., microphones, shall be placed in the head of
+the robot. The number of microphones is not limited.
+
+§ 3.8.6 Haptic Sensing Any passive sensor allowing haptic measurement is permitted, such as
+force sensors, touch sensors, buttons/bumpers, capacitative touch sensors.
+
+Haptic sensors can be placed at any location of the robot's body and are not limited in number.
+
+§ 3.8.7 Distance Sensing Active and passive sensors for one-dimensional distance sensing with
+a limited range are permitted if their use is limited to compensate for shortcomings in the spatial
+awareness of the robot in the close proximity.
+
+The number of such distance sensors is limited to 4.
+
+The use of distance sensors is discouraged and might be prohibited in the future.
+
+§ 3.8.8 Summary The Table 6 summarizes the approved sensors. The use of listed sensors
+that are considered human-like is encouraged. The use of listed sensors that are not considered
+human-like is accepted, but discouraged and might be prohibited or limited in the future.
+
+§ 3.9 Communication
+
+Robots participating in the HSL competitions must act autonomously during a game.
+
+Any use external power supply, teleoperation, remote control, remote processing, remote sensing,
+or remote brain of any kind is prohibited.
+
+Communication is only allowed among robots on the field, between the robots and the referees, and
+between the robots and the GameController.
+§ 3.9.1 Acoustic and Visual Communication The robots are permitted to communicate through
+visual signaling (e. g., gestures) and / or acoustic signaling using the robot's built-in microphones
+and speakers.
+
+                                                         17
+Rule Book                   RoboCup Humanoid Soccer League            2026-04-30
+
+Sensor Type                      Human-Like Comments
+
+RGB camera                       yes             opening angle limit: horizontal
+
+                                                  180, vertical  140
+
+Stereo camera                    yes
+
+Event camera                     yes
+
+Active RGB-D based on infrared projection no     discouraged
+
+Active RGB-D based on time of flight (TOF) no    discouraged
+
+Microphone array                 yes
+
+Gyro                             yes
+
+Accelerometer                    yes
+
+Compass                          no              magnetic measurement sensors
+
+                                                 are not allowed
+
+Integrated inertial measurement units (IMU) yes  no compass or must be disabled
+                                                 and not used
+
+Force sensors                    yes
+
+Touch sensors                    yes
+
+Buttons / Bumpers                yes
+
+Capacitive touch sensors         yes
+
+Near range infrared sensor       no
+
+Sonar / ultrasound sensors       no
+
+1D LIDAR and laser range sensor  no              with limited range
+
+Intrinsic sensors                yes             temperature, current, joint
+
+                                                 positions, etc.
+
+                          Table 6: Summary of approved sensor types.
+
+Communication that causes excessive discomfort to an audience, affects the safety of an audience,
+or violates normal playing rules is not permitted.
+
+§ 3.9.2 Wireless Communications: The robots are permitted to communicate through WiFi
+using builtin wireless adapters.
+
+A field is equipped with a wireless access point that must be used for any wireless communication
+during the game. Only the teams involved in the game are permitted to use the access point during a
+match.
+
+                                 18
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+Each team will be assigned a range of IP addresses that can be used both for their robots and their
+computers. The network configuration (e. g. IP addresses, channels, SSIDs, and required encryption)
+of the fields will be announced at the competition site.
+
+Wireless equipment and access points will be provided by the organizers of the competition. No
+other 2.4 GHz or 5 GHz radio equipment (including cellular phones and/or Bluetooth devices) is
+allowed to be used close to the field.
+
+§ 3.9.3 Wireless Robot-To-Robot Communication: Wireless robot-to-robot communication
+between the robot players is allowed and must use the access points provided by the event organizers.
+Direct wireless communication between the robots (using the so-called ad-hoc mode) is prohibited.
+
+Messages must be sent via UDP broadcast. Each message's payload size must not exceed 512 B.
+
+Each team will be allocated a single UDP port on which to send/receive their team messages.
+Specifically, a team's port will be 10000 plus that team's GameController number.
+
+Unicast communication between robots is prohibited.
+
+Each team is allowed to send in total a maximum of 12000 messages during a complete game.
+
+For each minute of additional time added by the Allowance for time lost rule (see Section 7), the
+limit is increased by 600 packets.
+
+Only messages sent by the robot players in the following game states count towards the communica-
+tion limit: ready, set and playing. Any messages sent during other game states do not count towards
+the teams message budget. Limits do not apply during penalty kick shoot-out.
+
+The number and the size of the messages sent by each team is monitored by the GameController.
+
+A violation of the permitted maximal size of a message or the maximal number of messages is
+subject to penalty (see Section 12).
+
+The limit of allowed packets will be lowered in future competitions to encourage a progress towards
+human-like communication and coordination.
+
+§ 3.9.4 GameController Communication: The GameController will communicate at 2
+packet(s) per second.
+
+Robots are required to respond to GameController messages and send status update packets to the
+GameController.
+
+The format for the GameController messages and for the responses is defined in the official
+GameController2
+
+    2https://github.com/RoboCup-HumanoidSoccerLeague/GameController/blob/master/
+game_controller_msgs/headers/RoboCupGameControlData.h
+
+                                                         19
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 3.9.5 Debug Communication: Team specific debug information may be sent to an external
+computer owned by the team. Each robot may send debug information in a single UDP packet to a
+single team device on the wired network. The robot may sent at most 1 packets per second. The
+size of a single packet is not explicitly restricted, but must be within the maximum single UDP
+packet size (typically 64kB).
+
+§ 3.10 Safety
+
+§ 3.10.1 Dangerous Equipment A player must not use equipment or wear anything that is
+dangerous to himself or another player.
+
+§ 3.10.2 Physical Stop Robot handlers must be able to immediately and physically bring a robot
+to a safe state at any point in the game (see § 5).
+
+It is the responsibility of the teams to ensure that a robot can be physically stopped by their handler
+in case of emergency.
+
+The team must be able to demonstrate their ability to physically stop their robots on request at any
+time during the competition.
+
+In order to ensure that a robot can be physically stopped a robot at any time, the robots can be
+equipped with dedicated safety features.
+
+Passive Features The robot can be equipped with passive components that allow for it to be
+physically restrained without danger to the human handler. Examples of such components are grips
+or handles on the back of the robot, and design features of the robot's body that allows a human to
+safely hold the robot.
+
+Active Features The robot can be equipped with active components that makes the robot to
+immediately stop all movements and assume a safe posture. Examples for such components are a
+physical button on the robot, emergency switch on the robot, remote emergency button.
+
+Remote Emergency Button Robots can be equipped with a remote emergency button. A remote
+emergency button is a device that is not physically attached to the robot and can send a remote
+signal to the robot causing it to stop all movement and assume a safe posture. Each emergency stop
+button can only be connected to one specific robot. The remote emergency button cannot perform
+any additional functions.
+
+           20
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 3.10.3 GameController Stop The robots must comply with the GameController protocol and
+immediately assume a safe pose when the command is sent by the GameController as formulated in
+§ 3.9.2 and § 7.1.7.
+
+§ 4 The Players' Equipment
+
+§ 4.1 Team Markers
+
+Robot bodies must be colored mostly with a neutral color, such as black, gray, white, or silver, and
+be non-reflective.
+
+Robots must use colored jersey shirts as team markers. A jersey is a tank top-style shirt that may
+start at the neck and go down to the waistline, and does not cover the arms of the robots. It must
+cover at least 50% of the upper body of the robot.
+
+Each robot has a unique jersey number from the set {1, 2, 3, . . . , 20}.
+
+Jerseys must have a primary color that comprises more than half of the jersey. The primary color
+must be recognizable from the front and back.
+
+Jerseys should not contain distracting patterns that could be confused with other elements of the
+soccer field, such as field lines or the ball.
+
+Jersey material must be non-reflecting, non-shiny, and non-glittery. Jerseys may be manufactured
+from fabric and fine mesh.
+
+The two teams must wear colors that distinguish them from each other and also the referee and the
+assistant referees.
+
+Each team must provide two jersey designs in distinctly different solid colors. The jersey color
+must clearly contrast with any uncovered parts of the robot to ensure reliable identification.
+
+Robots must display clear identification numbers (player number): a large number on the back and
+a smaller number on the front.
+
+The goalkeeper robot must be uniquely marked so that it can be easily distinguished from the other
+robots on the same team by the referees (e.g., the player number may serve as a distinguishing
+element).
+
+The goalkeeper may use a distinct jersey color, either by wearing the team's second kit or by
+introducing a third, clearly distinguishable color.
+
+Sponsorship logos are allowed only on the jerseys. Logos must not occupy more than 50% of the
+jersey surface, ensuring that at least half of the jersey remains in primary color. Logos must not
+
+                                                         21
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+interfere with the player numbers, and they must not include distracting patterns and colors that
+could be confused with other elements of the soccer field, such as the field lines or the ball.
+
+Jersey designs must be submitted for approval prior to the competition by a deadline specified by
+the organizers. Jerseys shall be reviewed and approved by the technical committee prior to the
+competition.
+
+§ 4.2 Goalkeeper
+
+The goalkeeper may use any of the allowed jersey numbers. The goalkeeper must wear a jersey
+with a primary color different from the primary colors used by the field players of both teams.
+
+           22
+Rule Book            RoboCup Humanoid Soccer League  2026-04-30
+
+§ 5 Human Officials
+
+Each match is run by a number of human officials. They are distinguished in two categories:
+referees, neutral persons who have the the duty to enforce the rules of play and ensure the game
+proceeds smoothly (including the GameController operator); and team officials, who belong to
+either of the teams and perform specific tasks for that team.
+
+The referees are assigned before the game: example modalities are by scheduling in official games
+or by common agreement in friendly games.
+
+As for team officials, each team selects theirs officials before the start of the game and communicates
+their selection to the head referee during the pre-game meeting. One person may cover multiple
+roles, unless otherwise specified.
+
+§ 5.1 Equipment of human on the field
+
+All humans on the field must not wear white or green footwear, socks, or any other foot covering in
+these reserved colors.
+
+All clothing worn on the field, including referee jerseys, must not contain distracting patterns or
+designs that could be confused with elements of the soccer field, such as field lines or the ball.
+
+They may also have equipment to communicate with each other, such as a headset or flags, if
+available.
+
+The referee jersey provided by the event is recommended for all referees but is not mandatory. The
+head referee must also be equipped with a whistle, a coin, and yellow and red cards.
+
+§ 5.2 Head Referee
+
+The head referee is the principal authority of the game and takes all decisions regarding the flow of
+the match and the enforcement of the rules.
+
+§ 5.2.1 Decisions of the Head Referee The head referee takes decisions to the best of their
+ability according to the rules and the spirit of the game. Any decision of the head referee is valid.
+
+The head referee's decision is final and can not be changed afterwards, even by video proof. There
+is no discussion about decisions during the game, neither between the assistant referees and the
+head referee, nor between the audience or the teams and the head referee.
+
+The head referee communicates their decision via verbal calls, occasionally complemented by a
+whistle sound.
+
+Calls. The head referee announces decisions by a clear loud call, and (as required) whistle sound.
+The whistle, or where there is no whistle the first verbal word of the referees calls, defines the point
+
+                                                         23
+Rule Book  RoboCup Humanoid Soccer League                                       2026-04-30
+
+in time at which the decision is made. The referees should make efforts to use consistent and clear
+calls, and it is preferable for referees to use the calls as specified in these rules.3 The intention of
+specifying the referee calls is for clarity and consistency across games.
+
+Whistle. Where a whistle is required, the head referee first whistles and then announces the reason
+for the whistle. The head referee may choose to use any normal sports whistle. Each whistle sound
+should be short and not too loud as to interfere with other fields and simultaneous games. The head
+referee must only sound the whistle in circumstances described in these rules.
+
+§ 5.2.2 Powers and Duties The head referee enforces the rules of the game and controls the
+match in cooperation with the assistant referees and the GameController operator.
+
+The head referee adjudicates all infringements of the rules, and stops, suspends, or abandons the                       This is the
+match accordingly. They indicate the restart of play after it has been stopped.                                         "advantage
+                                                                                                                        rule", de-
+The head referee may allow play to continue when the team against which an offense has been                             cide if we
+committed will benefit from such an advantage, and penalizes the original offense if the anticipated                    want it or
+advantage does not actually ensue.                                                                                      not
+
+When a robot commits multiple offenses at the same time, only the most serious one is called.
+
+The head referee should act on the advice of the assistant referee regarding incidents that they has
+not seen.
+
+The head referee has the right to take action against team officials who fail to conduct themselves
+in a responsible manner and may, at their discretion, expel them from the field of play and its
+immediate surrounds.
+
+The head referee must stop the game if a human is seriously injured during play until that person
+has left the field.
+
+The head referee can stop, suspend, or abandon the match because of outside interference of any
+kind, such as but not limited to: poor lighting or network conditions, or extraneous objects, animals
+or people entering the field.
+
+The head referee can request any robot be stopped if it becomes a threat to the safety of objects,
+participants or spectators.
+
+The head referee ensures that no unauthorized persons enter the field of play.
+
+The head referee should avoid handling the ball (except for placing a ball for kick-off), and avoid
+handling the robots. Their duty is to monitor and adjudicate the game. The head referee should only
+
+    3The calls specified in these rules are detailed in English. With the agreement of the teams, the referees may use
+suitable calls in any language. The exception to this are technical challenges that depend on the calls as specified.
+
+           24
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+handle robots and the ball if absolutely necessary to expedite game-play, where the robot handlers
+are otherwise occupied or too far away, and only if it doesn't compromise their own safety.
+
+The head referee may decide at any point before or during a game to relocate any objects around the
+field, or direct persons to another position around the field.
+
+§ 5.3 Assistant Referees
+
+The assistant referees assist the head referee with offenses and other events when they have a clearer
+view. For example, they indicate when the ball has completely crossed over the line of the field, and
+which team is awarded the resulting goal or free kick. They can also point out rule violations that
+occurred outside of the head referee's view.
+
+The assistant referees assist the head referee in officiating the match. They help monitor play, track
+the ball going out of bounds, and communicate with the head referee about incidents they observe.
+
+Assistant referees may replace the ball when it goes off the field or becomes stuck between a player's
+feet. Robot handling is performed by the designated robot handlers (see § 5), not by assistant
+referees, unless otherwise discussed with teams beforehand.
+
+Assistant referees should only enter the field to execute a decision made by the head referee. They
+should not prevent robots from falling during the game.
+
+A game normally has one or two assistant referees. The exact number is decided by the organizers
+of the competition.
+
+§ 5.4 GameController Operator
+
+The operator of the GameController is a referee who sits at a PC in the technical area. As with the
+head referee, the operator should make efforts to use consistent and clear calls.
+
+They will signal any change in the game state or penalties to the robots via the wireless as they are
+announced by the head referee. Note that for both kick-offs and goals, the moment of whistling is
+determining, not the verbal announcement of the head referee. They should repeat the call of the
+head referee as they do so, to confirm it was heard correctly.
+
+The operator will also inform the robot handlers when a timed penalty is over and a robot has
+to be placed back on the field. They should announce events that occur automatically in the
+GameController due to elapsed time, such as the ball coming into play after a kick-off, penalty kick
+or free kick, or the state changing from ready to set.
+
+           25
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+They are also responsible for keeping the time of each half. They should count aloud the remaining
+seconds in a half once the time remaining is 5 s or less.
+
+§ 5.5 Referee List for Friendly Games
+
+During a competition, especially (but not only) during the setup days, several teams may want to
+participate in friendly games with each other if a field is available to play in. People willing to
+volunteer for judging these games as head referee, assistant referee or GameController operator may
+submit their name to a list managed by the Organizing Committee, so that the teams organizing the
+friendly game are aware of their availability. This is especially recommended for those who wish to
+gain referee experience.
+
+Ultimately, the teams organizing the friendly game are still free to decide whether to call volunteers
+from the list or otherwise choose their referees.
+
+The Organizing Committee is in charge of maintaining the referee list and should be approached at
+the competition site if one should want to volunteer.
+
+§ 5.6 Team Captain
+
+The captain is a team official. They are the representative of the team for the game. They do not
+have to be the team leader.
+
+The team captain represents the team during the pre-game meeting.
+
+The team captain is the only person allowed to communicate with the referees. This includes making
+requests for pickup (Section § 12.2.5).
+
+§ 5.7 Robot Handlers
+
+The robot handlers are team officials. They are the only team members permitted to touch their
+team's robots, except when a robot is being serviced; in that case, any team member may touch it.
+Each team must provide one or two handlers.
+
+During the game, the robot handlers stay in a designated area and must receive permission from the
+head referee before entering the field.
+
+The robot handlers are tasked with removing their robots from the field when they are penalized,        Put either
+picked up, or otherwise removed from play. They must do so as swiftly as possible when instructed       here or in
+by the head referee, and with minimum interference with the game.                                       forbidden
+                                                                                                        actions:
+When play is stopped, the robot handlers inform the head referee when their robots are ready to         refusing
+resume.                                                                                                 to follow
+                                                                                                        head ref's
+Robot handlers should only enter the field to execute a decision made by the head referee. They         instruc-
+should not prevent robots from falling during an official game.                                         tions is
+                                                                                                        considered
+                                                                                                        unsporting
+                                                                                                        conduct
+
+           26
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+A robot handler may not touch a robot from a different team.
+
+Use of the Remote Emergency Button Robot handlers are allowed to carry a remote emergency
+stop button during a game (see § 3). This button must be worn either around the neck or on the
+belt of the robot handler and must be clearly marked. Robot handlers must keep their hands clearly
+away from the button unless the button is actively being pressed. Robot handlers can only use the
+remote emergency button in the following two cases: (1) command by the main referee for the robot
+to be stopped and removed from the game; (2) emergency situations where the robot's behavior
+poses danger to the humans outside of the field. Robot handlers must not use the remote emergency
+button to intentionally incapacitate their robots with the aim of gaining advantage in the game.
+
+§ 5.8 Humans Allowed on the Field
+
+During the game, starting at the Ready state, only the following people are allowed on the carpeted
+area (i.e. on the field and the surrounding border area):
+
+    · The referees;
+    · The robot handlers;
+    · And no one else.
+
+In addition, only the team captains and at most two more people per team are in the Technical Area
+(see § 1). This allows the referees easier communication with the team and the GameController
+operator gets less disturbed.
+
+§ 6 Judgement
+
+§ 6.1 Pre-game Referee Meeting and Task Delegation
+
+At least 15 min before the start of the game, the people who are going to serve as referees meet
+up to discuss the upcoming game. At least, they must assign among themselves the roles of head
+referee and GameController operator, with the remaining people acting as assistant referees.
+
+The head referee should also communicate whether they are going to delegate any duties to the
+assistants. Other topics that ensure a smooth cooperation among the referees can also be discussed.
+
+The head referee should talk to the assistants to determine what tasks or lesser decisions, if any, they
+wish to delegate to them to ensure that the game is arbitrated as smoothly as possible. This is left to
+the discretion of the head referee, based on their expertise in the role and their ability to focus on
+multiple events happening in the game at the same time and apply the corresponding rules.
+
+                                                         27
+Rule Book  RoboCup Humanoid Soccer League                        2026-04-30
+
+The head referee must clearly communicate what tasks are delegated to which person, so that
+everyone understands their duties during the game.
+
+If no agreement can be found, the default is that the responsibility for most calls and decisions falls
+upon the head referee, as determined by the rules.
+
+Common examples of tasks that can be delegated are:
+
+· Indicating when the ball leaves the field
+
+· Determining which team is to be given a free kick when the ball goes out of the field
+  (Section 14) and communicating this to the head referee
+
+· Indicating violations requiring a penalty, especially if they happened out of the view of the
+  head referee
+
+    ·                                                                                                      More ex-
+Note that the final decision is still made by the head referee.                                            amples
+                                                                                                           can be
+                                                                                                           added
+
+The above list is not prescriptive: the head referee can always choose to delegate zero, one, some, or
+all of these tasks. It is also not exhaustive: through discussion among the head referee, the assistants,
+and the GameController operator, other tasks not listed here may be identified and delegated.
+
+Care should be taken to not overburden any one person and not to blur the roles of head and assistant
+referees. Conflicts in the authority of the referees should be avoided, but if any do occur, the head
+referee's decision is final.
+
+§ 6.2 Pre-game Team Meeting
+
+Both teams send a representative called team captain to the field 10 min before their match starts.
+This time should be used to welcome each other, assign team colors, choose side and kick-off, and
+discuss any other topics related to the match.
+
+§ 6.2.1 Assigning team colors. The teams agree on the jersey colors they will use during the
+match, following the constraints outlined in § 4. The head referee should respect the teams' wishes
+as long as they fit within the constraints. If a suitable agreement cannot be reached, the head referee
+must make the decision if possible, or propose an alternative solution.
+
+§ 6.2.2 Choosing side and kickoff. The head referee flips a coin. The team who won the flip
+can decide whether they will take the kickoff or choose which side to defend during the first half.
+The team who lost the flip gets the other benefit.
+
+                                                         28
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 6.3 Referee ­ Team Communication
+
+During the match, only the team captains are allowed to communicate with the head referee.
+After the match the teams thank the referees for their duty.
+During all phases of the match teams and referees are communicating with respect to each other.
+§ 6.4 Referees During the Match
+
+The head referee and the assistant referees usually oversee the game from outside the field. Robot
+handlers enter the field to remove or place robots when penalties are applied (see § 5). Referees
+should avoid interfering with the robots as much as possible.
+§ 6.5 Referees After the Match
+
+At the end of the game, the head referee must provide the Technical and Organizing Committees
+(or other relevant authorities) with a match report, which includes the final score and any relevant
+information on incidents that occurred before, during or after the match.
+
+           29
+Rule Book               RoboCup Humanoid Soccer League  2026-04-30
+
+           game states
+
+           ready    set        playing                  finished
+
+safe       initial  penalized
+
+       start
+
+Figure 5: Diagram of the game states. Dashed lines denote technical state safe. Dashed transitions
+are activated through dedicated buttons or switches on the robot. Solid lines denote game states.
+Transitions between game states are activated by the GameController. The transition from set to
+playing (denoted by a double line) is additionally activated by a whistle. Final state finished
+is denoted by double circle.
+
+  Discuss and integrate the Stop state.
+
+§ 7 The Course of the Game
+
+§ 7.1 Robot States
+
+Throughout a match, robots transition through several defined states controlled by the GameCon-
+troller. Robots must respond appropriately to each state transition. Figure 5 illustrates the game
+states and transition between them.
+
+§ 7.1.1 Initial The initial state is active before the game begins. Robots should be placed
+in their starting positions by robot handlers. Robots are permitted to move their heads and perform
+calibration routines but must not locomote (move their legs or walk).
+
+§ 7.1.2 Ready The ready state begins when signaled by the GameController. During this state,
+robots may autonomously move to their designated positions for kick-off or other set plays. The
+ready state lasts 45 s. Robots must reach legal positions before the set state begins.
+
+                    30
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 7.1.3 Set The set state indicates that robots must be stationary in their positions. Robots that
+could not reach legal positions by the end of ready are penalized for Illegal Position during this
+state.
+
+No locomotion is permitted during this state, except for the minimum necessary to get up if the
+robot has fallen. Movement of the robot's head is also allowed. Any robot that moves its legs or
+locomotes during the set state will be penalized for Forbidden Motion (see § 12.2.2).
+
+The head referee signals the transition from set to playing by blowing the whistle. For kick-off
+and drop ball situations, the GameController sends the playing signal with a delay of 10 s after
+the whistle, to encourage teams to implement whistle detection.
+
+§ 7.1.4 Playing The playing state is the main game state where robots actively participate in
+the match. All normal game rules apply during this state.
+
+§ 7.1.5 Penalized A robot in the penalized state has been removed from play due to an
+infringement. The robot must remain stationary outside the field until its penalty time expires. After
+the penalty expires, the robot autonomously re-enters the field from the designated re-entry point
+(see § 12).
+
+§ 7.1.6 Finished The finished state indicates the end of a game half or the match. Robots
+should cease all game-related activity.
+
+§ 7.1.7 Stop (Emergency Stop)                                                                           This is
+                                                                                                        a tempo-
+The referee may call an emergency stop at any time for safety reasons. When an emergency stop           rary stop,
+is called, all robots must immediately cease all motion and behave as if in the set state. No           does not
+locomotion is permitted, not even for getting up. Robots must respond to this signal immediately.       have to be
+                                                                                                        emergency.
+The head referee signals an emergency stop by calling "Stop Play" loudly and clearly. The               A sepa-
+GameController will also send the emergency stop signal.                                                rate state
+                                                                                                        might
+The game clock, secondary timers, and penalty timers are paused during an emergency stop. If a          make
+team was in the process of taking a kick-off or a free kick, that information is retained when the      prob-
+game resumes.                                                                                           lems in
+                                                                                                        the imple-
+During an emergency stop, robots remain in place and must not be moved, except for untangling. If       mentation.
+the situation requires the robots to be removed from the field, a different call must be made, such as  Needs dis-
+a referee timeout.                                                                                      cussion
+                                                                                                        on how
+                                                                                                        it can be
+                                                                                                        realized.
+
+                                                                                                        Consequences
+                                                                                                        for not
+                                                                                                        complying
+                                                                                                        are to be
+                                                                                                        discussed
+                                                                                                        in the
+                                                                                                        next TC
+                                                                                                        meeting(s)
+
+Play resumes when the head referee determines it is safe to continue. The procedure for resuming
+the game from an emergency stop is as follows:
+
+           31
+Rule Book  RoboCup Humanoid Soccer League                                      2026-04-30
+
+· The ball is placed where it was at the time of the stop (if it was in play)
+· All humans leave the field
+· The head referee signals play to continue
+· The game resumes in the same state as it was when it was stopped.
+
+§ 7.2 Periods of Play
+
+The match consists of three parts: the first play period (first half), a half-time break, and a second
+play period (second half).
+
+Each game period has a duration of 10 minutes, starting from the beginning of the Playing state of
+the initial whistle.
+
+For the second half, the teams change sides of the field, thus attacking the goal they used to defend
+in the first half.
+
+§ 7.3 Half-Time Break
+
+The half-time break must be at least 10 minutes, unless otherwise agreed by the teams. When
+multiple games are played on adjacent fields, the half-time break can extend to allow the referees to
+move between fields, and any other time taken for such logistical considerations.
+
+During the half-time break both teams may perform any modifications on the hardware or software
+of the robots, change robots, or do anything else that can be done within the time allotted.
+
+§ 7.4 Signals
+
+The head referee uses a whistle to signal certain changes in the game phases (see § 7). The head
+referee should make all whistle sounds from the T-junction of the halfway line. The following game
+phases are signaled by a whistle:
+
+   1. playing ­ one short whistle blows;
+   2. finished at the end of the first half ­ two short whistle blows;
+   3. finished at the end of the second half ­ two short plus one long whistle blow;
+
+           32
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 7.5 Ready and Set States
+
+In both knock-out and round-robin games, the game clock is not stopped during the Ready and Set
+states other than the initial kickoff of a period.
+§ 7.6 Allowance For Time Lost
+
+Allowance is made in either period for all time lost through:
+    · substitutions
+    · assessment of injury to players
+    · removal of injured players from the field of play for treatment
+    · wasting time
+    · external circumstances (e.g., network issues)
+    · any other cause
+
+The allowance for time lost is at the discretion of the head referee. It is announced during the final
+minute of each half, and it is always expressed in whole minutes. The GameController operator
+executes this addition of time using the GameController interface.
+
+In exceptional circumstances, the head referee may decide to add time to the clock immediately
+after an incident rather than waiting until the final minute of a half.
+
+§ 7.7 Timeout
+
+§ 7.7.1 Team Timeout Each team can call a maximum of 1 timeout per game with a total
+time of no more than 5 minutes. During this time, both teams may change robots, change programs,
+or anything else that can be done within the time allotted. During normal game time, a team may
+call a timeout at any stoppage of play (after a goal, stuck game, before a half, etc.). Alternatively, a
+team may call a timeout before a penalty shootout if they have not used their timeout yet (see § 14).
+
+The timeout ends when the team that called the timeout says they are finished, at which time they
+must be ready to play. The other team must be ready to play at the time the timeout runs out, or 2
+minutes after a prematurely called end of the timeout, whichever is earlier. If the other team is not
+ready to play in time, it must call a timeout of its own.
+
+The clock stops during timeouts and is reset to the time when the current stoppage of play began.
+
+After the completion of the timeout, the game resumes with a kick-off for the team which did not
+call the timeout.
+
+                                                         33
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+If a team is not ready to play at the assigned time, it must use its timeout. After the timeout has
+expired, or if the team does not use it, the referee shall start the game with only the ready team on
+the field, if the other team is still not prepared. The unready team may return its robots to the field
+in accordance with the rules for "Request for Pick-up" (see § 12.2.5). If both teams are not ready,
+the same procedure applies.
+
+§ 7.7.2 Referee Timeout The head referee may call a timeout at any time if deemed necessary.
+A referee timeout should only be called in exceptional circumstances--one example might be when
+the wireless network is down or no robot responds to the GameController.
+
+Referees may call multiple timeouts during a game if needed. Teams may do anything during these
+timeouts, but they must be ready to play 2 minutes after the referee ends a timeout. The referee
+should end the timeout once the circumstance for which the timeout was called has been resolved.
+In cases where the circumstance is not resolved within 10 minutes, the Technical Committee should
+be consulted regarding when or if play should continue.
+
+If a team was going to have kick-off at the time the referee timeout was called (e.g., during most
+stoppages of play), that team shall kick-off when the game resumes. Otherwise, the drop ball rule
+(see § 8) applies instead.
+
+§ 7.8 Mercy Rule
+
+A game will conclude once the game score shows a goal difference of 10. Ending the game is
+mandatory once a goal difference of 10 is reached.
+
+§ 7.9 Forfeit Rule
+
+Teams who do not make a good faith effort to participate in a scheduled game are considered to
+forfeit the game.
+
+If a team notifies the technical committee that they wish to forfeit less than two hours before their
+scheduled game time, simply fails to show up for their game, or decides during their game that
+they wish to forfeit, then the opposing team will play the match against an empty field. However,
+any own goals will not be scored. Hence, after an opponent forfeits, the team playing against an
+empty field cannot do worse than they were doing at the time the opponent decided to forfeit. Teams
+may choose to forfeit at any stoppage of play. However, once a forfeit is announced, they may not
+reverse this decision.
+
+If a team notifies the technical committee that they wish to forfeit at least two hours before their
+schedule game time, the following procedure will be followed.
+
+    · If a team chooses to forfeit a match in the round robin games the other team plays the match
+       against an empty field. However, any own goals will not be scored.
+
+                                                         34
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+· If a team chooses to forfeit in a knock-out game it gets replaced by the next best qualified
+  team, i. e. the team it kicked out or left behind in the round robins.
+
+Note that there are a few unlikely cases that are not covered by these rules. If a situation is not
+covered by these rules, the technical committee and the organizing committee will work together to
+make a decision.
+
+Any forfeit will result in a qualification penalty being recorded but the circumstances of the forfeit
+will affect the severity of the offense and the impact on future qualification.
+
+§ 7.10 Ball Stop Rule
+
+If the time for a period would end while the ball is still in motion, the period is extended instead
+until any of the following events happens:
+
+    · The ball comes to a complete stop, or
+    · The ball leaves the field of play. If this causes a valid goal to be scored, the goal is counted.
+
+This extension should last a few seconds at most.
+
+§ 7.11 Penalty Kick Extension Rule
+
+If the time for a period would end while a penalty kick is taking place, the period is extended instead
+until the penalty kick is completed (see § 14). Note that this rule applies to any game state as long
+as the penalty kick substate is active, including the Ready and Set preceding the actual kick.
+
+§ 8 The Start and Restart of Play
+
+A kick-off starts both halves of a match, both halves of extra time and restarts play after a goal has
+been scored. Free kicks (direct or indirect), penalty kicks, throw-ins, a goal kicks and corner kicks
+are other restarts (see Laws 13­17). A dropped ball is the restart when the referee stops play and
+the Law does not require one of the above restarts.
+
+If an offense occurs when the ball is not in play, this does not change how play is restarted.
+
+           35
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 8.1 Kick-off
+
+§ 8.1.1 Procedure The team taking a kick-off is determined as follows:
+
+    · The initial kick-off of the first half is taken by the team who got this benefit during the
+       pre-game meeting (see 6).
+
+    · The initial kick-off of the second half is taken by the team who did not take the initial kick-off
+       of the first half.
+
+    · After a team scores a goal, a kick-off has to be taken by their opponents.
+
+    · Other situations, such as timeouts, have their own rules for determining the kick-off team.
+
+For every kick-off, during the set state, the ball is positioned on the center mark and is stationary.
+The players must follow these positioning rules:
+
+    · all players of the team not taking the kickoff must be in their own half of the field of play and
+       outside of the center circle,
+
+    · all players of the team taking the kickoff must be in their own half of the field or inside the
+       center circle,
+
+    · at most one player of the kicking team may be outside its own half (it must still be inside the
+       center circle). That player is designated as the kicking player for this kickoff.
+
+Robots that do not follow these rules are penalized for illegal position. Then, the head referee gives
+the signal to start play with a whistle. At this point, the following rules apply:
+
+    · the positioning rules above still apply until the ball is in play,
+    · if a kicking player was designated during the set state, that player must take the kickoff. If a
+
+       different player kicks the ball before the ball is in play, this is an offense and the kick-off is
+       retaken,
+    · the ball is in play when it is kicked and clearly moves, or 10 s after the referee has given
+       the signal, whichever happens first. In either case, the head referee or the GameController
+       operator will verbally announce this by the call "Ball Free",
+    · a goal may not be scored directly against the opponents from the kick-off,
+
+    · if the team taking the kick-off has three or more robots on the field then two different robots
+       need to touch the ball before scoring a goal. If a team taking the kick-off has only two or less
+       robots on the field, the robot taking the kick-off has to touch the ball at least one time outside
+       the center circle before scoring a goal.
+
+In order to encourage teams to recognize the signal to start play, the GameController application
+will delay the playing signal, as specified in § 7.1.3. The delay applies regardless of when or how
+the ball becomes in play.
+
+                                                         36
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 8.1.2 Offenses and Sanctions
+
+1. The regulations defined in the section § 12 apply (this includes in particular § 12.2.2 and
+   § 12.2.1).
+
+2. In the event of any offense during the kick-off procedure, the kick-off is retaken.
+
+§ 8.2 Dropped Ball
+
+§ 8.2.1 Definition A dropped ball is a method of restarting play when the referee stops the game
+while the ball is in play, and no team is entitled to a kick-off, free kick, or any other specific restart
+under these Laws.
+Typical situations include, but are not limited to:
+
+   1. referee or system error,
+   2. a pause in game during the playing state that has been acknowledged by the head referee,
+   3. a global game stuck (see § 8.3.2).
+
+§ 8.2.2 Procedure
+
+   1. Announcement and Preparation: The head referee announces "Dropped Ball". The game
+       state switches to ready phase. No team is designated to take kick-off.
+
+   2. Ready: Robots assume their positions inside their own half.
+   3. Set: The robots must stop moving. No robot of either team is allowed inside the center circle.
+
+       The referee places the ball on the center mark.
+   4. Playing: The referee signals the start and the game switches to playing phase (see § 7).
+
+       The ball is immediately in play. A goal may be scored directly from a dropped ball.
+
+§ 8.2.3 Offenses and Sanctions
+
+   1. The regulations defined in the section § 12 apply (this includes in particular § 12.2.2 and
+       § 12.2.1).
+
+   2. In the event of any offense during the dropped ball procedure, the dropped ball is retaken.
+
+                                37
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 8.2.4 Notes A dropped ball follows the standard kick-off procedure § 8 (including ready
+and set), with the following exceptions: (1) no team has kick-off rights; (2) no robot is allowed
+inside the center circle before the playing state; (3) the ball is immediately in play; (4) a goal
+may be scored directly from a dropped ball.
+
+§ 8.3 Game Stuck
+
+Game stuck situations occur when play has stalled and intervention is required to resume normal
+game flow.
+§ 8.3.1 Local Game Stuck Local game stuck is called when the ball has not moved significantly
+for 10 s while robots are in proximity to the ball. This typically occurs when robots are clustered
+around the ball but unable to make progress.
+When local game stuck is called:
+
+     · The robot nearest to the ball is penalized and removed according to the standard removal
+       penalty.
+
+     · The ball remains in its current position.
+     · Play continues immediately after the robot is removed.
+
+The head referee calls "Game Stuck <robot color><robot number>".
+Local game stuck penalties do not count towards the incremental penalty count.
+
+§ 8.3.2 Global Game Stuck Global game stuck is called when no robot has been within 1 m of
+the ball for 30 s. This typically occurs when all robots have lost track of the ball or are unable to
+approach it.
+When global game stuck is called:
+
+     · Play is stopped.
+     · The game is restarted with a drop ball (see § 8).
+
+The head referee calls "Global Game Stuck".
+
+           38
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 9 The Ball In and Out of Play
+
+The definition of the ball in/out of play refers to the definition of inside and outside in Section 1
+(Definition of Inside and Outside).
+
+§ 9.1 Ball Out of Play
+
+The ball is out of play when:
+
+    · the ball is outside the field of play (i.e. not even touching/overlapping the boundary lines)
+    · the ball is inside the goal
+    · the ball is being handled by a referee during play (such as the referee replacing the ball under
+
+       Section 4 (Judgment))
+    · play has been stopped by the referee
+
+§ 9.2 Ball In Play
+
+The ball is in play at all other times, including (but not limited to) when:
+
+    · the ball rebounds off the head referee or a assistant referee, the goalpost, or the crossbar, and
+       remains inside the field of play (i.e., within the region bounded by the touchlines and goal
+       lines)
+
+    · the ball rebounds off a robot player, including a robot located beside the field but outside the
+       field of play, provided that the ball has not left the field of play during the rebound
+
+    · the ball rebounds off a robot handler who has been permitted by the head referee to enter the
+       field of play, provided that the head referee determines that the contact was not intentionally
+       caused by the robot handler
+
+§ 10 The Method of Scoring
+
+§ 10.1 Goal Scored
+
+A goal is scored when the entire ball passes over the goal line, between the goalposts and under the
+crossbar as defined in Section 1 (Definition of Inside and Outside), provided that no infringement of
+the Laws of the Game has been committed previously by the team scoring the goal.
+The restart of the play will be a kick-off for the opponents team.
+
+                                                         39
+Rule Book  RoboCup Humanoid Soccer League                     2026-04-30
+
+§ 10.2 Winning Team
+
+The team scoring the greater number of goals during a match is the winner. If both teams score an
+equal number of goals, or if no goals are scored, the match is drawn.
+§ 10.3 Permitted Tiebreakers
+
+When competition rules require there to be a winning team after a match or home-and-away tie, the
+only permitted procedures for determining the winning team are:
+
+     · Extra time (2 additional equal periods of no more than 5 minutes each)
+     · Penalty shoot-out (see § 14)
+
+Before each additional time period and penalty shoot-out, a five-minute break shall take place. This
+break follows the same rules as the half-time break (see § 7).
+
+§ 11 Offsides
+
+Offsides are not used in the RoboCup Humanoid Soccer League.
+
+§ 12 Fouls and Misconduct
+
+The following actions are forbidden. In general, when a penalty applies, the robot shall be removed,
+not the ball.
+
+§ 12.1 Penalty Procedure
+
+When a robot commits an infraction, the head referee shall call out the infraction committed, the
+team color of the robot, and the jersey number of the robot. The penalty for the infraction will
+be applied immediately. The robot handlers should perform the actual movement of the robots
+for the penalty so that the head referee can continue focusing on the game. The operator of the
+GameController will send the appropriate signal to the robots indicating the infraction committed.
+
+Unless otherwise stated, all infractions result in the removal of the infringing robot from the field
+of play for a particular amount of time, after which it will be returned to the field of play (see
+Subsection 12). If a robot commits an offense in the vicinity of the ball (within the free kick
+avoidance radius, which is the center circle radius for the respective field size - see Table 2), the
+game is interrupted and the offending player is removed according to the standard removal penalty.
+
+                                                         40
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+After the offending robot is removed, the opposing team restarts play with a free kick (see § 13). If
+the offense occurred away from the ball, the offending robot is penalized and removed, but play is
+not interrupted.
+
+For penalties that are timed, the penalty time is considered to be over at the end of each half.
+
+§ 12.2 Standard Removal Penalty
+
+Unless otherwise stated, all infractions result in the removal of the infringing robot from the field of
+play for a particular amount of time, after which it will be returned to the field of play. This process
+is called the standard removal penalty.
+
+When the head referee indicates an infraction has been committed that results in the standard
+removal penalty, the robot handler for that team will remove the robot immediately from the field of
+play. The robot should be removed in such a way as to minimize the movement of the other robots
+and the ball. If the ball is inadvertently moved when removing the robot, the ball should be replaced
+to the position it was in when the robot was removed.
+
+The GameController will send the appropriate penalty signal to the robot indicating the infraction
+committed. After a penalty is signaled to the robot, it is not allowed to move in any fashion except
+for standing up or sitting down.
+
+The initial duration of the standard removal penalty time is 30 s. Unless otherwise specified, the
+penalty time increases by 15 s each time a team commits any infraction. During the set state the
+penalty time counter will not decrease. The GameController will keep track of the time of the
+penalty.
+
+After a robot is penalized and before it starts serving its penalty, the robot handler may hand it over
+to its team who may perform maintenance on the robot. The penalty timer does not decrease while
+maintenance is being performed.
+
+To serve its penalty, the removed robot is placed on the touchline at the height of the penalty mark
+of its own half and facing the opposite touchline. The robot must be placed fully outside of the field.
+If the position at the height of the penalty mark is already occupied, a nearby position is chosen.
+When finding a nearby location, it must still be in the robot's own half, so that the symmetry of the
+field can be resolved by the robot's localization system. After the robot is placed, the robot handler
+announces "<robot color><robot number>Ready", after which the GameController operator starts
+the penalty timer. After the penalty time elapses, the GameController operator will remove the
+penalty from the penalized robot, enabling it to autonomously re-enter the game without requiring
+additional intervention from the referees.
+
+If any team member interferes with the robot after it has started serving its penalty time (including
+button presses or connecting cables), the team member and the robot receive a warning, and the
+penalty timer is reset.
+
+                                                         41
+Rule Book  RoboCup Humanoid Soccer League                                      2026-04-30
+
+Standard Removal Penalties are issued for the following offenses:
+    · Illegal positioning*
+    · Motion in set*
+    · Local game stuck*
+    · Incapable robot*
+    · Request for pick-up
+    · Ball holding
+    · Leaving the field
+
+Offenses marked with a star (*) do not increase the incremental penalty count
+
+§ 12.2.1 Illegal Positioning A robot is considered to be illegally positioned if, during the set
+phase, it is located outside the field of play, within the opposing team's half, or within the center
+circle when its team does not have kick-off. A robot is also considered to be illegally positioned
+if it encroaches into the avoidance areas during a free kick (see 13) or penalty kick (see 14). The
+referee should not measure exact distances for avoidance areas and shall only penalize robots that
+are clearly violating this rule. A robot making a reasonable effort to return to the field of play
+following a standard penalty shall not be penalized for illegal position.
+
+A robot penalized under illegal positioning has the "Illegal Position" penalty applied. Illegally
+positioned robots are subject to the standard removal penalty (see § 12). The head referee will
+call "Illegal Position <robot color><robot number>". Referees may use "Illegal Defender"
+interchangeably to help with clarity. For simplicity, Illegal Positioning penalties do not count
+towards the incremental penalty count.
+
+During the set and playing states, at most three players can be within their own goal area at the
+same time. A robot is within the goal area if any part of its body is touching the ground inside the
+goal area or touching one of its lines. An "Illegal Position" penalty is applied when any additional
+players enter the area in playing, or to the excessive players closest to the border of the goal area
+in set. Note that if a player is pushed into the goal area by an opponent, this robot will not be
+subject to removal, unless it fails to exit the area within 5 s (or 5 s after getting up if the pushing led
+to falling).
+
+If an illegal defender kicks an own goal, the goal is scored for the opponent. If there is any doubt
+about whether a goal should count (e.g., the illegal defender infraction is called, but the robot scores
+the own goal immediately afterwards, before it is removed), then the decision shall be against the
+infringing robot.
+
+           42
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 12.2.2 Motion in Set Robots that begin moving their legs or locomote in any way during the
+Set phase, except for standing up after a fall, are awarded a standard penalty. The head referee will
+call "Motion in Set <robot color><robot number>". Note that falsely responding to a whistle on
+another field will result in this penalty. This rule does not apply to the movement of heads or arms.
+Motion in Set penalties do not count towards the incremental penalty count.
+
+§ 12.2.3 Local Game Stuck Penalty When Local Game Stuck is called (see § 8.3.1), the nearest
+robot to the ball will be penalized according to the standard penalty. Local Game Stuck penalties do
+not count towards the incremental penalty count.
+
+§ 12.2.4 Incapable Robot A robot is considered incapable, if it has ceased activity for 10 s or
+has been turned off.
+
+For the purpose of this rule, a robot is considered active, if it performs at least one of the following
+actions:
+
+   1. Walking in any direction or turning
+
+   2. Searching for the ball or tracking the ball
+
+A robot that has fallen is considered incapable, if it does not attempt to get up within 20 s or fails to
+get up within 3 attempts, or 4 when externally disturbed during initial attempts.
+
+An incapable robot must be removed from the field of play and awarded a standard penalty. In
+such cases, the head referee shall announce "Incapable robot <robot color><robot number>".
+Incapable Robot penalties do not count towards the incremental penalty count.
+
+Note: This rule is not intended to penalize robots solely for remaining stationary, provided they are
+responsive and have not crashed.
+
+Player Stance. Robots must not maintain a stance wider than a reasonable proportion of their
+body width for longer than 10 s. As a guideline, the stance should not exceed approximately 1.5
+times the robot's shoulder width. A robot staying in an excessively wide stance for longer than 10 s
+is considered to be incapable of playing, resulting in a standard removal penalty (see above).
+
+§ 12.2.5 Request for Pick-up A robot handler may request to pick up a robot if and only if a
+robot is in a dangerous situation that is likely to lead to physical injuries. The head referee must
+approve this request prior to the robot handler touching the robot. If a team member touches a robot
+without the permission of the referee, the respective robot and the person touching it each receive
+an official warning.
+
+The referee may deny a request for pick-up. A pick-up is not granted for reasons such as being
+incorrectly configured or being unable to see the ball.
+
+                                                         43
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 12.2.6 Ball Holding The goalkeeper is allowed to hold the ball for up to 10 s as long as it has
+at least one foot inside its own penalty area. In all other cases, robots are allowed to hold the ball
+for up to 5 s. Holding the ball for longer than this is not allowed. A robot is holding the ball, if
+the convex hull of the robot is covering more than half of the ball. It does not matter whether the
+offending robot is actually touching the ball. Repeatedly releasing and holding the ball in quick
+succession is treated as one continuous hold, even if individual holds are shorter than 10 s. In
+general, robots should release the ball for approximately as long as they were holding it to reset the
+clock.
+
+Ball holding may not be called when a robot falls on a ball. The robot will either get up and hence
+free the ball, or the robot should be removed under the Fallen Robot rule. Further, ball holding may
+not be called when the ball becomes stuck between a robot's legs. In such a situation, the head
+referee should call "Clear Ball" and a robot handler or assistant referee should remove the ball and
+place it approximately where it was before it became stuck.
+
+If a ball holding offense was committed, the head referee will call "Ball Holding <robot
+color><robot number>", and the robot is removed under the standard removal penalty. The
+ball should be removed from the possession of the robot and placed where the penalty occurred. If
+the robot that held the ball has moved the ball before the robot can be removed, the ball shall be
+replaced where the penalty occurred. This also applies to accidental goals.
+
+Example: A robot holds the ball, and before the referees can remove the robot, it shoots the ball
+into the goal. The goal will not be counted, and the ball will be replaced where the penalty occurred.
+
+§ 12.2.7 Leaving the Field A robot that leaves the carpeted playing area will be subject to
+the standard removal penalty. The head referee will call "Leaving the Field <robot color><robot
+number>".
+
+Additionally, a robot will also be subject to the standard removal penalty when:
+
+    · The robot walks into the goalposts or goal net for more than 5 s, including robots that are
+       stuck on the goalposts and unable to free themselves.
+
+    · The robot's fingers or other appendages become entangled in the net (without any time
+       constraint).
+
+§ 12.3 Cautionable Offenses
+
+The referee applies disciplinary sanctions through warnings, cautions (yellow cards), and sending-off
+offenses (red cards). A warning is an official verbal admonishment. The issuance of two warnings
+to the same player during a match results in a caution (yellow card). A yellow card constitutes a
+formal caution. The issuance of two yellow cards to the same player in the same match results in a
+
+                                                         44
+Rule Book                 RoboCup Humanoid Soccer League       2026-04-30
+
+sending-off (red card). A red card requires the player to be sent off. The player must immediately
+leave the field of play and the technical area and may not participate further in the match.
+
+Cards and warnings issued to players are cleared after the final whistle and do not persist between
+games.
+
+Teams may substitute a player who has received official warnings or cautions as usual. However,
+all warnings and cautions issued to the substituted player are transferred to the player entering the
+field. Players who have been sent off may not be substituted. As a result, the team must play the
+remainder of the match with one fewer player.
+
+Warnings are issued for the following offenses:
+
+     · Manual interaction by team members
+
+     · Playing with arms or hands
+
+Cautions are issued for the following offenses:
+
+· Damage to the field
+· Pushing
+· Receiving two warnings
+
+Players are sent off for the following offenses:
+
+· Endangering any human
+· Repeated deliberate violations of the rules
+· Actions that could cause significant damage to other robots
+· Receiving two cautions
+
+§ 12.3.1 Manual Interaction by Team Members Manual interaction with the robots, either
+directly or via some communications mechanism, is not permitted. Team members (that are not
+robot handlers) can only touch one of their robots when a robot handler hands it over to them after a
+it has been penalized or substituted.
+
+                                                  45
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 12.3.2 Playing with Arms or Hands Playing with arms/hands occurs when a field player or a
+goalkeeper outside its own penalty area moves its arms/hands to touch the ball (except during a fall
+or get-up). The goalkeeper is allowed to touch the ball with its arms/hands while it is within its own
+penalty area.
+
+A robot playing with arms/hands will be subject to the standard removal penalty and receive an
+official warning. In severe cases, e.g. using the hand or arm to deny the opposing team a goal,
+a caution may be awarded instead of a warning. The ball will be replaced at the point where it
+contacted the arms/hands of the offending robot. If an own goal is scored as a result of playing with
+arms/hands, the goal should count and the player should not be penalized.
+
+Accidental playing with arms/hands when a robot falls or executes a get-up routine will not be
+penalized. If the ball goes out of play in this case, normal kick-in rules will apply (see § 15).
+However, goals (except for own goals) resulting from a ball contact with the arms/hands during a
+fall or get-up do not count and result in a Goal Kick (see § 16) as if the ball went over the goal line
+next to the goal.
+
+§ 12.3.3 Damage to the Field A robot that damages the field, or poses a threat to spectator
+safety is removed from the field according to the standard penalty and receives a yellow card. In
+severe cases, the robot may receive a red card instead.
+
+§ 12.3.4 Pushing Pushing is any direct or indirect contact with an opponent robot that is either
+forceful enough to destabilize the opponent or continues for more than 5 s, even when the applied
+force is minimal. Front-to-front contact between robots does not constitute pushing, unless one robot
+is moving with significantly more force or speed than the other. Pushing may only occur between
+players of different teams. A robot pushed by another robot cannot simultaneously be called for
+pushing itself. In this case, only the initially offending robot will be penalized. A stationary robot
+cannot be penalized for pushing, including a robot that is kicking, provided that the ball was close
+enough where a kick could have succeeded at the start of the kick motion.
+
+If a pushing offense is committed, the head referee will call "Pushing <robot color><robot
+number>" and the offending player will be cautioned and removed from play according to a
+standard penalty. If the ball moves significantly as a result of pushing, then it should be replaced to
+where it was at the time of the infraction.
+
+§ 12.4 Aborting a Penalty
+
+If a penalty was incorrectly applied to a robot and acknowledged by the referee to be incorrect, the
+robot should first be removed and placed outside the field, following the same process as for the
+Standard Removal Penalty (see § 12). Once placed, the robot should then be allowed to continue
+play immediately after being placed and the GameController removes its penalty.
+
+                                                         46
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+The aborted penalty will not be added to the total team penalty count and will not contribute to the
+incremental penalty increase.
+
+§ 12.5 Untangling
+
+If entangled robots fail to untangle themselves, the referee may ask designated robot handlers of
+both teams to untangle the robots. Untangling must not make significant changes to robot positions
+or heading directions. Untangled robots must be placed on the ground no closer than 50 cm to the
+ball and in a way that does not give either team an advantage. Being entangled does not incur a
+penalty.
+
+§ 12.6 Jamming
+
+During a match, robots shall not jam the communication and sensor systems of the opponents:
+
+§ 12.6.1 Wireless Communication If a team violates the general regulations defined in § 3,
+penalties will apply. First violation will result in a warning. Repeated violation might result in
+disqualification from the tournament (including all technical challenges and side competitions).
+
+§ 12.6.2 Wireless Robot-To-Robot Communication Any team that exceeds the limits for
+wireless robot-to-robot communication defined in § 3.9.3, as tracked by the GameController, will
+have all goals automatically nullified for the game.
+
+§ 12.6.3 Acoustic interference Both teams and the audience shall avoid intentionally confusing
+the robots by producing sounds similar to the game whistle or to sounds used by the robots to
+communicate with each other.
+
+§ 12.6.4 Visual perception The use of flashlights or other bright light sources is not allowed
+during games. However, flash photography from the audience is allowable as long as the head
+referee believes the purpose is not to jam any of the robots.
+
+§ 12.7 Penalties Against Teams or Humans
+
+The referee can issue warnings, yellow and red cards against humans or teams at their discretion.
+Cards can be issued for offenses such as:
+
+    · Offensive, violent or abusive behavior
+    · Repeatedly ignoring referee instructions
+    · Repeatedly entering the field without permission
+
+                                                         47
+Rule Book  RoboCup Humanoid Soccer League       2026-04-30
+
+· Breaking the game rules to gain an advantage
+
+Cards that are issued against humans or teams must be reported to the Organizing Committee
+immediately after the game. Cards against humans or teams persist between games. A human
+who receives a red card will be prohibited from entering the field or team area during games for
+the remainder of the competition. A team that commits serious or repeated violations may be
+disqualified from the competition.
+
+§ 13 Free Kicks
+
+A free kick is a method of restarting play after various stoppages.
+A free kick is initiated in the following situations:
+
+    · When the ball goes over the touchlines, termed Kick-in or Throw-in (see § 15).
+    · When the ball goes over the goal line having last touched a player of the defending team,
+
+       termed Corner Kick (see § 17).
+    · When the ball goes over the goal line having last touched a player of the attacking team,
+
+       termed Goal Kick (see § 16).
+    · When an infringement is awarded that requires play to be stopped (see § 12), termed a Pushing
+
+       Free Kick.
+
+The head referee will announce a free kick by calling one of:
+
+   1. "Kick-in <color>" / "Throw-in <color>" for the team awarded the kick-in.
+   2. "Corner Kick <color>" for the team awarded the corner kick.
+   3. "Goal Kick <color>" for the team awarded the goal kick.
+   4. "Foul <offending color><offending number>" for pushing free kicks.
+
+The GameController will then activate the sub-state for the respective free kick. The team awarded
+the free kick (termed the attacking team) has 45 s to complete the kick. Free kicks are classified as
+either direct or indirect (see § 13).
+
+           48
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 13.1 Direct Free Kick
+
+A direct free kick allows the attacking team to score a goal directly from the kick:
+
+    · If a direct free kick is kicked directly into the opponent's goal by the attacking team, a goal is
+       awarded.
+
+    · If a direct free kick is kicked directly into the team's own goal, a corner kick is awarded to
+       the opposing team.
+
+The following set plays are direct free kicks: Corner Kick, Goal Kick, and Pushing Free Kick.
+
+Note: If the attacking team fails to execute the free kick within the time limit, the defending team
+may also score directly (see Failed Free Kick in § 13).
+
+§ 13.2 Indirect Free Kick
+
+An indirect free kick requires the ball to be touched by another player before the attacking team can
+score a goal:
+
+    · A goal can only be scored by the attacking team if the ball has been touched by another player
+       (of either team) after the kick, before being kicked again into the goal.
+
+    · If an indirect free kick is kicked directly into the opponent's goal by the attacking team
+       without touching another player, a goal kick is awarded to the opposing team.
+
+    · If an indirect free kick is kicked directly into the team's own goal, a corner kick is awarded to
+       the opposing team.
+
+The following set plays are indirect free kicks: Kick-in / Throw-in.
+
+Note: If the attacking team fails to execute the free kick within the time limit, the defending team
+may score directly without the indirect requirement (see Failed Free Kick in § 13).
+
+§ 13.3 Execution
+
+The referee places the ball according to the type of free kick (see § 15, 16 and 17 for specific ball
+placement rules). For a Pushing Free Kick, the ball is left in place.
+
+§ 13.3.1 Ball Position and Placement All free kicks are taken from the place where the offense
+occurred, except:
+
+           49
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+· Indirect free kicks to the attacking team for an offense inside the opponents' penalty area are
+  taken from the nearest point on the penalty area line which runs parallel to the goal line.
+
+· Free kicks to the defending team in their goal area may be taken from anywhere in that area.
+
+When the referee calls for a free kick, play must also be stopped (see § 7.1.7). Once the robots
+become stationary, the referees will place the ball in the appropriate position. Then, the head referee
+gives the signal to resume play and commence the free kick.
+
+The ball must be stationary as play resumes, and is in play when it is kicked and clearly moves as
+determined by the referee. The ball is also considered in play 45 s after the referee gave the signal.
+
+§ 13.3.2 Avoidance Region and Distance Requirements During a free kick, only the attacking
+team may approach within the avoidance region of the ball. For all free kicks, the avoidance region
+is the center circle radius for the respective field size (see Table 2). This means the same exclusion
+zone as during kick-off applies to all free kicks, an opponent robot must remain outside this radius
+from the ball until it is in play.
+
+Until the ball is in play, all opponents must remain outside of this avoidance region, unless they are
+on their own goal line between the goalposts, and outside the penalty area for free kicks inside the
+opponents' penalty area.
+
+All robots of the defensive team must immediately move away from the ball to outside the avoidance
+region when the free kick is awarded. Defensive robots that violate these restrictions are penalized
+with "Illegal Positioning" (see § 12.2.1), which results in a standard removal penalty (see § 12).
+Additional penalties against any further robots during the free kick, including pushing, do not result
+in an additional free kick but still incur the appropriate removal penalty.
+
+§ 13.3.3 Sanctions and Retakes If, when a free kick is taken, an opponent is closer to the ball
+than the required distance, the opponent receives a removal penalty and the kick is retaken.
+
+§ 13.3.4 Completion A free kick is deemed completed and play returns to normal when:
+
+    · The attacking team moves the ball clearly (except for a robot getting up, which is exempt
+       from this rule), or
+
+    · The 45 s time period expires (or game time expires).
+
+The head referee announces completion by calling "Ball Free", and the GameController resumes
+the playing state.
+
+           50
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 13.3.5 Failed Free Kick If the attacking team fails to execute the free kick within the allotted
+45 s, the free kick expires and play resumes normally. In this situation:
+
+· The defending team may play the ball immediately after the free kick expires.
+
+· If the defending team plays the ball first (before the originally attacking team), they may
+  score a direct goal regardless of whether the original free kick was direct or indirect.
+
+Example: The blue team is awarded a kick-in (indirect free kick) but does not play the ball within
+45 s. The referee calls "Ball Free". A red robot immediately kicks the ball directly into the blue
+goal. The goal counts, as the failed-free-kick exception allows the defending team to score directly.
+
+§ 14 Penalty Kick and Penalty Shoot-Out
+
+§ 14.1 Penalty Kick
+
+A penalty kick is awarded against a team that commits an offense for which a direct free kick
+(see § 13) is awarded, inside its own penalty area and while the ball is in play. A goal may be scored
+directly from a penalty kick.
+
+§ 14.1.1 Procedure During normal play, if a penalty kick is awarded, the head referee calls
+"Penalty Kick <color>" for the team that will be performing the kick4. The GameController
+immediately transitions to the ready state, with a specific field in the message informing the robots
+that a penalty kick is about to take place.
+
+During the ready state, the robots have 30 s to reach valid positions for the penalty kick, according
+to the following rules:
+
+     · The defending goalkeeper must have both its feet on the goal line.
+
+     · At most one robot of the kicking team may be inside the defending team's penalty area. It
+       may not block the penalty mark during the set state.
+
+     · All other robots must be outside the penalty area and at least one center circle radius (see
+       Table 2) from the penalty mark.
+
+     · If multiple robots of the kicking team violate these rules, the only robot to not be penalized
+       shall be the one that is closest to the penalty mark without blocking it.
+
+    4This is a change from previous Standard Platform League (SPL) rules.
+
+           51
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+· All robots other than the defending goalkeeper must be behind the defending team's penalty
+  mark.
+
+When the ready time ends, the GameController transitions to set with the penalty kick sub-state
+active. The following actions take place:
+
+· If the defending goalkeeper is not positioned correctly, it is manually placed on the closest
+  point of the goal line that is not blocked by a goal post. The goalkeeper is moved in a direction
+  perpendicular to the goal line, and its orientation is left unchanged.
+
+· The positioning rules above enter into effect. Robots that violate them are penalized for illegal
+  position.
+
+· The referees position the ball on the penalty mark.
+
+The head referee commences the penalty kick by blowing the whistle once and calling "Playing".
+The GameController activates the playing state after the standard delay (see § 7.1.3). During this
+state:
+
+· The defending goalkeeper must remain on its feet (it is not allowed to "dive") until the ball is
+  touched by the kicking team or the penaltty kick is complete.
+
+· The positioning rules remain into effect for the same duration.
+
+The time limit for the penalty kick is 60 s after play begins. The penalty kick ends when:
+
+    · The ball comes to a complete stop after the first contact by the striker robot.
+    · The striker robot touches the ball a second time after the ball has clearly moved.
+    · The ball leaves the field of play.
+    · The time limit expires.
+    · A goal is scored.
+
+A goal is awarded to the attacking team if the ball completely crosses the goal line between the
+goalposts and under the crossbar before the penalty kick ends, provided no infringement has
+occurred.
+
+           52
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 14.1.2 Infringements and Sanctions If the goalkeeper violates the positioning rules (leaves
+the goal line early or dives before the striker touches the ball), the penalty kick ends immediately
+and a goal is awarded to the attacking team.
+
+If the striker violates the rules (touches the ball a second time after it has moved), the penalty kick
+ends immediately with no goal awarded.
+
+All standard rules such as Ball Holding and Pushing are applied during the penalty kick, but they do
+not result in additional free kicks. A goalkeeper will not be penalized for inactivity during a penalty
+kick, provided it is actively attempting to defend the goal.
+
+§ 14.2 Penalty Kick Shoot-Out
+
+A penalty kick shoot-out is used to determine the outcome of a tied game when an outcome is
+required (for example, during knockout rounds, quarterfinals, semifinals, third place match, or final).
+
+All penalty kicks are taken against the same goal.5
+
+The team listed first on the competition schedule will have the striker robot for the first penalty kick.
+Subsequently, both teams take kicks alternately. The penalty kick shoot-out will consist of three
+penalty kicks per team. A team that has scored the most goals at the conclusion of these will be
+declared the winner. A winner can also be declared before the conclusion of the penalty shoot-out if
+a team can no longer win mathematically. If the two teams remain tied after three penalty kicks,
+then a sudden death shoot-out will follow until a definite winner is found.
+
+The penalty kick shoot-out starts immediately without changing any code after the second half
+ended. No timeouts may be called during the penalty shoot-out. However, a team may request a
+timeout before the penalty shoot-out starts if they have a timeout remaining for this game. During
+the timeout, code changes are allowed.
+
+Before the penalty shoot-out begins, each team must hand over to referees up to 6 prepared robots
+that may participate in the penalty shoot-out. No robots may be added once the penalty shoot-out
+starts. Robots that will not participate in the shoot-out must not be on the wireless network and
+must stay outside of the field. All participating robots must be wearing the correct jersey for their
+player number and no duplicate numbers are permitted.
+
+During the entire penalty kick shoot-out, the robots are controlled by the GameController and the
+referee's whistle. A team cannot request the referees to press buttons on their robots, except for
+initially leaving the initial state.
+
+§ 14.2.1 Penalty Kick Procedure A penalty kick is carried out with one striker robot and one
+opposing goalkeeper. Before each penalty kick, both teams must select the robot to participate
+(as goalkeeper or striker). The team leader communicates the selection to the head referee by
+
+    5Which goal to use for the shoot-out is decided in agreement with the teams, or otherwise by a coin toss.
+
+                                                         53
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+privately handing the referee a card with their chosen number. After both teams have selected
+their player, the GameController operator selects the requested striker and goalkeeper robots and
+the GameController communicates that all non-selected robots are substitutes and should remain
+inactive. The GameController indicates which team has the striker robot in the current penalty kick.
+
+Referees place the ball, the striker, and goalkeeper robots. The ball is placed on the penalty mark
+closest to the goal being defended. The striker robot is positioned on the edge of the penalty area,
+facing the ball and the goal. The goalkeeper is placed with its feet on the goal line and in the center
+of the goal. Neither robot is permitted to locomote during the set state.
+
+The head referee commences the penalty kick by blowing the whistle once and calling "Playing".
+The GameController activates the playing state after the standard delay.
+
+The time limit for the striker is 60 s after the penalty kick starts. A penalty kick is over when the
+ball has come to a full stop after the first contact by the striker robot. The striker robot is not
+allowed to play the ball a second time after the ball has clearly moved, otherwise the penalty kick
+ends immediately. A goal is awarded to the attacking team if a goal has been scored (the ball has
+completely crossed the goal line) before the penalty kick is over. Otherwise, the score is unchanged.
+
+The goalkeeper robot must always be in contact with the goal line and must remain on its feet until
+the striker robot touches the ball. The goalkeeper is only permitted to "dive" and be off its feet after
+the attacking robot has touched the ball. If the goalkeeper violates these rules, the penalty kick ends
+immediately and a goal is awarded to the attacking team.
+
+All rules such as Ball Holding and Pushing are applied during the penalty kick. A goalkeeper will
+not be penalized for inactivity during a penalty kick, provided it is actively attempting to defend.
+
+§ 14.2.2 Sudden Death Shoot-Out If teams remain tied after the initial three penalty kicks
+each, sudden death begins. Teams take one additional penalty kick each, and the game decision is
+made as follows:
+Each kick is ranked in one of the following categories (from best to worst):
+
+   1. Goal scored
+   2. Kick at the goal that is blocked by the goalkeeper
+   3. Kick that hits a goalpost
+   4. Kick that crosses the goal line next to the goalposts
+   5. Any other kick
+   6. No kick
+
+If both teams' kicks rank in different categories, the team with the higher ranked kick wins.
+Otherwise, the sudden death is repeated. If after 3 sudden death penalty kicks there is still no winner,
+the referee will toss a coin to decide the game.
+
+                                                         54
+Rule Book  RoboCup Humanoid Soccer League                                  2026-04-30
+
+§ 15 Kick-in / Throw-in
+
+A kick-in (or throw-in) is an indirect free kick (see § 13). A kick-in is awarded to the opponents of
+the player who last touched the ball when the whole of the ball leaves the field of play by crossing
+the touchline, either on the ground or in the air. Balls are deemed to be out based on the team that
+last touched the ball, irrespective of who actually kicked the ball.
+
+§ 15.1 Ball Placement
+The ball is placed on the touchline at the point where it left the field.
+
+§ 15.2 Throw-in Option
+
+Robots may also perform a throw-in with their hands instead of kicking. When performing a
+throw-in with hands, the robot must:
+
+    · Face the field of play.
+    · Have part of each foot either on the touchline or on the ground outside the touchline.
+    · Hold the ball with at least one hand.
+    · Deliver the ball from behind and over its head.
+    · Release the ball within 10 seconds.
+
+If a robot attempts to perform a throw-in with hands and fails to respect these rules, a free kick is
+awarded to the opposing team.
+
+§ 15.3 Examples
+
+Example 1: A blue robot at midfield kicks the ball over the left touchline 2 m into the red half of
+the field. The referee calls "Kick-in red" and the ball is replaced on the left touchline where it went
+out.
+
+                         55
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+Example 2: A blue robot kicks the ball but the ball touches a red robot at midfield before leaving
+the field near the halfway line. The ball is regarded as out by red; the referee calls "Kick-in blue"
+and the ball is replaced on the touchline where it went out.
+
+§ 15.4 Procedural Requirements
+
+All opponents must stand at least the center circle radius (see Table 2) from the point at which the
+kick-in is taken. The ball is in play when it enters the field of play. After delivering the ball, the
+kicking robot must not touch the ball again until it has touched another player.
+
+§ 15.5 Offenses and Sanctions
+
+If, after the ball is in play, the kicker touches the ball again before it has touched another player:
+
+    · An indirect free kick is awarded to the opposing team, to be taken from the place where the
+       infringement occurred.
+
+If, after the ball is in play, the kicker deliberately handles the ball before it has touched another
+player:
+
+· A direct free kick is awarded to the opposing team, to be taken from the place where the
+  infringement occurred.
+
+· A penalty kick is awarded if the infringement occurred inside the kicker's penalty area.
+
+If an opponent unfairly distracts or impedes the kicker, they are cautioned for unsporting behaviour.
+For any other infringement of this rule, the kick-in is taken by a player of the opposing team.
+
+§ 16 Goal Kick
+
+A goal kick is a direct free kick (see § 13) awarded when the whole of the ball passes over the goal
+line, either on the ground or in the air, having last touched a player of the attacking team, and a goal
+is not scored.
+
+§ 16.1 Ball Placement
+
+The ball is placed on the corner of the goal area on the same side of the field that the ball went out.
+That is, the corner inside the field where the goal area line meets the goal line (not the T-junction on
+the goal line itself).
+
+                                                         56
+Rule Book  RoboCup Humanoid Soccer League                                               2026-04-30
+
+§ 16.2 Avoidance Region
+
+For a goal kick, the avoidance region is the entire penalty area. All robots of the opposing team
+must remain outside the penalty area until the ball is in play (see § 13).
+
+§ 16.3 Example
+
+Example: A blue robot kicks the ball out the end of the field to the right of the goal the red team is
+defending. The referee calls "Goal Kick red" and the ball is placed on the right corner of the goal
+area.
+
+§ 16.4 Offenses and Sanctions
+
+If, after the ball is in play, the kicker touches the ball again before it has touched another player:
+
+    · An indirect free kick is awarded to the opposing team, to be taken from the place where the
+       infringement occurred.
+
+If, after the ball is in play, the kicker deliberately handles the ball before it has touched another
+player:
+
+    · A direct free kick is awarded to the opposing team, to be taken from the place where the
+       infringement occurred.
+
+    · A penalty kick is awarded if the infringement occurred inside the kicker's penalty area.
+
+In the event of any other infringement, the kick is retaken.
+
+§ 17 Corner Kick
+
+A corner kick is a direct free kick (see § 13) awarded when the whole of the ball passes over the
+goal line, either on the ground or in the air, having last touched a player of the defending team, and
+a goal is not scored.
+
+§ 17.1 Ball Placement
+The ball is placed on the corner of the field on the same side that the ball went out.
+
+                                                         57
+Rule Book  RoboCup Humanoid Soccer League  2026-04-30
+
+§ 17.2 Example
+
+Example: The red goalkeeper kicks the ball out the end of the field to the right of the goal. The
+referee calls "Corner Kick blue", the ball is placed on the corner to the right of the goal, and a free
+kick is started.
+
+§ 17.3 Offenses and Sanctions
+
+If, after the ball is in play, the kicker touches the ball again before it has touched another player:
+
+    · An indirect free kick is awarded to the opposing team, to be taken from the place where the
+       infringement occurred.
+
+If, after the ball is in play, the kicker deliberately handles the ball before it has touched another
+player:
+
+    · A direct free kick is awarded to the opposing team, to be taken from the place where the
+       infringement occurred.
+
+    · A penalty kick is awarded if the infringement occurred inside the kicker's penalty area.
+
+In the event of any other infringement, the kick is retaken.
+
+           58
+Rule Book       RoboCup Humanoid Soccer League  2026-04-30
+
+IV Law Changes
+
+These rules were designed for RoboCup 2026 and the newly founded Humanoid Soccer League.
+They are based on the rule-books of the former Standard Platform League, Humanoid League
+KidSize and Humanoid League AdultSize. This section is reserved for future changes.
+
+                59
+Rule Book             RoboCup Humanoid Soccer League  2026-04-30
+
+A Field Technical Drawings
+
+Missing - to be done
+
+                            60
+
