@@ -154,7 +154,7 @@ export function useSimulation() {
   const dragBall = useCallback((pos: Vec2) =>
     setSimState(s => ({ ...s, ball: { ...s.ball, pos, velocity: { x: 0, y: 0 } } })), [])
 
-  // Drag any field robot by index (last index is always the goalkeeper slot)
+  // Drag any robot by index (the goalkeeper is determined by role; indices are not fixed because roles can swap)
   const dragRobot = useCallback((pos: Vec2, index: number) =>
     setSimState(s => {
       const robots = [...s.robots]
