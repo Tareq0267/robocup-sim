@@ -15,7 +15,7 @@ const GK_STATE_COLORS: Record<string, string> = {
   FIND_BALL: '#a855f7', RETREAT: '#64748b', ADJUST_BLOCK: '#22d3ee', CHASE: '#f97316', KICK: '#ef4444',
 }
 
-interface Props { simState: SimState; robotIndex: 0 | 1 | 2 }
+interface Props { simState: SimState; robotIndex: number }
 
 function Row({ label, value, unit = '', color = '' }: { label: string; value: string | number; unit?: string; color?: string }) {
   return (

@@ -1,4 +1,5 @@
-import type { SimState } from '../simulation/types'
+import type { SimState, GameMode } from '../simulation/types'
+import GameModeSelect from './GameModeSelect'
 
 interface Props {
   simState:     SimState
@@ -7,14 +8,15 @@ interface Props {
   step:         () => void
   reset:        () => void
   setSpeed:     (s: number) => void
+  setGameMode:  (mode: GameMode) => void
   lightMode:    boolean
   toggleTheme:  () => void
 }
 
 const SPEEDS = [0.25, 0.5, 1, 2, 4]
 
-export default function ControlBar({ simState, play, pause, step, reset, setSpeed, lightMode, toggleTheme }: Props) {
-  const { isPlaying, speed, gc } = simState
+export default function ControlBar({ simState, play, pause, step, reset, setSpeed, setGameMode, lightMode, toggleTheme }: Props) {
+  const { isPlaying, speed, gc, gameMode } = simState
 
   const stateColor =
     isPlaying                ? '#4ade80' :
@@ -23,7 +25,9 @@ export default function ControlBar({ simState, play, pause, step, reset, setSpee
     gc.gameState === 'END'   ? '#f87171' : '#4b5563'
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 bg-[#0d0d0d] border-b border-[#1e1e1e] select-none flex-shrink-0">
+    <div className="relative flex items-center gap-2 px-3 py-1.5 bg-[#0d0d0d] border-b border-[#1e1e1e] select-none flex-shrink-0">
+
+      <GameModeSelect gameMode={gameMode} setGameMode={setGameMode} />
 
       {/* Transport */}
       <button

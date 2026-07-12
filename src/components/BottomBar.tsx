@@ -11,7 +11,7 @@ interface Props {
   score:            { ours: number; theirs: number }
   autoGoal:         boolean
   kickoffCountdown: number
-  penalties:        [boolean, boolean, boolean]
+  penalties:        boolean[]
   updateGc:         <K extends keyof GameControllerState>(key: K, value: GameControllerState[K]) => void
   scoreGoal:        (side: 'ours' | 'theirs') => void
   setAutoGoal:      (v: boolean) => void
@@ -84,8 +84,8 @@ export default function BottomBar({
   const [open, setOpen] = useState(false)
   const isFk = gc.subStateType === 'FREE_KICK'
 
-  function togglePenalty(i: 0 | 1 | 2) {
-    const next: [boolean, boolean, boolean] = [...penalties] as [boolean, boolean, boolean]
+  function togglePenalty(i: number) {
+    const next = [...penalties]
     next[i] = !next[i]
     updateGc('penalties', next)
   }

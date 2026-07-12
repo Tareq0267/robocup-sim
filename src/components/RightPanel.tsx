@@ -4,14 +4,14 @@ import TeamTab       from './TeamTab'
 import StateTab      from './StateTab'
 import GoalkeeperTab from './GoalkeeperTab'
 
-type Tab = 'team' | 'p1' | 'p2' | 'gk'
+type Tab = 'team' | 'gk' | number  // number = field-player robot index
 
 interface Props {
   simState:      SimState
   onFocusChange: (robot: number | null) => void
 }
 
-const PLAYER_COLORS = ['#3b82f6', '#14b8a6']
+const PLAYER_COLORS = ['#3b82f6', '#14b8a6', '#a78bfa', '#f59e0b', '#ec4899']
 
 const MIN_WIDTH     = 180
 const MAX_WIDTH     = 560
@@ -51,10 +51,9 @@ export default function RightPanel({ simState, onFocusChange }: Props) {
 
   function changeTab(t: Tab) {
     setTab(t)
-    if (t === 'team')     onFocusChange(null)
-    else if (t === 'p1')  onFocusChange(0)
-    else if (t === 'p2')  onFocusChange(1)
-    else /* gk */         onFocusChange(simState.robots.findIndex(r => r.role === 'goalkeeper'))
+    if (t === 'team')      onFocusChange(null)
+    else if (t === 'gk')   onFocusChange(simState.robots.findIndex(r => r.role === 'goalkeeper'))
+    else                   onFocusChange(t)
   }
 
   if (collapsed) {
@@ -76,11 +75,15 @@ export default function RightPanel({ simState, onFocusChange }: Props) {
     )
   }
 
+  const fieldPlayerIndices = simState.robots
+    .map((r, i) => ({ r, i }))
+    .filter(x => x.r.role !== 'goalkeeper')
+    .map(x => x.i)
+
   const tabs: { id: Tab; label: string; color?: string }[] = [
     { id: 'team', label: 'Team' },
-    { id: 'p1',   label: 'P1',  color: PLAYER_COLORS[0] },
-    { id: 'p2',   label: 'P2',  color: PLAYER_COLORS[1] },
-    { id: 'gk',   label: 'GK',  color: '#f97316' },
+    ...fieldPlayerIndices.map((idx, rank) => ({ id: idx as Tab, label: `P${rank + 1}`, color: PLAYER_COLORS[rank] })),
+    { id: 'gk', label: 'GK', color: '#f97316' },
   ]
 
   const contentZoom  = Math.max(0.8, Math.min(1.5, width / DEFAULT_WIDTH))
@@ -129,10 +132,9 @@ export default function RightPanel({ simState, onFocusChange }: Props) {
 
       {/* Content — text scales with panel width */}
       <div className="flex-1 overflow-hidden" style={contentStyle}>
-        {tab === 'team' && <TeamTab       simState={simState} />}
-        {tab === 'p1'   && <StateTab      simState={simState} robotIndex={0} />}
-        {tab === 'p2'   && <StateTab      simState={simState} robotIndex={1} />}
-        {tab === 'gk'   && <GoalkeeperTab simState={simState} />}
+        {tab === 'team'          && <TeamTab       simState={simState} />}
+        {tab === 'gk'            && <GoalkeeperTab simState={simState} />}
+        {typeof tab === 'number' && <StateTab      simState={simState} robotIndex={tab} />}
       </div>
     </div>
   )

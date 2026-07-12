@@ -8,7 +8,7 @@ const STATE_COLORS: Record<string, string> = {
   FIND_BALL: '#a855f7', RETREAT: '#64748b', ADJUST_BLOCK: '#22d3ee', KICK: '#ef4444',
 }
 
-const PLAYER_COLORS = ['#3b82f6', '#14b8a6', '#a78bfa']
+const PLAYER_COLORS = ['#3b82f6', '#14b8a6', '#a78bfa', '#f59e0b', '#ec4899']
 const GK_COLOR      = '#f97316'
 
 interface Props { simState: SimState }
@@ -44,7 +44,7 @@ export default function TeamTab({ simState }: Props) {
           {robots.map((r, i) => {
             const isActive = activeIndex === i
             const isGK     = r.role === 'goalkeeper'
-            const color    = isGK ? GK_COLOR : PLAYER_COLORS[i]
+            const color    = isGK ? GK_COLOR : (PLAYER_COLORS[i] ?? '#60a5fa')
             const badge    = isGK ? 'GK' : isActive ? 'ACTIVE' : 'IDLE'
             return (
               <div
@@ -94,7 +94,7 @@ export default function TeamTab({ simState }: Props) {
         const sColor   = isGK
           ? ({ FIND_BALL: '#a855f7', RETREAT: '#64748b', ADJUST_BLOCK: '#22d3ee', CHASE: '#f97316', KICK: '#ef4444' }[robot.gkState] ?? GK_COLOR)
           : (STATE_COLORS[robot.state] ?? '#60a5fa')
-        const pColor     = isGK ? GK_COLOR : PLAYER_COLORS[i]
+        const pColor     = isGK ? GK_COLOR : (PLAYER_COLORS[i] ?? '#60a5fa')
         const dBall      = isGK ? simState.goalkeeperDebug.distanceToBall : debug.distanceToBall
         const displayState = isGK ? robot.gkState : robot.state
 

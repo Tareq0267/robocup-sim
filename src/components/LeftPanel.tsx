@@ -70,7 +70,7 @@ export default function LeftPanel({
   function buildSnapshot() {
     return {
       params:   simState.robots[0].params,
-      gkParams: (simState.robots.find(r => r.role === 'goalkeeper') ?? simState.robots[2]).gkParams,
+      gkParams: (simState.robots.find(r => r.role === 'goalkeeper') ?? simState.robots[simState.robots.length - 1]).gkParams,
       team:     simState.team,
     }
   }
@@ -132,7 +132,7 @@ export default function LeftPanel({
     )
   }
 
-  const enemyGkParams = (simState.enemyRobots.find(r => r.role === 'goalkeeper') ?? simState.enemyRobots[2]).gkParams
+  const enemyGkParams = (simState.enemyRobots.find(r => r.role === 'goalkeeper') ?? simState.enemyRobots[simState.enemyRobots.length - 1]).gkParams
   const enemyParams   = simState.enemyRobots[0].params
   const contentZoom   = Math.max(0.8, Math.min(1.5, width / DEFAULT_WIDTH))
   const contentStyle  = { zoom: contentZoom, height: `calc(100% / ${contentZoom})` } as React.CSSProperties
@@ -222,7 +222,7 @@ export default function LeftPanel({
               <ParameterPanel
                 params={simState.robots[0].params}
                 team={simState.team}
-                gkParams={(simState.robots.find(r => r.role === 'goalkeeper') ?? simState.robots[2]).gkParams}
+                gkParams={(simState.robots.find(r => r.role === 'goalkeeper') ?? simState.robots[simState.robots.length - 1]).gkParams}
                 setParam={setParam}
                 setTeamConfig={setTeamConfig}
                 setGKParam={setGKParam}
