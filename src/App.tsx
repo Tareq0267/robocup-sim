@@ -13,6 +13,7 @@ export default function App() {
     setSpeed, setAutoGoal, setParam, setTeamConfig, setGKParam, setOverlay,
     setBallStatic, dragBall, dragRobot, dragEnemyRobot,
     setEnemyMode, setEnemyParam, setEnemyGKParam, setGameMode,
+    setStrategy, setStrategyParam,
   } = useSimulation()
 
   const [focusedRobot, setFocusedRobot] = useState<number | null>(null)
@@ -42,6 +43,8 @@ export default function App() {
           setEnemyMode={setEnemyMode}
           setEnemyParam={setEnemyParam}
           setEnemyGKParam={setEnemyGKParam}
+          setStrategy={setStrategy}
+          setStrategyParam={setStrategyParam}
         />
         <div className="flex-1 overflow-hidden">
           <SimCanvas simState={simState} focusedRobot={focusedRobot} dragBall={dragBall} dragRobot={dragRobot} dragEnemyRobot={dragEnemyRobot} />

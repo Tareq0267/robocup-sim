@@ -1,20 +1,23 @@
 import { useState, useRef, useEffect } from 'react'
-import type { SimState, OverlaySettings, RobotParams, TeamConfig, GoalkeeperParams, EnemyMode } from '../simulation/types'
+import type { SimState, OverlaySettings, RobotParams, TeamConfig, GoalkeeperParams, EnemyMode, StrategyId, StrategyParams } from '../simulation/types'
 import ParameterPanel from './ParameterPanel'
 import OverlayPanel   from './OverlayPanel'
+import StrategyPanel  from './StrategyPanel'
 
-type Tab = 'params' | 'overlays' | 'enemy'
+type Tab = 'params' | 'overlays' | 'enemy' | 'strategy'
 
 interface Props {
-  simState:        SimState
-  setParam:        <K extends keyof RobotParams>(key: K, value: RobotParams[K]) => void
-  setTeamConfig:   <K extends keyof TeamConfig>(key: K, value: TeamConfig[K]) => void
-  setGKParam:      <K extends keyof GoalkeeperParams>(key: K, value: GoalkeeperParams[K]) => void
-  setOverlay:      <K extends keyof OverlaySettings>(key: K, value: boolean) => void
-  setBallStatic:   (v: boolean) => void
-  setEnemyMode:    (mode: EnemyMode) => void
-  setEnemyParam:   <K extends keyof RobotParams>(key: K, value: RobotParams[K]) => void
-  setEnemyGKParam: <K extends keyof GoalkeeperParams>(key: K, value: GoalkeeperParams[K]) => void
+  simState:         SimState
+  setParam:         <K extends keyof RobotParams>(key: K, value: RobotParams[K]) => void
+  setTeamConfig:    <K extends keyof TeamConfig>(key: K, value: TeamConfig[K]) => void
+  setGKParam:       <K extends keyof GoalkeeperParams>(key: K, value: GoalkeeperParams[K]) => void
+  setOverlay:       <K extends keyof OverlaySettings>(key: K, value: boolean) => void
+  setBallStatic:    (v: boolean) => void
+  setEnemyMode:     (mode: EnemyMode) => void
+  setEnemyParam:    <K extends keyof RobotParams>(key: K, value: RobotParams[K]) => void
+  setEnemyGKParam:  <K extends keyof GoalkeeperParams>(key: K, value: GoalkeeperParams[K]) => void
+  setStrategy:      (id: StrategyId) => void
+  setStrategyParam: <K extends keyof StrategyParams>(key: K, value: StrategyParams[K]) => void
 }
 
 const ENEMY_MODE_CYCLE: Record<EnemyMode, EnemyMode> = { off: 'static', static: 'active', active: 'off' }
@@ -31,7 +34,7 @@ const DEFAULT_WIDTH = 288
 
 export default function LeftPanel({
   simState, setParam, setTeamConfig, setGKParam, setOverlay, setBallStatic,
-  setEnemyMode, setEnemyParam, setEnemyGKParam,
+  setEnemyMode, setEnemyParam, setEnemyGKParam, setStrategy, setStrategyParam,
 }: Props) {
   const [collapsed,   setCollapsed]   = useState(false)
   const [tab,         setTab]         = useState<Tab>('params')
@@ -144,7 +147,7 @@ export default function LeftPanel({
     >
       {/* Tab bar */}
       <div className="flex items-stretch border-b border-[#1e1e1e] flex-shrink-0">
-        {(['params', 'overlays', 'enemy'] as Tab[]).map(t => (
+        {(['params', 'strategy', 'overlays', 'enemy'] as Tab[]).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -232,6 +235,15 @@ export default function LeftPanel({
         )}
 
         {tab === 'overlays' && <OverlayPanel simState={simState} setOverlay={setOverlay} setBallStatic={setBallStatic} />}
+
+        {tab === 'strategy' && (
+          <StrategyPanel
+            strategy={simState.strategy}
+            strategyParams={simState.strategyParams}
+            setStrategy={setStrategy}
+            setStrategyParam={setStrategyParam}
+          />
+        )}
 
         {tab === 'enemy' && (
           <div className="flex flex-col h-full">

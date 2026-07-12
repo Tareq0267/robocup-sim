@@ -11,7 +11,7 @@ interface Props {
   hideTeamConfig?: boolean
 }
 
-function Slider({
+export function Slider({
   label, value, unit, min, max, step, desc, accentClass = 'accent-blue-500',
   onChange,
 }: {

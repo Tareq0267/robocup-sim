@@ -12,6 +12,7 @@ const STATE_COLORS: Record<string, string> = {
   SEARCHING:     '#a855f7',  // purple
   IDLE:          '#64748b',  // slate
   ASSIST:        '#60a5fa',  // blue
+  RUN_UP:        '#10b981',  // emerald — strategy-driven attacking run
   CHASING:       '#f97316',  // orange
   REPOSITIONING: '#eab308',  // yellow
   RADIAL_ADJUST: '#22d3ee',  // cyan
@@ -79,16 +80,25 @@ export function render(ctx: CanvasRenderingContext2D, state: SimState, cw: numbe
     } else {
       const debug    = state.debugs[i]
       const isActive = state.activeIndex === i
+      // While the active robot is passing, aim overlays should point at the
+      // teammate it's passing to instead of the true goal.
+      const aimGoal = isActive && state.isPassing
+        ? { center: state.activeAimTarget, width: 0, depth: 0 }
+        : state.goal
       if (state.overlays.showFOVCone)             drawFOVCone(ctx, robot, debug, scz, tc)
       if (state.overlays.showChaseDistanceCircle && isActive) drawChaseCircle(ctx, robot, state.ball, scz, tc)
-      if (state.overlays.showAlignmentLine && isActive)       drawAlignmentLine(ctx, robot, state.ball, state.goal, scz, tc)
-      if (state.overlays.showShootAngleCone && isActive)      drawShootCone(ctx, robot, state.ball, state.goal, scz, tc)
+      if (state.overlays.showAlignmentLine && isActive)       drawAlignmentLine(ctx, robot, state.ball, aimGoal, scz, tc)
+      if (state.overlays.showShootAngleCone && isActive)      drawShootCone(ctx, robot, state.ball, aimGoal, scz, tc)
       if (state.overlays.showContactRange)        drawContactRange(ctx, robot, state.ball, scz, tc)
       if (state.overlays.showTangentVector && debug.tangentialDir)
         drawVector(ctx, robot.pos, debug.tangentialDir, scz, tc, '#eab308', 'tangent')
       if (state.overlays.showRadialVector && debug.radialDir)
         drawVector(ctx, robot.pos, debug.radialDir, scz, tc, '#22d3ee', 'radial')
       drawAssistTarget(ctx, robot, state.ball, state.court.width / 2, scz, tc, PLAYER_COLORS[i] ?? GK_COLOR)
+      if (robot.state === RobotState.RUN_UP) {
+        const runUpTarget = { x: state.goal.center.x - state.strategyParams.runUpDepth, y: state.strategyParams.runUpLaneY }
+        drawRunUpTarget(ctx, robot, runUpTarget, scz, tc, PLAYER_COLORS[i] ?? GK_COLOR)
+      }
     }
   })
 
@@ -356,6 +366,26 @@ function drawAssistTarget(
   ctx.lineTo(ax,     ay + s)
   ctx.lineTo(ax - s, ay)
   ctx.closePath()
+  ctx.strokeStyle = playerColor + 'bb'; ctx.lineWidth = 1.5; ctx.stroke()
+  ctx.fillStyle   = playerColor + '33'; ctx.fill()
+}
+
+// ── Run-up target marker (strategy: Run & Pass) ───────────────
+function drawRunUpTarget(
+  ctx: CanvasRenderingContext2D,
+  robot: Robot, target: { x: number; y: number },
+  _sc: number, tc: (x: number, y: number) => [number, number],
+  playerColor: string,
+) {
+  const [tx, ty] = tc(target.x, target.y)
+  const [rx, ry] = tc(robot.pos.x, robot.pos.y)
+
+  ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(tx, ty)
+  ctx.strokeStyle = playerColor + '55'; ctx.lineWidth = 1
+  ctx.setLineDash([2, 5]); ctx.stroke(); ctx.setLineDash([])
+
+  const s = 6
+  ctx.beginPath(); ctx.arc(tx, ty, s, 0, Math.PI * 2)
   ctx.strokeStyle = playerColor + 'bb'; ctx.lineWidth = 1.5; ctx.stroke()
   ctx.fillStyle   = playerColor + '33'; ctx.fill()
 }

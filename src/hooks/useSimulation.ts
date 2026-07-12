@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import type { SimState, RobotParams, OverlaySettings, Vec2, TeamConfig, GoalkeeperParams, GameControllerState, GcGameState, GcSubStateType, GcSubState, GcFreeKickType, EnemyMode, GameMode } from '../simulation/types'
-import { createTeamRobots, DEFAULT_BALL, DEFAULT_GOAL, DEFAULT_OWN_GOAL, DEFAULT_FIELD_LAYOUT, DEFAULT_COURT, DEFAULT_GOAL_5V5, DEFAULT_OWN_GOAL_5V5, DEFAULT_FIELD_LAYOUT_5V5, DEFAULT_COURT_5V5, DEFAULT_OVERLAYS, DEFAULT_TEAM, DEFAULT_GC, EMPTY_GK_DEBUG } from '../simulation/config'
+import type { SimState, RobotParams, OverlaySettings, Vec2, TeamConfig, GoalkeeperParams, GameControllerState, GcGameState, GcSubStateType, GcSubState, GcFreeKickType, EnemyMode, GameMode, StrategyId, StrategyParams } from '../simulation/types'
+import { createTeamRobots, DEFAULT_BALL, DEFAULT_GOAL, DEFAULT_OWN_GOAL, DEFAULT_FIELD_LAYOUT, DEFAULT_COURT, DEFAULT_GOAL_5V5, DEFAULT_OWN_GOAL_5V5, DEFAULT_FIELD_LAYOUT_5V5, DEFAULT_COURT_5V5, DEFAULT_OVERLAYS, DEFAULT_TEAM, DEFAULT_STRATEGY_PARAMS, DEFAULT_GC, EMPTY_GK_DEBUG } from '../simulation/config'
 import { tick, makeKickoffState } from '../simulation/engine'
 
 const EMPTY_DEBUG = {
@@ -31,6 +31,10 @@ function makeInitialState(gameMode: GameMode = '3v3'): SimState {
     swapTimer:      0,
     gkSwapCooldown: 0,
     team:        { ...DEFAULT_TEAM },
+    strategy:        'none',
+    strategyParams:  { ...DEFAULT_STRATEGY_PARAMS },
+    activeAimTarget: { x: 0, y: 0 },
+    isPassing:       false,
     goalkeeperDebug: { ...EMPTY_GK_DEBUG, stateHistory: [] },
     ball:        { ...DEFAULT_BALL },
     goal:        is5v5 ? { ...DEFAULT_GOAL_5V5 }         : { ...DEFAULT_GOAL },
@@ -134,6 +138,12 @@ export function useSimulation() {
 
   const setTeamConfig = useCallback(<K extends keyof TeamConfig>(key: K, value: TeamConfig[K]) =>
     setSimState(s => ({ ...s, team: { ...s.team, [key]: value } })), [])
+
+  const setStrategy = useCallback((id: StrategyId) =>
+    setSimState(s => ({ ...s, strategy: id })), [])
+
+  const setStrategyParam = useCallback(<K extends keyof StrategyParams>(key: K, value: StrategyParams[K]) =>
+    setSimState(s => ({ ...s, strategyParams: { ...s.strategyParams, [key]: value } })), [])
 
   const setOverlay = useCallback(<K extends keyof OverlaySettings>(key: K, value: boolean) =>
     setSimState(s => ({ ...s, overlays: { ...s.overlays, [key]: value } })), [])
@@ -267,5 +277,6 @@ export function useSimulation() {
     setSpeed, setAutoGoal, setParam, setTeamConfig, setGKParam, setOverlay,
     setBallStatic, dragBall, dragRobot, dragEnemyRobot,
     setEnemyMode, setEnemyParam, setEnemyGKParam, setGameMode,
+    setStrategy, setStrategyParam,
   }
 }

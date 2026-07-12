@@ -17,11 +17,14 @@ export interface Vec2 { x: number; y: number }
 // Inactive robot:
 //   SEARCHING        — ball outside FOV, spin
 //   ASSIST           — ball visible, move to support position 2m behind ball
+//   RUN_UP           — (strategy-driven) ball visible, make an attacking run
+//                      toward a point near the opponent goal instead of assisting
 // ----------------------------------------------------------------
 export const RobotState = {
   SEARCHING:     'SEARCHING',
   IDLE:          'IDLE',
   ASSIST:        'ASSIST',
+  RUN_UP:        'RUN_UP',
   CHASING:       'CHASING',
   REPOSITIONING: 'REPOSITIONING',
   RADIAL_ADJUST: 'RADIAL_ADJUST',
@@ -63,6 +66,19 @@ export interface TeamConfig {
   theirKickoffX:   number  // (m) striker X when they kick off (real: -1.53)
   theirPrimaryY:   number  // (m) primary striker Y when they kick off (real: +2.0)
   theirSecondaryY: number  // (m) secondary striker Y when they kick off (real: -1.5)
+}
+
+// ----------------------------------------------------------------
+// STRATEGY — pluggable tactics for the inactive/active striker roles
+// (ours-only; see src/simulation/strategies.ts for the decision logic)
+// ----------------------------------------------------------------
+export type StrategyId = 'none' | 'runAndPass'
+
+export interface StrategyParams {
+  runUpDepth:      number  // (m)   distance from the opponent goal line the runner targets
+  runUpLaneY:      number  // (m)   lateral (y) target position for the attacking run
+  runUpSpeed:      number  // (m/s) speed while making the run
+  passTriggerDist: number  // (m)   once the runner is within this distance of goal, the striker passes instead of shooting
 }
 
 export type TeamRole = 'striker' | 'goalkeeper'
@@ -244,6 +260,10 @@ export interface SimState {
   swapTimer:       number                 // striker lead-swap hysteresis timer
   gkSwapCooldown:  number                 // seconds remaining before next GK role swap is allowed
   team:            TeamConfig
+  strategy:         StrategyId
+  strategyParams:   StrategyParams
+  activeAimTarget:  Vec2      // resolved point the active striker is aiming at (goal centre, or a teammate's position when passing)
+  isPassing:        boolean   // true when the active striker is aiming at a teammate instead of the goal
   ball:            Ball
   goal:            Goal            // opponent's goal (right side) — robots shoot at this
   ownGoal:         Goal            // our goal (left side) — goalkeeper defends this

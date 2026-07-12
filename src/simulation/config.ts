@@ -1,7 +1,7 @@
 // ================================================================
 // DEFAULT VALUES — change these to set starting conditions
 // ================================================================
-import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type OverlaySettings, type RobotParams, type TeamConfig, type FieldLayout, type GoalkeeperParams, type GoalkeeperDebugData, type GameControllerState, type GameMode } from './types'
+import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type OverlaySettings, type RobotParams, type TeamConfig, type FieldLayout, type GoalkeeperParams, type GoalkeeperDebugData, type GameControllerState, type GameMode, type StrategyId, type StrategyParams } from './types'
 
 // Adult Size field: 14m × 9m
 export const DEFAULT_COURT: Court = {
@@ -94,6 +94,23 @@ export const DEFAULT_TEAM: TeamConfig = {
   theirKickoffX:  -1.53,
   theirPrimaryY:   2.0,
   theirSecondaryY: -1.5,
+}
+
+// ----------------------------------------------------------------
+// STRATEGY — pluggable tactics (ours-only). See simulation/strategies.ts
+// for the decision logic; add a strategy by adding an entry here plus a
+// branch in decideInactiveRole/decideAimTarget.
+// ----------------------------------------------------------------
+export const STRATEGIES: { id: StrategyId; label: string; desc: string }[] = [
+  { id: 'none',       label: 'Hold Shape',  desc: 'Default — inactive robots hold a defensive support position.' },
+  { id: 'runAndPass', label: 'Run & Pass',  desc: 'One inactive robot makes an attacking run toward goal; the striker passes to it once it is close enough instead of shooting itself.' },
+]
+
+export const DEFAULT_STRATEGY_PARAMS: StrategyParams = {
+  runUpDepth:      2.5,
+  runUpLaneY:      1.5,
+  runUpSpeed:      1.0,
+  passTriggerDist: 3.0,
 }
 
 export const DEFAULT_GK_PARAMS: GoalkeeperParams = {
@@ -288,4 +305,21 @@ export const KICKOFF_PARAM_META: TeamParamMeta[] = [
   { key: 'theirKickoffX',   label: 'Their Kickoff X',      unit: 'm', min: -7,  max: 0,  step: 0.05, desc: 'Striker X position when they kick off (real: -1.53)' },
   { key: 'theirPrimaryY',   label: 'Their Primary Y',      unit: 'm', min: -4,  max: 4,  step: 0.1,  desc: 'Primary striker Y when they kick off (real: +2.0)' },
   { key: 'theirSecondaryY', label: 'Their Secondary Y',    unit: 'm', min: -4,  max: 4,  step: 0.1,  desc: 'Secondary striker Y when they kick off (real: -1.5)' },
+]
+
+export interface StrategyParamMeta {
+  key:   keyof StrategyParams
+  label: string
+  unit:  string
+  min:   number
+  max:   number
+  step:  number
+  desc:  string
+}
+
+export const STRATEGY_PARAM_META: StrategyParamMeta[] = [
+  { key: 'runUpDepth',      label: 'Run-Up Depth',          unit: 'm',   min: 0.5, max: 6, step: 0.1,  desc: 'How close to the opponent goal line the runner advances to' },
+  { key: 'runUpLaneY',      label: 'Run-Up Lane (Y)',       unit: 'm',   min: -4,  max: 4, step: 0.1,  desc: 'Lateral target position for the attacking run' },
+  { key: 'runUpSpeed',      label: 'Run-Up Speed',          unit: 'm/s', min: 0.1, max: 2, step: 0.05, desc: 'Speed while making the attacking run' },
+  { key: 'passTriggerDist', label: 'Pass Trigger Distance', unit: 'm',   min: 0.5, max: 6, step: 0.1,  desc: 'Striker passes instead of shooting once the runner is within this distance of goal' },
 ]

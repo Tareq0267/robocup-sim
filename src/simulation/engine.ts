@@ -2,13 +2,14 @@
 // SIMULATION ENGINE — one tick per frame
 // ================================================================
 
-import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type SimState, type DebugData, type StateTransition, type GoalkeeperRobot, type GoalkeeperDebugData, type GcGameState, type GcSubState, type GcSubStateType } from './types'
+import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type SimState, type DebugData, type StateTransition, type GoalkeeperRobot, type GoalkeeperDebugData, type GcGameState, type GcSubState, type GcSubStateType, type Vec2 } from './types'
 import { getNextState, getInactiveState, computeAlignmentError, computeOrientationError, computeFovError, isOnCorrectSide, isAligned, isAtContactRange, isOrientationAligned, canSeeBall } from './stateMachine'
 import { searchBehavior, idleBehavior, assistBehavior, chaseBehavior, repositionBehavior, radialAdjustBehavior, readyBehavior, shootBehavior, getTargetOrientation, moveToPointBehavior } from './behaviors'
 import { goalieDecide, gkCanSeeBall, gkFovError, gkAlignmentError, ballInZone } from './goalkeeperStateMachine'
 import { gkFindBallBehavior, gkRetreatBehavior, gkAdjustBlockBehavior, gkChaseBehavior, gkKickBehavior, gkTargetOrientation } from './goalkeeperBehaviors'
 import { stepBall, applyContact, resolveOverlap, separateCircles } from './physics'
 import { add, scale, dist, rotateToward, normalize, sub } from './math'
+import { decideInactiveRole, decideAimTarget } from './strategies'
 
 const MAX_HISTORY = 50
 
@@ -211,17 +212,19 @@ function tickRobot(
   dt:          number,
   time:        number,
   prevHistory: StateTransition[],
-  fkOverride?: { frozen: boolean; target?: { x: number; y: number } },
+  fkOverride?: { frozen: boolean; target?: Vec2; speed?: number; movingState?: RobotState },
 ): { robot: Robot; debug: DebugData } {
 
   const history = [...prevHistory]
 
-  // ── Freekick override ──────────────────────────────────────
+  // ── Freekick / kickoff / strategy override ──────────────────
+  // (speed/movingState default to the freekick/kickoff behavior — ASSIST at
+  // chaseSpeed — so only strategy overrides that set them differ, e.g. RUN_UP)
   if (fkOverride) {
     const velocity = fkOverride.frozen || !fkOverride.target
       ? { x: 0, y: 0 }
-      : moveToPointBehavior(robot, fkOverride.target, robot.params.chaseSpeed)
-    const state = fkOverride.frozen ? RobotState.IDLE : RobotState.ASSIST
+      : moveToPointBehavior(robot, fkOverride.target, fkOverride.speed ?? robot.params.chaseSpeed)
+    const state = fkOverride.frozen ? RobotState.IDLE : (fkOverride.movingState ?? RobotState.ASSIST)
     const overRobot = { ...robot, state }
     const rawPos = add(robot.pos, scale(velocity, dt))
     const hw = court.width / 2 - robot.radius + ROBOT_FIELD_PADDING
@@ -481,6 +484,21 @@ export function tick(state: SimState, dt: number): SimState {
     strikerRankByIndex.set(idx, idx === newActiveIndex ? 0 : nonActiveRank++)
   }
 
+  // ── Strategy (ours-only) ──────────────────────────────────
+  // At most one inactive striker is the "designated runner" — the first
+  // non-active by index. decideInactiveRole/decideAimTarget are no-ops
+  // (ASSIST / aim-at-goal) when state.strategy === 'none'.
+  const runnerIdx     = strikerIdxsNow.find(idx => idx !== newActiveIndex)
+  const runUpDecision = runnerIdx !== undefined
+    ? decideInactiveRole(state.strategy, robots[runnerIdx], ball, goal, state.strategyParams, true)
+    : null
+  const aimResult = runnerIdx !== undefined
+    ? decideAimTarget(state.strategy, robots[runnerIdx], goal, state.strategyParams)
+    : { target: goal.center, isPassing: false }
+  const activeAimGoal: Goal = aimResult.isPassing
+    ? { center: aimResult.target, width: 0, depth: 0 }
+    : goal
+
   // ── Kickoff walk (READY state) ───────────────────────────
   const isKickoffReady  = state.gc.gameState === 'READY'
   const kickoffTargets  = isKickoffReady ? calcKickoffTargets(state) : null
@@ -520,15 +538,20 @@ export function tick(state: SimState, dt: number): SimState {
     } else {
       const isActive = newActiveIndex === i
       const strikerRank = strikerRankByIndex.get(i) ?? 0
+      const isDesignatedRunner = i === runnerIdx && runUpDecision?.state === RobotState.RUN_UP
       // During GET_READY the active striker (rank 0) plays normally so it can kick.
       // Non-active strikers (rank > 0) are sent to a spread-out support target.
+      // Below that, a strategy may send the designated runner on an attacking run.
       const fkOverride = penalized
         ? { frozen: true }
         : kickoffTargets ? { frozen: false, target: kickoffTargets[i] }
         : fkActive && (fkFrozen || strikerRank > 0)
           ? { frozen: fkFrozen, target: fkTargets?.[strikerRank] }
-          : undefined
-      const r = tickRobot(robots[i], ball, goal, court, isActive, dt, time, state.debugs[i]?.stateHistory ?? [], fkOverride)
+          : isDesignatedRunner
+            ? { frozen: false, target: runUpDecision!.runUpTarget, speed: state.strategyParams.runUpSpeed, movingState: RobotState.RUN_UP }
+            : undefined
+      const effectiveGoal = isActive ? activeAimGoal : goal
+      const r = tickRobot(robots[i], ball, effectiveGoal, court, isActive, dt, time, state.debugs[i]?.stateHistory ?? [], fkOverride)
       tickedRobots[i] = r.robot
       newDebugs[i]    = r.debug
     }
@@ -739,6 +762,8 @@ export function tick(state: SimState, dt: number): SimState {
     activeIndex:          newActiveIndex,
     swapTimer:            newSwapTimer,
     gkSwapCooldown:       newGkSwapCooldown,
+    activeAimTarget:      aimResult.target,
+    isPassing:            aimResult.isPassing,
     ball:                 newBall,
     time:                 time + dt,
     isPlaying:            kickoffDone && !state.autoGoal ? false : state.isPlaying,
