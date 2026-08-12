@@ -1,7 +1,8 @@
 // ================================================================
 // DEFAULT VALUES — change these to set starting conditions
 // ================================================================
-import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type OverlaySettings, type RobotParams, type TeamConfig, type FieldLayout, type GoalkeeperParams, type GoalkeeperDebugData, type GameControllerState, type GameMode } from './types'
+import { RobotState, GoalkeeperState, AssistSlot, type Robot, type Ball, type Goal, type Court, type OverlaySettings, type RobotParams, type TeamConfig, type FieldLayout, type GoalkeeperParams, type GoalkeeperDebugData, type GameControllerState, type GameMode } from './types'
+import type { AssistField } from './assistStrategy'
 
 // Adult Size field: 14m × 9m
 export const DEFAULT_COURT: Court = {
@@ -68,6 +69,32 @@ export const DEFAULT_FIELD_LAYOUT_5V5: FieldLayout = {
   penaltyMarkDist:     2.1 * LEN_RATIO,
 }
 
+// ----------------------------------------------------------------
+// ASSIST STRATEGY — field + penalties derived from sim geometry
+// ----------------------------------------------------------------
+// Derives the assist-strategy Field from the sim's own goal / layout so the
+// blocking slots are placed relative to the defending goal line, exactly like
+// assist_strategy_policy.h does for the real 22 m RoboLeague field.
+export function assistFieldFromSim(
+  ownGoal: Goal, court: Court, layout: FieldLayout,
+): AssistField {
+  return {
+    length:            court.width,
+    width:             court.height,
+    penaltyAreaLength: layout.ownPenaltyArea.maxX - layout.ownPenaltyArea.minX,
+    goalAreaLength:    layout.ownGoalArea.maxX - layout.ownGoalArea.minX,
+    goalWidth:         ownGoal.width,
+  }
+}
+
+// Assignment cost weights — matches config.yaml strategy.cooperation.*
+export const DEFAULT_ASSIST_PENALTIES = {
+  normalSwitch: 4.0,  // assist_slot_switch_penalty
+  anchorSwitch: 9.0,  // assist_anchor_switch_penalty (applied to CENTER_SWEEP)
+  laneCross:    16.0, // assist_lane_cross_penalty
+  pathCross:    9.0,  // assist_path_cross_penalty
+} as const
+
 export const DEFAULT_PARAMS: RobotParams = {
   // Aligned to real robot (config.yaml + subtree_striker_play.xml)
   chaseDistance:       0.7,    // StrikerDecide chase_threshold="0.7" — switch to adjust within 0.7m
@@ -81,9 +108,11 @@ export const DEFAULT_PARAMS: RobotParams = {
   rotationSpeed:       1.2,    // vtheta_limit: 1.2 rad/s
   fieldOfView:         1.571,  // cam_fov_x: 90° = π/2
   // Assist
-  assistSpeed:          0.2,   // Assist vx_limit="0.2"
-  assistBackDist:       2.0,   // dist_to_goalline offset — place target 2m behind ball
-  assistDistToGoalLine: 2.5,   // dist_to_goalline="2.5" — min clearance from own goal line
+  assistSpeed:         1.2,   // Support movement — real Assist vx_limit=0.2 is config-tunable; sim uses full speed for a responsive barricade
+  // Blocking-slot fractions (RCAP2026 assist_strategy_policy defaults)
+  assistNearFraction:   0.35,  // close block spots sit 35% of the way to the ball
+  assistFarFraction:    0.60,  // far block spots sit 60% of the way to the ball
+  assistCenterFraction: 0.50,  // centre sweep sits 50% of the way to the ball
 }
 
 export const DEFAULT_TEAM: TeamConfig = {
@@ -148,6 +177,8 @@ export function createTeamRobots(gameMode: GameMode, side: 'ours' | 'enemy'): Ro
     role:        'goalkeeper',
     gkState:     GoalkeeperState.RETREAT,
     gkParams:    { ...DEFAULT_GK_PARAMS },
+    assistSlot:     AssistSlot.NONE,
+    assistTarget:   { x: 0, y: 0 },
   }
 
   const fieldX = xSign * (halfLength / 2)
@@ -160,6 +191,8 @@ export function createTeamRobots(gameMode: GameMode, side: 'ours' | 'enemy'): Ro
     role:        'striker' as const,
     gkState:     GoalkeeperState.RETREAT,
     gkParams:    { ...DEFAULT_GK_PARAMS },
+    assistSlot:     AssistSlot.NONE,
+    assistTarget:   { x: 0, y: 0 },
   }))
 
   return [...fieldPlayers, gk]
@@ -266,9 +299,10 @@ export const PARAM_META: ParamMeta[] = [
 ]
 
 export const ASSIST_PARAM_META: ParamMeta[] = [
-  { key: 'assistSpeed',          label: 'Assist Speed',          unit: 'm/s', min: 0.05, max: 1.5, step: 0.05, desc: 'Assist vx_limit="0.2" — speed while moving to support position' },
-  { key: 'assistBackDist',       label: 'Back Distance',         unit: 'm',   min: 0.5,  max: 6,   step: 0.1,  desc: 'Place assist target this far behind the ball along the goal→ball line (default: 2.0m)' },
-  { key: 'assistDistToGoalLine', label: 'Goal Line Clearance',   unit: 'm',   min: 0.5,  max: 6,   step: 0.1,  desc: 'Assist dist_to_goalline="2.5" — minimum clearance between assist target and own goal line' },
+  { key: 'assistSpeed',          label: 'Assist Speed',          unit: 'm/s', min: 0.05, max: 2,   step: 0.05, desc: 'Support movement speed — real Assist vx_limit="0.2"; raise it on the robot to match punchy barricade tracking' },
+  { key: 'assistNearFraction',   label: 'Close Block Fraction',  unit: 'x',   min: 0.05, max: 0.95, step: 0.05, desc: 'RCAP2026 near_fraction="0.35" — close block spots sit this fraction of the way from goal to ball' },
+  { key: 'assistFarFraction',    label: 'Far Block Fraction',    unit: 'x',   min: 0.05, max: 0.95, step: 0.05, desc: 'RCAP2026 far_fraction="0.60" — far block spots sit this fraction of the way from goal to ball' },
+  { key: 'assistCenterFraction', label: 'Centre Sweep Fraction', unit: 'x',   min: 0.05, max: 0.95, step: 0.05, desc: 'RCAP2026 center_fraction="0.50" — centre sweep sits this fraction of the way from goal to ball' },
 ]
 
 export interface TeamParamMeta {

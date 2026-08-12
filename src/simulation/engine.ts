@@ -2,13 +2,15 @@
 // SIMULATION ENGINE — one tick per frame
 // ================================================================
 
-import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type SimState, type DebugData, type StateTransition, type GoalkeeperRobot, type GoalkeeperDebugData, type GcGameState, type GcSubState, type GcSubStateType } from './types'
+import { RobotState, GoalkeeperState, AssistSlot, type Robot, type Ball, type Goal, type Court, type SimState, type DebugData, type StateTransition, type GoalkeeperRobot, type GoalkeeperDebugData, type GcGameState, type GcSubState, type GcSubStateType } from './types'
 import { getNextState, getInactiveState, computeAlignmentError, computeOrientationError, computeFovError, isOnCorrectSide, isAligned, isAtContactRange, isOrientationAligned, canSeeBall } from './stateMachine'
 import { searchBehavior, idleBehavior, assistBehavior, chaseBehavior, repositionBehavior, radialAdjustBehavior, readyBehavior, shootBehavior, getTargetOrientation, moveToPointBehavior } from './behaviors'
 import { goalieDecide, gkCanSeeBall, gkFovError, gkAlignmentError, ballInZone } from './goalkeeperStateMachine'
 import { gkFindBallBehavior, gkRetreatBehavior, gkAdjustBlockBehavior, gkChaseBehavior, gkKickBehavior, gkTargetOrientation } from './goalkeeperBehaviors'
 import { stepBall, applyContact, resolveOverlap, separateCircles } from './physics'
-import { add, scale, dist, rotateToward, normalize, sub } from './math'
+import { add, scale, dist, rotateToward, normalize, sub, angOf } from './math'
+import { calculateAssistAssignments, calculateAssistSlotTarget, segmentDistance, type AssistField, type AssistPenalties, type Pose } from './assistStrategy'
+import { assistFieldFromSim, DEFAULT_ASSIST_PENALTIES } from './config'
 
 const MAX_HISTORY = 50
 
@@ -200,6 +202,82 @@ function calcFreekickTargets(
 }
 
 // ----------------------------------------------------------------
+// Assist blocking-slot formation — assigns each non-lead striker a slot on
+// the ball→goal-anchor blocking lines (RCAP2026 assist_strategy_policy) and
+// tracks the live target + yield state on the robot.
+// ----------------------------------------------------------------
+function computeAssistFormation(
+  robots: Robot[],
+  strikerIdxs: number[],
+  activeIndex: number,
+  previousActiveIndex: number,
+  ball: Ball,
+  attackGoal: Goal,
+  field: AssistField,
+  penalties: AssistPenalties,
+  time: number,
+): Robot[] {
+  const result = [...robots]
+  const assistCount = strikerIdxs.length - 1
+  if (assistCount <= 0) {
+    for (const idx of strikerIdxs) {
+      if (idx !== activeIndex) result[idx] = { ...result[idx], assistSlot: AssistSlot.NONE }
+    }
+    return result
+  }
+
+  const assistantIds = strikerIdxs.filter(i => i !== activeIndex)
+  const poses: Record<number, Pose> = {}
+  for (const idx of strikerIdxs) {
+    const r = result[idx]
+    poses[idx] = { x: r.pos.x, y: r.pos.y, theta: r.orientation }
+  }
+  const leaderPose = poses[activeIndex]
+  const leaderKickDir = angOf(sub(attackGoal.center, ball.pos))
+
+  const previousAssignments: Record<number, AssistSlot> = {}
+  for (const idx of strikerIdxs) previousAssignments[idx] = result[idx].assistSlot
+
+  const params = result[strikerIdxs[0]].params
+  const near   = params.assistNearFraction
+  const far    = params.assistFarFraction
+  const center = params.assistCenterFraction
+
+  const assignments = calculateAssistAssignments(
+    assistantIds, previousAssignments, previousActiveIndex, activeIndex,
+    poses, ball.pos, leaderPose, leaderKickDir,
+    near, far, center, field, penalties,
+  )
+
+  for (const idx of assistantIds) {
+    const slot   = assignments[idx] ?? AssistSlot.NONE
+    const target = calculateAssistSlotTarget(
+      slot, ball.pos, assistCount, near, far, center, field)
+    const robot  = result[idx]
+
+    // NOTE: the C++ YIELD_LANE phase (former leader after losing ownership)
+    // is deliberately NOT modeled: it only makes the robot stand still while
+    // its lanes are protected, and the sim has no lane routing to protect.
+    // Assistants always advance to their live slot target immediately.
+
+    result[idx] = {
+      ...robot,
+      assistSlot:   slot,
+      assistTarget: { x: target.x, y: target.y },
+    }
+  }
+
+  const leader = result[activeIndex]
+  if (leader && leader.assistSlot !== AssistSlot.NONE) {
+    result[activeIndex] = {
+      ...leader,
+      assistSlot: AssistSlot.NONE,
+    }
+  }
+  return result
+}
+
+// ----------------------------------------------------------------
 // Single-robot update — called once per striker robot per frame
 // ----------------------------------------------------------------
 function tickRobot(
@@ -254,7 +332,7 @@ function tickRobot(
   switch (nextState) {
     case RobotState.SEARCHING:    velocity = searchBehavior();                                         break
     case RobotState.IDLE:         velocity = idleBehavior();                                           break
-    case RobotState.ASSIST:       velocity = assistBehavior(updatedRobot, ball, court.width / 2);      break
+    case RobotState.ASSIST:       velocity = assistBehavior(updatedRobot, updatedRobot.assistTarget);            break
     case RobotState.CHASING:      velocity = chaseBehavior(updatedRobot, ball);                        break
     case RobotState.REPOSITIONING:velocity = repositionBehavior(updatedRobot, ball, goal);             break
     case RobotState.RADIAL_ADJUST:velocity = radialAdjustBehavior(updatedRobot, ball);                 break
@@ -481,6 +559,15 @@ export function tick(state: SimState, dt: number): SimState {
     strikerRankByIndex.set(idx, idx === newActiveIndex ? 0 : nonActiveRank++)
   }
 
+  // ── Assist blocking-slot formation (RCAP2026 assist strategy) ──
+  // Assigns each non-lead striker a ball→goal blocking slot and stamps the
+  // live target + yield state onto the robot before it is ticked.
+  const assistRobots = computeAssistFormation(
+    robots, strikerIdxsNow, newActiveIndex, state.activeIndex, ball, goal,
+    assistFieldFromSim(ownGoal, court, state.fieldLayout),
+    DEFAULT_ASSIST_PENALTIES, time,
+  )
+
   // ── Kickoff walk (READY state) ───────────────────────────
   const isKickoffReady  = state.gc.gameState === 'READY'
   const kickoffTargets  = isKickoffReady ? calcKickoffTargets(state) : null
@@ -498,23 +585,23 @@ export function tick(state: SimState, dt: number): SimState {
   const gkFkTarget = fkMove ? { x: ownGoal.center.x + GK_FK_DIST, y: 0 } : undefined
 
   // ── Tick each robot ────────────────────────────────────────
-  const tickedRobots: Robot[]           = new Array(robots.length)
-  const newDebugs:    DebugData[]       = new Array(robots.length)
+  const tickedRobots: Robot[]           = new Array(assistRobots.length)
+  const newDebugs:    DebugData[]       = new Array(assistRobots.length)
   let   newGkDebug:   GoalkeeperDebugData = state.goalkeeperDebug
 
-  for (let i = 0; i < robots.length; i++) {
+  for (let i = 0; i < assistRobots.length; i++) {
     const penalized = state.gc.penalties[i] ?? false
-    if (robots[i].role === 'goalkeeper') {
+    if (assistRobots[i].role === 'goalkeeper') {
       const gkFkOvr = penalized
         ? { frozen: true }
         : kickoffTargets ? { frozen: false, target: kickoffTargets[i] }
         : fkActive ? { frozen: fkFrozen, target: gkFkTarget } : undefined
       const gkResult = tickGoalkeeper(
-        toGKRobot(robots[i]), ball, ownGoal, court, state, dt, time,
+        toGKRobot(assistRobots[i]), ball, ownGoal, court, state, dt, time,
         state.goalkeeperDebug.stateHistory,
         gkFkOvr,
       )
-      tickedRobots[i] = fromGKRobot(robots[i], gkResult.gk)
+      tickedRobots[i] = fromGKRobot(assistRobots[i], gkResult.gk)
       newDebugs[i]    = { ...EMPTY_STRIKER_DEBUG, stateHistory: state.debugs[i]?.stateHistory ?? [] }
       newGkDebug      = gkResult.debug
     } else {
@@ -528,7 +615,7 @@ export function tick(state: SimState, dt: number): SimState {
         : fkActive && (fkFrozen || strikerRank > 0)
           ? { frozen: fkFrozen, target: fkTargets?.[strikerRank] }
           : undefined
-      const r = tickRobot(robots[i], ball, goal, court, isActive, dt, time, state.debugs[i]?.stateHistory ?? [], fkOverride)
+      const r = tickRobot(assistRobots[i], ball, goal, court, isActive, dt, time, state.debugs[i]?.stateHistory ?? [], fkOverride)
       tickedRobots[i] = r.robot
       newDebugs[i]    = r.debug
     }
@@ -603,24 +690,32 @@ export function tick(state: SimState, dt: number): SimState {
       if (newEnemySwapTimer >= team.roleSwapDelay) { newEnemyActiveIndex = eCloser; newEnemySwapTimer = 0 }
     } else { newEnemySwapTimer = 0 }
 
+    // Enemy assist blocking-slot formation — mirrored so enemy assistants block
+    // relative to their own goal (their defense goal = the sim's right goal).
+    const enemyAssistRobots = computeAssistFormation(
+      eRobots, eSNow, newEnemyActiveIndex, state.enemyActiveIndex, ball, enemyAttackGoal,
+      assistFieldFromSim(enemyDefenseGoal, court, enemyFieldState.fieldLayout),
+      DEFAULT_ASSIST_PENALTIES, time,
+    )
+
     // Kickoff walk targets for enemy
     const eKickoffTargets = isKickoffReady ? calcEnemyKickoffTargets(state) : null
 
     // Tick each enemy robot
-    const tickedE: Robot[]     = new Array(eRobots.length)
-    const eDbgs:   DebugData[] = new Array(eRobots.length)
-    for (let i = 0; i < eRobots.length; i++) {
-      if (eRobots[i].role === 'goalkeeper') {
+    const tickedE: Robot[]     = new Array(enemyAssistRobots.length)
+    const eDbgs:   DebugData[] = new Array(enemyAssistRobots.length)
+    for (let i = 0; i < enemyAssistRobots.length; i++) {
+      if (enemyAssistRobots[i].role === 'goalkeeper') {
         const eGkOvr = eKickoffTargets
           ? { frozen: false, target: eKickoffTargets[i] }
           : undefined
         const res = tickGoalkeeper(
-          toGKRobot(eRobots[i]), ball, enemyDefenseGoal, court,
+          toGKRobot(enemyAssistRobots[i]), ball, enemyDefenseGoal, court,
           enemyFieldState, dt, time,
           state.enemyGoalkeeperDebug.stateHistory,
           eGkOvr,
         )
-        tickedE[i]       = fromGKRobot(eRobots[i], res.gk)
+        tickedE[i]       = fromGKRobot(enemyAssistRobots[i], res.gk)
         eDbgs[i]         = { ...EMPTY_STRIKER_DEBUG, stateHistory: state.enemyDebugs[i]?.stateHistory ?? [] }
         newEnemyGkDebug  = res.debug
       } else {
@@ -629,7 +724,7 @@ export function tick(state: SimState, dt: number): SimState {
           ? { frozen: false, target: eKickoffTargets[i] }
           : undefined
         const res = tickRobot(
-          eRobots[i], ball, enemyAttackGoal, court,
+          enemyAssistRobots[i], ball, enemyAttackGoal, court,
           isEActive, dt, time,
           state.enemyDebugs[i]?.stateHistory ?? [],
           eFkOverride,

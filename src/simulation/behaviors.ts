@@ -25,30 +25,16 @@ export function idleBehavior(): Vec2 {
   return { x: 0, y: 0 }
 }
 
-// ASSIST — inactive robot: move to support position 2m behind the ball on the
-// own-goal→ball line. Mirrors real Assist BT node (vx_limit=0.2, vy_limit=0.2,
-// dist_to_goalline=2.5). courtHalfLength = court.width / 2 (our field is 14m wide,
-// so half = 7m along the x axis).
-export function assistBehavior(robot: Robot, ball: Ball, courtHalfLength: number): Vec2 {
-  const { assistSpeed, assistBackDist, assistDistToGoalLine } = robot.params
-
-  const ownGoalX = -courtHalfLength
-  let tx         = ball.pos.x - assistBackDist
-  tx             = Math.max(tx, ownGoalX + assistDistToGoalLine)
-
-  // Target y: project along the own-goal-centre → ball line to get lateral coord
-  const denom = ball.pos.x + courtHalfLength  // distance of ball from own goal line
-  const ty    = Math.abs(denom) > 0.05
-    ? ball.pos.y * (tx + courtHalfLength) / denom
-    : 0
-
-  const target   = { x: tx, y: ty }
-  const toTarget = sub(target, robot.pos)
-  const d        = dist(robot.pos, target)
+// ASSIST — inactive robot: move to its assigned blocking-slot target.
+// The target is computed by the engine via the assist strategy (RCAP2026
+// assist_strategy_policy). Speed mirrors the real Assist BT node vx_limit=0.2.
+export function assistBehavior(robot: Robot, target: Vec2): Vec2 {
+  const { assistSpeed } = robot.params
+  const d = dist(robot.pos, target)
 
   if (d < 0.15) return { x: 0, y: 0 }  // close enough — stop
 
-  return scale(normalize(toTarget), Math.min(assistSpeed, d))
+  return scale(normalize(sub(target, robot.pos)), Math.min(assistSpeed, d))
 }
 
 // CHASING — run straight toward the ball

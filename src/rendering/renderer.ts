@@ -7,6 +7,7 @@
 import type { SimState, Robot, DebugData, GoalkeeperRobot } from '../simulation/types'
 import { RobotState } from '../simulation/types'
 import { angOf } from '../simulation/math'
+import { assistSlotName } from '../simulation/assistStrategy'
 
 const STATE_COLORS: Record<string, string> = {
   SEARCHING:     '#a855f7',  // purple
@@ -88,7 +89,7 @@ export function render(ctx: CanvasRenderingContext2D, state: SimState, cw: numbe
         drawVector(ctx, robot.pos, debug.tangentialDir, scz, tc, '#eab308', 'tangent')
       if (state.overlays.showRadialVector && debug.radialDir)
         drawVector(ctx, robot.pos, debug.radialDir, scz, tc, '#22d3ee', 'radial')
-      drawAssistTarget(ctx, robot, state.ball, state.court.width / 2, scz, tc, PLAYER_COLORS[i] ?? GK_COLOR)
+      drawAssistTarget(ctx, robot, scz, tc, PLAYER_COLORS[i] ?? GK_COLOR)
     }
   })
 
@@ -326,23 +327,18 @@ function drawVector(
 }
 
 // ── Assist target marker ──────────────────────────────────────
+// Draws the blocking-slot target assigned by the RCAP2026 assist strategy
+// (stored on robot.assistTarget by the engine each frame).
 function drawAssistTarget(
   ctx: CanvasRenderingContext2D,
-  robot: Robot, ball: { pos: { x: number; y: number } }, courtHalfLength: number,
+  robot: Robot,
   _sc: number, tc: (x: number, y: number) => [number, number],
   playerColor: string,
 ) {
   if (robot.state !== RobotState.ASSIST) return
 
-  const DIST_TO_GOALLINE = 2.5
-  let tx = ball.pos.x - 2.0
-  tx = Math.max(tx, -courtHalfLength + DIST_TO_GOALLINE)
-  const denom = ball.pos.x + courtHalfLength
-  const ty = Math.abs(denom) > 0.05
-    ? ball.pos.y * (tx + courtHalfLength) / denom
-    : 0
-
-  const [ax, ay] = tc(tx, ty)
+  const target = robot.assistTarget
+  const [ax, ay] = tc(target.x, target.y)
   const [rx, ry] = tc(robot.pos.x, robot.pos.y)
 
   ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(ax, ay)
@@ -358,6 +354,10 @@ function drawAssistTarget(
   ctx.closePath()
   ctx.strokeStyle = playerColor + 'bb'; ctx.lineWidth = 1.5; ctx.stroke()
   ctx.fillStyle   = playerColor + '33'; ctx.fill()
+
+  ctx.fillStyle = playerColor + 'dd'
+  ctx.font = '9px monospace'
+  ctx.fillText(assistSlotName(robot.assistSlot), ax + 6, ay - 6)
 }
 
 // ── Ball velocity ─────────────────────────────────────────────

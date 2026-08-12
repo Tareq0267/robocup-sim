@@ -5,6 +5,20 @@
 export interface Vec2 { x: number; y: number }
 
 // ----------------------------------------------------------------
+// ASSIST SLOT — ball-to-goal blocking slot assigned to a non-lead striker.
+// Mirrors AssistSlot enum from Robotedge-5v5-RCAP2026 types.h.
+// ----------------------------------------------------------------
+export const AssistSlot = {
+  NONE:             'NONE',
+  BLOCK_LEFT_CLOSE: 'BLOCK_LEFT_CLOSE',
+  BLOCK_RIGHT_CLOSE:'BLOCK_RIGHT_CLOSE',
+  CENTER_SWEEP:     'CENTER_SWEEP',
+  BLOCK_LEFT_FAR:   'BLOCK_LEFT_FAR',
+  BLOCK_RIGHT_FAR:  'BLOCK_RIGHT_FAR',
+} as const
+export type AssistSlot = typeof AssistSlot[keyof typeof AssistSlot]
+
+// ----------------------------------------------------------------
 // ROBOT STATE MACHINE
 // Active robot priority order (0 = highest):
 //   0. SEARCHING     — ball outside FOV, spin until visible
@@ -47,8 +61,12 @@ export interface RobotParams {
 
   // Assist (inactive striker support position)
   assistSpeed:          number  // (m/s) Speed while moving to assist target — Assist vx_limit="0.2"
-  assistBackDist:       number  // (m)   How far behind the ball to place the assist target (default 2.0)
-  assistDistToGoalLine: number  // (m)   Minimum distance of assist target from own goal line — dist_to_goalline=2.5
+
+  // Blocking-slot fractions (RCAP2026 assist_strategy_policy): distance along
+  // the ball→goal-anchor line where each blocking spot sits (0.35/0.60/0.50).
+  assistNearFraction:   number  // (0..1) Close block spots (BLOCK_*_CLOSE)
+  assistFarFraction:    number  // (0..1) Far block spots (BLOCK_*_FAR)
+  assistCenterFraction: number  // (0..1) Center sweep spot (CENTER_SWEEP)
 }
 
 // ----------------------------------------------------------------
@@ -76,6 +94,10 @@ export interface Robot {
   role:        TeamRole    // current active role
   gkState:     GoalkeeperState   // goalkeeper-role state (active when role==='goalkeeper')
   gkParams:    GoalkeeperParams  // goalkeeper-role parameters
+
+  // Assist blocking-slot state (strikers only)
+  assistSlot:     AssistSlot // blocking slot assigned by the leader
+  assistTarget:   Vec2       // live blocking spot for the assigned slot
 }
 
 export interface Ball {
