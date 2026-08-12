@@ -9,7 +9,7 @@ import { goalieDecide, gkCanSeeBall, gkFovError, gkAlignmentError, ballInZone } 
 import { gkFindBallBehavior, gkRetreatBehavior, gkAdjustBlockBehavior, gkChaseBehavior, gkKickBehavior, gkTargetOrientation } from './goalkeeperBehaviors'
 import { stepBall, applyContact, resolveOverlap, separateCircles } from './physics'
 import { add, scale, dist, rotateToward, normalize, sub, angOf } from './math'
-import { calculateAssistAssignments, calculateAssistSlotTarget, segmentDistance, type AssistField, type AssistPenalties, type Pose } from './assistStrategy'
+import { calculateAssistAssignments, calculateAssistSlotTarget, type AssistField, type AssistPenalties, type Pose } from './assistStrategy'
 import { assistFieldFromSim, DEFAULT_ASSIST_PENALTIES } from './config'
 
 const MAX_HISTORY = 50
@@ -204,7 +204,7 @@ function calcFreekickTargets(
 // ----------------------------------------------------------------
 // Assist blocking-slot formation — assigns each non-lead striker a slot on
 // the ball→goal-anchor blocking lines (RCAP2026 assist_strategy_policy) and
-// tracks the live target + yield state on the robot.
+// stamps the live target onto the robot.
 // ----------------------------------------------------------------
 function computeAssistFormation(
   robots: Robot[],
@@ -215,7 +215,6 @@ function computeAssistFormation(
   attackGoal: Goal,
   field: AssistField,
   penalties: AssistPenalties,
-  time: number,
 ): Robot[] {
   const result = [...robots]
   const assistCount = strikerIdxs.length - 1
@@ -565,7 +564,7 @@ export function tick(state: SimState, dt: number): SimState {
   const assistRobots = computeAssistFormation(
     robots, strikerIdxsNow, newActiveIndex, state.activeIndex, ball, goal,
     assistFieldFromSim(ownGoal, court, state.fieldLayout),
-    DEFAULT_ASSIST_PENALTIES, time,
+    DEFAULT_ASSIST_PENALTIES,
   )
 
   // ── Kickoff walk (READY state) ───────────────────────────
