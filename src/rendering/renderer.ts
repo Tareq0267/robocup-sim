@@ -7,6 +7,7 @@
 import type { SimState, Robot, DebugData, GoalkeeperRobot } from '../simulation/types'
 import { RobotState } from '../simulation/types'
 import { angOf } from '../simulation/math'
+import { aggressiveStrikerCountFor, rankedStrikerIndices } from '../simulation/teamPolicy'
 
 const STATE_COLORS: Record<string, string> = {
   SEARCHING:     '#a855f7',  // purple
@@ -55,6 +56,12 @@ export function render(ctx: CanvasRenderingContext2D, state: SimState, cw: numbe
   drawOwnGoal(ctx, state, scz, tc)
   drawGoal(ctx, state, scz, tc)
 
+  // Aggressive pressing swarm — the lead plus the next closest strikers run
+  // the full striker state machine; overlays/highlight apply to all of them.
+  const ourGkIdx   = state.robots.findIndex(r => r.role === 'goalkeeper')
+  const ourRanked  = rankedStrikerIndices(state.robots, state.ball, ourGkIdx)
+  const ourAggressive = new Set(ourRanked.slice(0, aggressiveStrikerCountFor(ourRanked.length, state.team.strikerFraction)))
+
   // Per-robot overlays (drawn under robots)
   state.robots.forEach((robot, i) => {
     const focused = focusedRobot === null || focusedRobot === i
@@ -78,11 +85,11 @@ export function render(ctx: CanvasRenderingContext2D, state: SimState, cw: numbe
       }
     } else {
       const debug    = state.debugs[i]
-      const isActive = state.activeIndex === i
+      const isSwarm  = ourAggressive.has(i)
       if (state.overlays.showFOVCone)             drawFOVCone(ctx, robot, debug, scz, tc)
-      if (state.overlays.showChaseDistanceCircle && isActive) drawChaseCircle(ctx, robot, state.ball, scz, tc)
-      if (state.overlays.showAlignmentLine && isActive)       drawAlignmentLine(ctx, robot, state.ball, state.goal, scz, tc)
-      if (state.overlays.showShootAngleCone && isActive)      drawShootCone(ctx, robot, state.ball, state.goal, scz, tc)
+      if (state.overlays.showChaseDistanceCircle && isSwarm) drawChaseCircle(ctx, robot, state.ball, scz, tc)
+      if (state.overlays.showAlignmentLine && isSwarm)       drawAlignmentLine(ctx, robot, state.ball, state.goal, scz, tc)
+      if (state.overlays.showShootAngleCone && isSwarm)      drawShootCone(ctx, robot, state.ball, state.goal, scz, tc)
       if (state.overlays.showContactRange)        drawContactRange(ctx, robot, state.ball, scz, tc)
       if (state.overlays.showTangentVector && debug.tangentialDir)
         drawVector(ctx, robot.pos, debug.tangentialDir, scz, tc, '#eab308', 'tangent')
@@ -104,8 +111,9 @@ export function render(ctx: CanvasRenderingContext2D, state: SimState, cw: numbe
     } else {
       const debug    = state.debugs[i]
       const isActive = state.activeIndex === i
-      drawRobot(ctx, robot, i, isActive, state.overlays.showOrientationArrow, debug, scz, tc)
-      if (state.overlays.showStateLabel) drawStateLabel(ctx, robot, i, isActive, scz, tc)
+      const isSwarm  = ourAggressive.has(i)
+      drawRobot(ctx, robot, i, isActive || isSwarm, state.overlays.showOrientationArrow, debug, scz, tc)
+      if (state.overlays.showStateLabel) drawStateLabel(ctx, robot, i, isActive || isSwarm, scz, tc)
     }
   })
 

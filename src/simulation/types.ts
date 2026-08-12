@@ -14,9 +14,11 @@ export interface Vec2 { x: number; y: number }
 //   4. READY         — in position, body still rotating
 //   5. SHOOTING      — position + orientation aligned, push ball
 //
-// Inactive robot:
-//   SEARCHING        — ball outside FOV, spin
-//   ASSIST           — ball visible, move to support position 2m behind ball
+// Aggressive swarm strikers (see teamPolicy.ts): the lead plus the
+// next closest (aggressiveStrikerCountFor - 1) strikers run the full
+// state machine above and may shoot. Defensive strikers:
+//   SEARCHING — ball outside FOV, spin
+//   ASSIST    — ball visible, move to support position 2m behind ball
 // ----------------------------------------------------------------
 export const RobotState = {
   SEARCHING:     'SEARCHING',
@@ -36,6 +38,7 @@ export type RobotState = typeof RobotState[keyof typeof RobotState]
 export interface RobotParams {
   chaseDistance:       number  // (m)     Ball farther than this → CHASING
   chaseSpeed:          number  // (m/s)   Speed while chasing
+  pressChaseSpeed:     number  // (m/s)   Aggressive swarm strikers chase at this speed — strategy.press.chase_vx_limit (real: 1.3)
   tangentialSpeed:     number  // (m/s)   Orbital speed while repositioning
   shootAngle:          number  // (rad)   Max alignment error to be considered aligned
   radialSpeedDistance: number  // (m)     Threshold: switch far→near radial speed
@@ -57,6 +60,9 @@ export interface RobotParams {
 export interface TeamConfig {
   roleSwapDelay:   number  // (s) How long the closer robot must stay closer before roles swap
                            //     Resets to 0 if distances flip back before delay completes
+  strikerFraction: number  // Fraction of outfield players that press aggressively
+                           //     (strategy.cooperation.striker_fraction, real: 0.75); the
+                           //     rest hold defensive ASSIST cover
   ourKickoffX:     number  // (m) striker X when we kick off (real: -2.0)
   ourPrimaryY:     number  // (m) primary striker Y when we kick off (real: +2.0)
   ourSecondaryY:   number  // (m) secondary striker Y when we kick off (real: -1.5)
@@ -241,6 +247,7 @@ export interface SimState {
   gameMode:        GameMode
   robots:          Robot[]                // exactly one has role==='goalkeeper'
   activeIndex:     number                 // index of lead striker (role==='striker', closest to ball)
+                                          //     the lead plus aggressiveStrikerCountFor-1 others form the pressing swarm
   swapTimer:       number                 // striker lead-swap hysteresis timer
   gkSwapCooldown:  number                 // seconds remaining before next GK role swap is allowed
   team:            TeamConfig

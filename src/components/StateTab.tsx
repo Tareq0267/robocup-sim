@@ -1,4 +1,5 @@
 import type { SimState } from '../simulation/types'
+import { aggressiveStrikerCountFor, rankedStrikerIndices } from '../simulation/teamPolicy'
 
 const STATE_COLORS: Record<string, string> = {
   SEARCHING:     '#a855f7',
@@ -62,6 +63,16 @@ export default function StateTab({ simState, robotIndex }: Props) {
   const limitDeg = robot.params.shootAngle * 180 / Math.PI
   const isActive = !isGK && simState.activeIndex === robotIndex
 
+  // Aggressive pressing swarm membership (mirrors teamPolicy.ts)
+  const gkIdx      = simState.robots.findIndex(r => r.role === 'goalkeeper')
+  const ranked     = rankedStrikerIndices(simState.robots, simState.ball, gkIdx)
+  const aggressiveCount = aggressiveStrikerCountFor(ranked.length, simState.team.strikerFraction)
+  const isSwarm    = !isGK && ranked.slice(0, aggressiveCount).includes(robotIndex)
+  const roleText   = isGK ? '● GOALKEEPER'
+    : isActive ? '● ACTIVE'
+    : isSwarm ? '● PRESSING'
+    : '○ ASSIST'
+
   return (
     <div className="p-3 overflow-y-auto h-full text-xs font-mono">
 
@@ -79,9 +90,11 @@ export default function StateTab({ simState, robotIndex }: Props) {
           ? 'bg-[#431407] border border-[#f9731633] text-[#f97316]'
           : isActive
             ? 'bg-[#1e3a5f] border border-[#2563eb55] text-[#60a5fa]'
-            : 'bg-[#1a1a1a] border border-[#2a2a2a] text-[#6b7280]'
+            : isSwarm
+              ? 'bg-[#431407] border border-[#f9731655] text-[#f97316]'
+              : 'bg-[#1a1a1a] border border-[#2a2a2a] text-[#6b7280]'
       }`}>
-        {isGK ? '● GOALKEEPER' : isActive ? '● ACTIVE' : '○ IDLE'}
+        {roleText}
       </div>
 
       <Section title="Time">

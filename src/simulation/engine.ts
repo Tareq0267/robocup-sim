@@ -5,6 +5,7 @@
 import { RobotState, GoalkeeperState, type Robot, type Ball, type Goal, type Court, type SimState, type DebugData, type StateTransition, type GoalkeeperRobot, type GoalkeeperDebugData, type GcGameState, type GcSubState, type GcSubStateType } from './types'
 import { getNextState, getInactiveState, computeAlignmentError, computeOrientationError, computeFovError, isOnCorrectSide, isAligned, isAtContactRange, isOrientationAligned, canSeeBall } from './stateMachine'
 import { searchBehavior, idleBehavior, assistBehavior, chaseBehavior, repositionBehavior, radialAdjustBehavior, readyBehavior, shootBehavior, getTargetOrientation, moveToPointBehavior } from './behaviors'
+import { aggressiveStrikerCountFor, aggressiveStrikerSet } from './teamPolicy'
 import { goalieDecide, gkCanSeeBall, gkFovError, gkAlignmentError, ballInZone } from './goalkeeperStateMachine'
 import { gkFindBallBehavior, gkRetreatBehavior, gkAdjustBlockBehavior, gkChaseBehavior, gkKickBehavior, gkTargetOrientation } from './goalkeeperBehaviors'
 import { stepBall, applyContact, resolveOverlap, separateCircles } from './physics'
@@ -82,6 +83,7 @@ export function makeKickoffState(
   const gkPos = { x: state.fieldLayout.ownGoalArea.maxX, y: 0 }
 
   const strikerPositions = strikerKickoffPositions(strikerIdxs.length, kx, kpy, ksy, -1)
+  const aggressiveCount  = aggressiveStrikerCountFor(strikerIdxs.length, state.team.strikerFraction)
   const newRobots = [...state.robots]
 
   strikerIdxs.forEach((idx, rank) => {
@@ -89,7 +91,11 @@ export function makeKickoffState(
       ...state.robots[idx],
       pos:         { ...strikerPositions[rank] },
       orientation: 0,
-      state:       rank === 0 && kickoffSide === 'ours' ? RobotState.CHASING : RobotState.SEARCHING,
+      // On our kickoff the whole aggressive swarm starts chasing; the
+      // defensive assist robot(s) search until the ball is placed.
+      state: kickoffSide === 'ours' && rank < aggressiveCount
+        ? RobotState.CHASING
+        : RobotState.SEARCHING,
     }
   })
   newRobots[gkIdx] = {
@@ -207,7 +213,7 @@ function tickRobot(
   ball:        Ball,
   goal:        Goal,
   court:       Court,
-  isActive:    boolean,
+  isAggressive: boolean,
   dt:          number,
   time:        number,
   prevHistory: StateTransition[],
@@ -238,7 +244,9 @@ function tickRobot(
   }
 
   // ── 1. Determine next state ────────────────────────────────
-  const { state: nextState, reason } = isActive
+  // Aggressive swarm strikers (lead + next closest) run the full striker
+  // state machine and may shoot; only the defensive assist group is held.
+  const { state: nextState, reason } = isAggressive
     ? getNextState(robot, ball, goal)
     : getInactiveState(robot, ball)
 
@@ -255,7 +263,7 @@ function tickRobot(
     case RobotState.SEARCHING:    velocity = searchBehavior();                                         break
     case RobotState.IDLE:         velocity = idleBehavior();                                           break
     case RobotState.ASSIST:       velocity = assistBehavior(updatedRobot, ball, court.width / 2);      break
-    case RobotState.CHASING:      velocity = chaseBehavior(updatedRobot, ball);                        break
+    case RobotState.CHASING:      velocity = chaseBehavior(updatedRobot, ball, isAggressive ? updatedRobot.params.pressChaseSpeed : undefined); break
     case RobotState.REPOSITIONING:velocity = repositionBehavior(updatedRobot, ball, goal);             break
     case RobotState.RADIAL_ADJUST:velocity = radialAdjustBehavior(updatedRobot, ball);                 break
     case RobotState.READY:        velocity = readyBehavior();                                          break
@@ -481,6 +489,12 @@ export function tick(state: SimState, dt: number): SimState {
     strikerRankByIndex.set(idx, idx === newActiveIndex ? 0 : nonActiveRank++)
   }
 
+  // ── Aggressive pressing swarm ─────────────────────────────
+  // Mirrors the real handleCooperation() cost ranks: the
+  // aggressiveStrikerCountFor() closest strikers (lead included) press
+  // aggressively and may shoot; the rest hold defensive ASSIST cover.
+  const aggressiveSet = aggressiveStrikerSet(robots, ball, gkIdxNow, team.strikerFraction)
+
   // ── Kickoff walk (READY state) ───────────────────────────
   const isKickoffReady  = state.gc.gameState === 'READY'
   const kickoffTargets  = isKickoffReady ? calcKickoffTargets(state) : null
@@ -518,17 +532,18 @@ export function tick(state: SimState, dt: number): SimState {
       newDebugs[i]    = { ...EMPTY_STRIKER_DEBUG, stateHistory: state.debugs[i]?.stateHistory ?? [] }
       newGkDebug      = gkResult.debug
     } else {
-      const isActive = newActiveIndex === i
-      const strikerRank = strikerRankByIndex.get(i) ?? 0
+      const isAggressive = aggressiveSet.has(i)
+      const strikerRank  = strikerRankByIndex.get(i) ?? 0
       // During GET_READY the active striker (rank 0) plays normally so it can kick.
-      // Non-active strikers (rank > 0) are sent to a spread-out support target.
+      // All other strikers (aggressive and defensive alike) are sent to a
+      // spread-out support target — mirrors freeKickExecution assist gating.
       const fkOverride = penalized
         ? { frozen: true }
         : kickoffTargets ? { frozen: false, target: kickoffTargets[i] }
         : fkActive && (fkFrozen || strikerRank > 0)
           ? { frozen: fkFrozen, target: fkTargets?.[strikerRank] }
           : undefined
-      const r = tickRobot(robots[i], ball, goal, court, isActive, dt, time, state.debugs[i]?.stateHistory ?? [], fkOverride)
+      const r = tickRobot(robots[i], ball, goal, court, isAggressive, dt, time, state.debugs[i]?.stateHistory ?? [], fkOverride)
       tickedRobots[i] = r.robot
       newDebugs[i]    = r.debug
     }
@@ -557,6 +572,7 @@ export function tick(state: SimState, dt: number): SimState {
   let newEnemyGkSwapCooldown = state.enemyGkSwapCooldown
   let newEnemyDebugs: DebugData[]          = state.enemyDebugs
   let newEnemyGkDebug: GoalkeeperDebugData = state.enemyGoalkeeperDebug
+  let eAggressiveSet: Set<number> = new Set()
 
   if (state.enemyMode === 'active') {
     const enemyFieldState: SimState = {
@@ -603,6 +619,9 @@ export function tick(state: SimState, dt: number): SimState {
       if (newEnemySwapTimer >= team.roleSwapDelay) { newEnemyActiveIndex = eCloser; newEnemySwapTimer = 0 }
     } else { newEnemySwapTimer = 0 }
 
+    // Enemy aggressive swarm (same policy as our team)
+    eAggressiveSet = aggressiveStrikerSet(eRobots, ball, egkNow, team.strikerFraction)
+
     // Kickoff walk targets for enemy
     const eKickoffTargets = isKickoffReady ? calcEnemyKickoffTargets(state) : null
 
@@ -624,13 +643,13 @@ export function tick(state: SimState, dt: number): SimState {
         eDbgs[i]         = { ...EMPTY_STRIKER_DEBUG, stateHistory: state.enemyDebugs[i]?.stateHistory ?? [] }
         newEnemyGkDebug  = res.debug
       } else {
-        const isEActive   = newEnemyActiveIndex === i
+        const isEAggressive = eAggressiveSet.has(i)
         const eFkOverride = eKickoffTargets
           ? { frozen: false, target: eKickoffTargets[i] }
           : undefined
         const res = tickRobot(
           eRobots[i], ball, enemyAttackGoal, court,
-          isEActive, dt, time,
+          isEAggressive, dt, time,
           state.enemyDebugs[i]?.stateHistory ?? [],
           eFkOverride,
         )
@@ -668,22 +687,32 @@ export function tick(state: SimState, dt: number): SimState {
   const trueFinalRobots = crossOur
 
   // ── Ball physics ──────────────────────────────────────────
-  const activeRobot  = trueFinalRobots[newActiveIndex]
   const gkFinalRobot = trueFinalRobots.find(r => r.role === 'goalkeeper')!
-  const activeVel    = activeRobot.state === RobotState.SHOOTING ? shootBehavior(activeRobot) : { x: 0, y: 0 }
-  const gkVel        = gkFinalRobot.gkState === GoalkeeperState.KICK
+  const gkVel = gkFinalRobot.gkState === GoalkeeperState.KICK
     ? gkKickBehavior(toGKRobot(gkFinalRobot))
     : { x: 0, y: 0 }
 
   let newBall = ball
-  if (activeRobot.state === RobotState.SHOOTING)       newBall = applyContact(newBall, activeRobot, activeVel)
+  // Every aggressive swarm striker may take the shot once it reaches
+  // SHOOTING (mirrors the real behaviour where any pressing striker that
+  // wins the ball can kick). The defensive assist group never shoots.
+  for (const [i, fr] of trueFinalRobots.entries()) {
+    if (fr.role === 'goalkeeper') continue
+    if (aggressiveSet.has(i) && fr.state === RobotState.SHOOTING) {
+      newBall = applyContact(newBall, fr, shootBehavior(fr))
+    }
+  }
   if (gkFinalRobot.gkState === GoalkeeperState.KICK)   newBall = applyContact(newBall, gkFinalRobot, gkVel)
   for (const fr of trueFinalRobots) newBall = resolveOverlap(newBall, fr)
 
   if (state.enemyMode === 'active') {
-    const eActive = finalEnemyRobots[newEnemyActiveIndex]
-    const eGk     = finalEnemyRobots.find(r => r.role === 'goalkeeper')
-    if (eActive.state === RobotState.SHOOTING)        newBall = applyContact(newBall, eActive, shootBehavior(eActive))
+    const eGk = finalEnemyRobots.find(r => r.role === 'goalkeeper')
+    for (const [i, er] of finalEnemyRobots.entries()) {
+      if (er.role === 'goalkeeper') continue
+      if (eAggressiveSet.has(i) && er.state === RobotState.SHOOTING) {
+        newBall = applyContact(newBall, er, shootBehavior(er))
+      }
+    }
     if (eGk && eGk.gkState === GoalkeeperState.KICK) newBall = applyContact(newBall, eGk, gkKickBehavior(toGKRobot(eGk)))
   }
   if (state.enemyMode !== 'off') {

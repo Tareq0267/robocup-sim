@@ -1,4 +1,5 @@
 import type { SimState } from '../simulation/types'
+import { aggressiveStrikerCountFor, rankedStrikerIndices } from '../simulation/teamPolicy'
 
 const STATE_COLORS: Record<string, string> = {
   SEARCHING: '#a855f7', IDLE: '#64748b', ASSIST: '#60a5fa', CHASING: '#f97316',
@@ -31,6 +32,18 @@ export default function TeamTab({ simState }: Props) {
   const pendingSwap = swapTimer > 0
   const gkIdx      = robots.findIndex(r => r.role === 'goalkeeper')
 
+  // Aggressive pressing swarm: the aggressiveStrikerCountFor() closest
+  // strikers (lead included) press and may shoot; the rest hold ASSIST.
+  const ranked        = rankedStrikerIndices(robots, ball, gkIdx)
+  const aggressiveCount = aggressiveStrikerCountFor(ranked.length, team.strikerFraction)
+  const aggressiveSet  = new Set(ranked.slice(0, aggressiveCount))
+
+  const roleBadge = (i: number, isGK: boolean): string =>
+    isGK ? 'GK'
+      : activeIndex === i ? 'ACTIVE'
+      : aggressiveSet.has(i) ? 'PRESS'
+      : 'ASSIST'
+
   return (
     <div className="p-3 overflow-y-auto h-full text-xs font-mono space-y-3">
 
@@ -42,23 +55,24 @@ export default function TeamTab({ simState }: Props) {
         <div className="text-[10px] text-[#6b7280] uppercase tracking-widest mb-2">Role Assignment</div>
         <div className="flex gap-1.5 mb-2">
           {robots.map((r, i) => {
-            const isActive = activeIndex === i
             const isGK     = r.role === 'goalkeeper'
+            const isActive = activeIndex === i
+            const isSwarm  = aggressiveSet.has(i)
             const color    = isGK ? GK_COLOR : (PLAYER_COLORS[i] ?? '#60a5fa')
-            const badge    = isGK ? 'GK' : isActive ? 'ACTIVE' : 'IDLE'
+            const badge    = roleBadge(i, isGK)
             return (
               <div
                 key={i}
                 className="flex-1 rounded px-1.5 py-1.5 text-center"
                 style={{
-                  border:     `1px solid ${color}${(isActive || isGK) ? 'aa' : '33'}`,
-                  background: (isActive || isGK) ? color + '15' : 'transparent',
+                  border:     `1px solid ${color}${(isActive || isGK || isSwarm) ? 'aa' : '33'}`,
+                  background: (isActive || isGK || isSwarm) ? color + '15' : 'transparent',
                 }}
               >
-                <div className="font-bold text-[11px]" style={{ color: (isActive || isGK) ? color : color + '66' }}>
+                <div className="font-bold text-[11px]" style={{ color: (isActive || isGK || isSwarm) ? color : color + '66' }}>
                   P{i + 1}
                 </div>
-                <div className="text-[9px] mt-0.5" style={{ color: (isActive || isGK) ? '#e2e8f0' : '#475569' }}>
+                <div className="text-[9px] mt-0.5" style={{ color: (isActive || isGK || isSwarm) ? '#e2e8f0' : '#475569' }}>
                   {badge}
                 </div>
               </div>
@@ -90,6 +104,7 @@ export default function TeamTab({ simState }: Props) {
       {robots.map((robot, i) => {
         const debug    = debugs[i]
         const isActive = activeIndex === i
+        const isSwarm  = aggressiveSet.has(i)
         const isGK     = robot.role === 'goalkeeper'
         const sColor   = isGK
           ? ({ FIND_BALL: '#a855f7', RETREAT: '#64748b', ADJUST_BLOCK: '#22d3ee', CHASE: '#f97316', KICK: '#ef4444' }[robot.gkState] ?? GK_COLOR)
@@ -129,9 +144,14 @@ export default function TeamTab({ simState }: Props) {
                   ● active
                 </div>
               )}
+              {!isActive && isSwarm && !isGK && (
+                <div className="flex-1 text-center text-[10px] py-0.5 rounded bg-[#431407] text-[#f97316]">
+                  ● pressing
+                </div>
+              )}
             </div>
 
-            {isActive && !isGK && (
+            {isSwarm && !isGK && (
               <div className="mt-2">
                 <div className="flex justify-between text-[10px] text-[#6b7280] mb-0.5">
                   <span>alignment</span>

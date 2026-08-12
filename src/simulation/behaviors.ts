@@ -52,9 +52,11 @@ export function assistBehavior(robot: Robot, ball: Ball, courtHalfLength: number
 }
 
 // CHASING — run straight toward the ball
-export function chaseBehavior(robot: Robot, ball: Ball): Vec2 {
+// Aggressive swarm strikers pass their pressChaseSpeed (strategy.press
+// chase_vx_limit); defensive robots never reach this state.
+export function chaseBehavior(robot: Robot, ball: Ball, speed?: number): Vec2 {
   const dir = normalize(sub(ball.pos, robot.pos))
-  return scale(dir, robot.params.chaseSpeed)
+  return scale(dir, speed ?? robot.params.chaseSpeed)
 }
 
 // REPOSITIONING — orbit the ball tangentially until robot is directly behind it

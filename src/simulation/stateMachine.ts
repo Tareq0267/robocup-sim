@@ -30,10 +30,11 @@ import { RobotState, type Robot, type Ball, type Goal } from './types'
 import { sub, dist, angOf, dot, normalize, wrapAngle } from './math'
 
 // ----------------------------------------------------------------
-// INACTIVE ROBOT STATE
-// Called when this robot is not the active (ball-chasing) robot.
-// Mirrors real StrikerDecide: non-lead robot always goes to ASSIST.
-// Falls back to SEARCHING if ball is out of FOV.
+// INACTIVE (DEFENSIVE) ROBOT STATE
+// Called for strikers outside the aggressive pressing swarm.
+// Mirrors real StrikerDecide: defensive robots always go to ASSIST.
+// Falls back to SEARCHING if ball is out of FOV. Aggressive swarm
+// strikers never use this — they run the full getNextState() machine.
 // ----------------------------------------------------------------
 export function getInactiveState(robot: Robot, ball: Ball): { state: RobotState; reason: string } {
   if (!canSeeBall(robot, ball)) {

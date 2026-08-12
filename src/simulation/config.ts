@@ -72,6 +72,7 @@ export const DEFAULT_PARAMS: RobotParams = {
   // Aligned to real robot (config.yaml + subtree_striker_play.xml)
   chaseDistance:       0.7,    // StrikerDecide chase_threshold="0.7" — switch to adjust within 0.7m
   chaseSpeed:          1.2,    // Chase vx_limit="1.2" (config.yaml vx_limit=2.0 is the hardware cap)
+  pressChaseSpeed:     1.3,    // strategy.press.chase_vx_limit="1.3" — aggressive swarm strikers chase at this speed
   tangentialSpeed:     1.2,    // Adjust tangential_speed_far="1.2"
   shootAngle:          0.15,   // ≈ 8.6° (kick_threshold in AdjustForKickoff is 5°, conservative)
   radialSpeedDistance: 0.5,    // Adjust near_threshold="0.5"
@@ -88,6 +89,7 @@ export const DEFAULT_PARAMS: RobotParams = {
 
 export const DEFAULT_TEAM: TeamConfig = {
   roleSwapDelay:   1.0,
+  strikerFraction: 0.75,
   ourKickoffX:    -2.0,
   ourPrimaryY:     2.0,
   ourSecondaryY:  -1.5,
@@ -255,6 +257,7 @@ export interface ParamMeta {
 export const PARAM_META: ParamMeta[] = [
   { key: 'chaseDistance',       label: 'Chase Distance',        unit: 'm',     min: 0.1, max: 5,   step: 0.05, desc: 'StrikerDecide chase_threshold — switch to adjust when ball is within this distance (real: 0.7m)' },
   { key: 'chaseSpeed',          label: 'Chase Speed',           unit: 'm/s',   min: 0.1, max: 2,   step: 0.1,  desc: 'Chase vx_limit="1.2" — hardware cap is 2.0 m/s' },
+  { key: 'pressChaseSpeed',     label: 'Press Chase Speed',     unit: 'm/s',   min: 0.1, max: 2,   step: 0.1,  desc: 'strategy.press.chase_vx_limit="1.3" — aggressive swarm strikers (incl. the lead) chase at this speed' },
   { key: 'tangentialSpeed',     label: 'Tangential Speed',      unit: 'm/s',   min: 0.1, max: 2,   step: 0.05, desc: 'Adjust tangential_speed_far — lateral orbit speed (real: 1.2 m/s, vy_limit: 0.4)' },
   { key: 'shootAngle',          label: 'Shoot Angle Tolerance', unit: 'deg',   min: 1,   max: 30,  step: 0.5,  desc: 'Max body alignment error before kicking (real kick_threshold ≈ 5°)' },
   { key: 'radialSpeedDistance', label: 'Near Threshold',        unit: 'm',     min: 0.1, max: 2,   step: 0.05, desc: 'Adjust near_threshold — switches far→near speed (real: 0.5m)' },

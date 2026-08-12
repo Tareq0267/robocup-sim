@@ -62,6 +62,22 @@ export default function ParameterPanel({ params, team, gkParams, setParam, setTe
         </>
       )}
 
+      {/* Swarm — aggressive pressing */}
+      {showTeam && (
+        <>
+          <div className="text-[10px] text-[#fb7185] uppercase tracking-widest pt-2 border-t border-[#1e1e1e]">
+            Swarm — Aggressive Pressing
+          </div>
+          <Slider
+            label="Aggressive Striker Fraction" value={team!.strikerFraction} unit=""
+            min={0.25} max={1} step={0.05}
+            desc="strategy.cooperation.striker_fraction = 0.75 — fraction of outfield players that press aggressively (round-half-up, always ≥ 1, leader included). The rest hold ASSIST cover."
+            accentClass="accent-rose-500"
+            onChange={v => setTeamConfig!('strikerFraction', v)}
+          />
+        </>
+      )}
+
       {/* Striker settings (shared P1/P2) */}
       <div className="text-[10px] text-[#6b7280] uppercase tracking-widest pt-1">
         Strikers (P1 &amp; P2)
