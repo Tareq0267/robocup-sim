@@ -70,21 +70,32 @@ export const DEFAULT_FIELD_LAYOUT_5V5: FieldLayout = {
 }
 
 // ----------------------------------------------------------------
-// ASSIST STRATEGY — field + penalties derived from sim geometry
+// ASSIST STRATEGY — field_type dimensions (mirrors RCAP2026 types.h)
 // ----------------------------------------------------------------
-// Derives the assist-strategy Field from the sim's own goal / layout so the
-// blocking slots are placed relative to the defending goal line, exactly like
-// assist_strategy_policy.h does for the real 22 m RoboLeague field.
-export function assistFieldFromSim(
-  ownGoal: Goal, court: Court, layout: FieldLayout,
-): AssistField {
-  return {
-    length:            court.width,
-    width:             court.height,
-    penaltyAreaLength: layout.ownPenaltyArea.maxX - layout.ownPenaltyArea.minX,
-    goalAreaLength:    layout.ownGoalArea.maxX - layout.ownGoalArea.minX,
-    goalWidth:         ownGoal.width,
-  }
+// The real robot builds the assist-strategy Field straight from the configured
+// game.field_type (brain_config.cpp: FD_KIDSIZE / FD_ADULTSIZE / FD_ROBOLEAGUE
+// defined in src/brain/include/types.h). Mirror those exact values here so the
+// sim's block slots always land where the robot's do, regardless of how the
+// sim's own court/goal are drawn.
+export type FieldType = 'kid_size' | 'adult_size' | 'robo_league'
+
+// FieldDimensions layout in types.h:
+//   {length, width, penaltyDist, goalWidth, circleRadius,
+//    penaltyAreaLength, penaltyAreaWidth, goalAreaLength, goalAreaWidth}
+// (brain.cpp:297-303) keeps {length, width, penaltyAreaLength,
+// goalAreaLength, goalWidth} for the assist policy.
+export const FIELD_TYPE_ASSIST: Record<FieldType, AssistField> = {
+  kid_size:    { length: 9,      width: 6,      penaltyAreaLength: 2,     goalAreaLength: 1,      goalWidth: 2.6 },
+  adult_size:  { length: 14.16,  width: 9.22,   penaltyAreaLength: 3.24,  goalAreaLength: 1.345,  goalWidth: 2.6 },
+  robo_league: { length: 22.003, width: 14.126, penaltyAreaLength: 5.221, goalAreaLength: 2.307,  goalWidth: 2.6 },
+}
+
+// Map the sim's game mode onto the C++ game.field_type the robot runs with:
+// '3v3' ↔ adult_size (14m RoboLeague), '5v5' ↔ robo_league (22m RoboLeague).
+export function assistFieldForGameMode(gameMode: GameMode): AssistField {
+  return gameMode === '5v5'
+    ? FIELD_TYPE_ASSIST.robo_league
+    : FIELD_TYPE_ASSIST.adult_size
 }
 
 // Assignment cost weights — matches config.yaml strategy.cooperation.*

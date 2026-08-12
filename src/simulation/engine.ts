@@ -10,7 +10,7 @@ import { gkFindBallBehavior, gkRetreatBehavior, gkAdjustBlockBehavior, gkChaseBe
 import { stepBall, applyContact, resolveOverlap, separateCircles } from './physics'
 import { add, scale, dist, rotateToward, normalize, sub, angOf } from './math'
 import { calculateAssistAssignments, calculateAssistSlotTarget, type AssistField, type AssistPenalties, type Pose } from './assistStrategy'
-import { assistFieldFromSim, DEFAULT_ASSIST_PENALTIES } from './config'
+import { assistFieldForGameMode, DEFAULT_ASSIST_PENALTIES } from './config'
 
 const MAX_HISTORY = 50
 
@@ -563,7 +563,7 @@ export function tick(state: SimState, dt: number): SimState {
   // live target + yield state onto the robot before it is ticked.
   const assistRobots = computeAssistFormation(
     robots, strikerIdxsNow, newActiveIndex, state.activeIndex, ball, goal,
-    assistFieldFromSim(ownGoal, court, state.fieldLayout),
+    assistFieldForGameMode(state.gameMode),
     DEFAULT_ASSIST_PENALTIES,
   )
 
@@ -691,10 +691,11 @@ export function tick(state: SimState, dt: number): SimState {
 
     // Enemy assist blocking-slot formation — mirrored so enemy assistants block
     // relative to their own goal (their defense goal = the sim's right goal).
+    // The assist field is the same game.field_type for both teams.
     const enemyAssistRobots = computeAssistFormation(
       eRobots, eSNow, newEnemyActiveIndex, state.enemyActiveIndex, ball, enemyAttackGoal,
-      assistFieldFromSim(enemyDefenseGoal, court, enemyFieldState.fieldLayout),
-      DEFAULT_ASSIST_PENALTIES, time,
+      assistFieldForGameMode(state.gameMode),
+      DEFAULT_ASSIST_PENALTIES,
     )
 
     // Kickoff walk targets for enemy
